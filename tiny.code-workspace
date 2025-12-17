@@ -17,39 +17,23 @@
       "editor.defaultFormatter": "esbenp.prettier-vscode",
       "editor.codeActionsOnSave": {
         "source.fixAll": "always",
-        "source.organizeImports": "explicit",
-      },
+        "source.organizeImports": "explicit"
+      }
     },
     "[typescriptreact]": {
       "editor.formatOnSave": true,
       "editor.defaultFormatter": "esbenp.prettier-vscode",
       "editor.codeActionsOnSave": {
         "source.fixAll": "always",
-        "source.organizeImports": "explicit",
-      },
+        "source.organizeImports": "explicit"
+      }
     },
     "[html]": {
-      "editor.defaultFormatter": "vscode.html-language-features",
+      "editor.defaultFormatter": "vscode.html-language-features"
     },
-    "eslint.validate": [
-      "mdx",
-      "markdown",
-      "javascript",
-      "javascriptreact",
-      "typescript",
-      "typescriptreact",
-      "astro"
-    ],
+    "eslint.validate": ["mdx", "markdown", "javascript", "javascriptreact", "typescript", "typescriptreact", "astro"],
     "eslint.options": {
-      "extensions": [
-        ".js",
-        ".jsx",
-        ".md",
-        ".mdx",
-        ".ts",
-        ".tsx",
-        ".astro"
-      ],
+      "extensions": [".js", ".jsx", ".md", ".mdx", ".ts", ".tsx", ".astro"]
     },
     "editor.tabSize": 2,
     "editor.insertSpaces": true,
@@ -58,7 +42,7 @@
     "typescript.updateImportsOnFileMove.enabled": "always",
     "editor.codeActionsOnSave": {
       "source.fixAll": "explicit",
-      "source.organizeImports": "explicit",
+      "source.organizeImports": "explicit"
     },
     "typescript.inlayHints.parameterTypes.enabled": true,
     "typescript.inlayHints.parameterNames.suppressWhenArgumentMatchesName": false,
@@ -94,25 +78,22 @@
       "tsconfig.json": "tsconfig.*.json, jsconfig.json",
       "package.json": "package-lock.json",
       ".gitignore": ".prettier*, .editorconfig, .eslint*, .npm*, .nojekyll",
-      "readme.md": "*.md",
+      "readme.md": "*.md"
     },
     "git.enableSmartCommit": true,
     "git.autofetch": true,
     "explorer.excludeGitIgnore": false,
     "git.branchPrefix": "feature/",
     "git.branchRandomName.enable": true,
-    "git.branchRandomName.dictionary": [
-      "animals",
-      "numbers"
-    ],
+    "git.branchRandomName.dictionary": ["animals", "numbers"],
     "search.showLineNumbers": true,
     "workbench.editorAssociations": {
-      "*.log": "default",
+      "*.log": "default"
     },
     "editor.minimap.enabled": true,
     "workbench.colorTheme": "Tokyo Night Storm",
     "editor.fontSize": 14,
-    "[javascriptreact]": { },
+    "[javascriptreact]": {},
     "editor.accessibilitySupport": "off",
     "editor.minimap.size": "fit",
     "cSpell.customDictionaries": {
@@ -120,18 +101,18 @@
         "name": "myDictionary",
         "path": "~/myDictionary.txt",
         "scope": "user",
-        "addWords": true,
+        "addWords": true
       },
-      "custom": true,
+      "custom": true
     },
     "debug.javascript.codelens.npmScripts": "never",
     "emmet.includeLanguages": {
-      "javascript": "javascriptreact",
+      "javascript": "javascriptreact"
     },
     "js/ts.implicitProjectConfig.checkJs": true,
     "editor.detectIndentation": false,
     "markdownlint.config": {
-      "MD007": false,
+      "MD007": false
     },
     "workbench.colorCustomizations": {
       "activityBar.activeBackground": "#2f7c47",
@@ -151,11 +132,10 @@
       "titleBar.activeForeground": "#e7e7e7",
       "titleBar.inactiveBackground": "#21573299",
       "titleBar.inactiveForeground": "#e7e7e799",
-      "sideBar.border": "#2f7c47",
-      "tab.activeBorder": "#2f7c47"
+      "sideBar.border": "#2f7c47"
     },
     "peacock.color": "#215732",
-    "cSpell.words": [ ],
+    "cSpell.words": [],
     "css.lint.unknownAtRules": "ignore",
     "files.autoSave": "onFocusChange",
     "editor.dragAndDrop": false,
@@ -163,30 +143,25 @@
     "editor.formatOnSaveMode": "file",
     "files.eol": "\r\n",
     "files.readonlyExclude": {
-      "dist/**": true,
+      "dist/**": true
     },
     "window.title": "${rootNameShort}${separator}${activeEditorShort}${separator}${activeFolderMedium}",
     "explorer.fileNesting.expand": false,
     "search.exclude": {
       "dist/**": true,
-      "package-lock.json": true,
+      "package-lock.json": true
     },
     "peacock.affectSideBarBorder": true,
     "prettier.quoteProps": "consistent",
-    "prettier.documentSelectors": [
-      "**/*.astro"
-    ],
+    "prettier.documentSelectors": ["**/*.astro"],
     "[astro]": {
       "editor.defaultFormatter": "esbenp.prettier-vscode",
       "editor.codeActionsOnSave": {
         "source.fixAll": "always",
-        "source.organizeImports": "explicit",
-      },
+        "source.organizeImports": "explicit"
+      }
     },
-    "git.branchProtection": [
-      "develop",
-      "main"
-    ],
+    "git.branchProtection": ["develop", "main"],
     "git.enableCommitSigning": false,
     "git.postCommitCommand": "push",
     "workbench.tree.enableStickyScroll": false,
@@ -196,10 +171,10 @@
     "editor.inlayHints.enabled": "offUnlessPressed",
     "workbench.layoutControl.enabled": false,
     "[markdown]": {
-      "diffEditor.ignoreTrimWhitespace": false,
+      "diffEditor.ignoreTrimWhitespace": false
     },
     "files.associations": {
-      "CODEOWNERS": "plaintext",
-    },
-  },
+      "CODEOWNERS": "plaintext"
+    }
+  }
 }
