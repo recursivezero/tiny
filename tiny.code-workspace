@@ -99,8 +99,8 @@
     "git.enableSmartCommit": true,
     "git.autofetch": true,
     "explorer.excludeGitIgnore": false,
-    "git.branchPrefix": "feature/",
-    "git.branchRandomName.enable": true,
+    "git.branchPrefix": "feature/RTY-25000X",
+    "git.branchRandomName.enable": false,
     "git.branchRandomName.dictionary": [
       "animals",
       "numbers"
