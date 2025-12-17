@@ -26,10 +26,10 @@ This is template repository of RecursiveZero.
 > <!-- References -->
 
 [template]: https://badgen.net/static/github/template?icon=github
-[repo]: https://github.com/recursivezero/template
-[license]: https://badgen.net/github/license/recursivezero/template
-[issues]: https://badgen.net/github/open-issues/recursivezero/template
-[PR]: https://badgen.net/github/prs/recursivezero/template
-[commits]: https://badgen.net/github/commits/recursivezero/template/main?color=green
+[repo]: https://github.com/recursivezero/tiny
+[license]: https://badgen.net/github/license/recursivezero/tiny
+[issues]: https://badgen.net/github/open-issues/recursivezero/tiny
+[PR]: https://badgen.net/github/prs/recursivezero/tiny
+[commits]: https://badgen.net/github/commits/recursivezero/tiny/main?color=green
 
 

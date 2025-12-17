@@ -1,19 +1,19 @@
 {
-  "name": "@recursivezero/template",
+  "name": "@recursivezero/tiny",
   "version": "0.0.1",
   "private": false,
   "displayName": "RecursiveZeroTemplate",
   "description": "This is a template repository.",
   "publisher": "@recursivezero",
-  "homepage": "https://github.com/recursivezero/template/blob/main/README.md",
+  "homepage": "https://github.com/recursivezero/tiny/blob/main/README.md",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/recursivezero/template/issues",
+    "url": "https://github.com/recursivezero/tiny/issues",
     "email": "recursivezero@outlook.com"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/recursivezero/template.git"
+    "url": "https://github.com/recursivezero/tiny.git"
   },
   "keywords": [
     "project",
@@ -26,15 +26,15 @@
     "name": "Recursive Zero",
     "email": "recursivezero@outlook.com"
   },
-  "contributors": [{
-    "name": "Keshav Mohta",
-    "email": "xkeshav@gmail.com"
-  }],
+  "contributors": [ {
+      "name": "Keshav Mohta",
+      "email": "xkeshav@gmail.com"
+    } ],
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js"
   },
-  "dependencies": { 
+  "dependencies": {
     "@xkeshav/day": "latest",
     "@xkeshav/watch": "latest"
   },
