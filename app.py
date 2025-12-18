@@ -44,7 +44,7 @@ def generate_qr_with_logo(data, filename):
 
     qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
 
-    logo = Image.open("static/images/logo.jpg")
+    logo = Image.open("static/images/logo.png")
 
     
     qr_width, qr_height = qr_img.size
