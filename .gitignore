@@ -1,10 +1,6 @@
-
 __pycache__/
 *.py[cod]
 *.pyo
-*.pyd
-*.pdb
-*.pkl
 *$py.class
 
 
@@ -14,8 +10,8 @@ env/
 
 
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 
 
 instance/
@@ -26,20 +22,26 @@ instance/
 
 dump/
 *.bson
-*.json
-
-
 urls_export.json
 
 
+.cache/
+.pytest_cache/
+.mypy_cache/
+.pytype/
+.coverage
+htmlcov/
+
+
 *.log
-log/
 logs/
+log/
 
 
 .vscode/
 .idea/
 *.swp
+*.swo
 
 
 .DS_Store
@@ -48,13 +50,11 @@ Thumbs.db
 
 build/
 dist/
-*.egg-info/
 .eggs/
+*.egg-info/
 
 
-.cache/
-.pytest_cache/
-
+poetry.lock
 
 *.tmp
 *.temp
