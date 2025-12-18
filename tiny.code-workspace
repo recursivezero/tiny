@@ -175,6 +175,9 @@
     },
     "files.associations": {
       "CODEOWNERS": "plaintext"
+    },
+    "[python]": {
+      "diffEditor.ignoreTrimWhitespace": true
     }
   }
 }
