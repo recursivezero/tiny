@@ -94,26 +94,39 @@ def generate_code(length=6):
 
 📁 Project Folder Structure
 
-URL_SHORTENING/
-│── app.py
-│── models.py
-│── database.py
-│── requirements.txt
-│
-├── instance/
-│ └── urls.db
-│
-├── templates/
-│ ├── index.html
-│ └── admin.html
-│
-└── static/
-├── style.css
-└── images/
-└── url_shortener_bg.jpg
-└──logo.png
-├── qr
-└──Xyz.png
+```text
+
+Directory structure:
+└── tiny/
+    ├── CHANGELOG.md
+    ├── LICENSE
+    ├── README.md
+    ├── app/
+    │   ├── __init__.py
+    │   ├── app.py
+    │   ├── assets/
+    │   │   └── images/
+    │   │       ├── Dark_mode.png
+    │   ├── cli.py
+    │   ├── database.py
+    │   ├── models.py
+    │   ├── static/
+    │   │   ├── images/
+    │   │   │   ├── logo.png
+    │   │   │   └── url_shortener_bg.jpg
+    │   │   └── style.css
+    │   └── templates/
+    │       ├── admin.html
+    │       └── index.html
+    ├── package.json
+    ├── pyproject.toml
+    └── poetry.lock
+    ├── requirements.txt
+    └── tiny.code-workspace
+    └── .gitignore
+    └── .flake8
+    └── .env
+```
 
 ⚙️ How to Run the Project Locally
 
