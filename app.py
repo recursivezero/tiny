@@ -3,8 +3,9 @@ import string
 import random
 import json
 import datetime
-from flask import Flask, request, redirect, render_template, send_file
+from flask import Flask, request, redirect, render_template, send_file, session, url_for
 from pymongo import MongoClient
+from flask import render_template, request, redirect, url_for, session
 import re
 from dotenv import load_dotenv
 import qrcode
@@ -68,14 +69,13 @@ def generate_qr_with_logo(data, filename):
 
 
 app = Flask(__name__)
+app.secret_key = "super-secret-key"
 
 MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI)
 
 db = client["url_shortener"]
 urls = db["urls"]
-
-
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -85,7 +85,7 @@ def index():
     qr_enabled = False
     qr_type = "short"
     qr_image = None
-    qr_filename=None
+    qr_filename = None
 
     if request.method == "POST":
         original_url = request.form.get("original_url", "")
@@ -112,15 +112,34 @@ def index():
             }
 
             urls.insert_one(doc)
+
             new_short_url = request.host_url + short_code
 
-            if qr_enabled:
-                qr_data = new_short_url if qr_type == "short" else original_url
-                qr_filename = f"{short_code}.png"
-                generate_qr_with_logo(qr_data, qr_filename)
+            
+            session["new_short_url"] = new_short_url
+            session["qr_enabled"] = qr_enabled
+            session["qr_type"] = qr_type
+            session["original_url"] = original_url
+            session["short_code"] = short_code
+
+            return redirect(url_for("index"))
+           
+    
+    new_short_url = session.pop("new_short_url", None)
+    qr_enabled = session.pop("qr_enabled", False)
+    qr_type = session.pop("qr_type", "short")
+    original_url = session.pop("original_url", None)
+    short_code = session.pop("short_code", None)
+
+    
+    if qr_enabled and new_short_url and short_code:
+        qr_data = new_short_url if qr_type == "short" else original_url
+        qr_filename = f"{short_code}.png"
+        generate_qr_with_logo(qr_data, qr_filename)
+        qr_image = f"/static/qr/{qr_filename}"
 
     all_urls = list(urls.find().sort("created_at", -1))
-    qr_image = f"/static/qr/{qr_filename}" if qr_filename else None
+    
 
     return render_template(
         "index.html",
@@ -130,8 +149,10 @@ def index():
         qr_data=qr_data,
         qr_enabled=qr_enabled,
         qr_type=qr_type,
+        all_urls=all_urls,
         qr_image=qr_image
-     )
+    )
+
 
 @app.route("/<short_code>")
 def redirect_short(short_code):

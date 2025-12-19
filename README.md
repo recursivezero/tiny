@@ -1,6 +1,6 @@
+## 🔗 Short URL Generator
 
-## 🔗 Short URL Generator  
-*A modern, Bitly-style URL shortening web application built with Flask & MongoDB*
+_A modern, Bitly-style URL shortening web application built with Flask & MongoDB_
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-Web%20Framework-black.svg)
@@ -13,19 +13,20 @@
 ## 📌 Overview
 
 **Short URL Generator** is a sleek, fast and modern URL shortening platform built using Flask and MongoDB.  
-It converts long URLs into short, shareable links — just like Bitly.  
+It converts long URLs into short, shareable links — just like Bitly.
 
 It supports:
-- URL shortening  
-- QR Code generation (Short URL or Original URL)  
-- Visit counting  
-- MongoDB database  
-- JSON import/export (Admin Panel)  
-- Input validation + sanitization  
-- Light/Dark Mode with memory  
-- Glassmorphism UI  
-- Copy-to-clipboard button  
-- Delete confirmation popup  
+
+- URL shortening
+- QR Code generation (Short URL or Original URL)
+- Visit counting
+- MongoDB database
+- JSON import/export (Admin Panel)
+- Input validation + sanitization
+- Light/Dark Mode with memory
+- Glassmorphism UI
+- Copy-to-clipboard button
+- Delete confirmation popup
 
 This project is perfect for learning **Flask**, **MongoDB**, **Web UI design**, and **clean backend development**.
 
@@ -34,22 +35,25 @@ This project is perfect for learning **Flask**, **MongoDB**, **Web UI design**, 
 ## 🚀 Features
 
 ### 🔹 User Features
-- Convert long URLs into short, unique codes  
-- QR code generation (select **Short URL** or **Original URL**)  
-- Clean Bitly-style result card  
-- Copy button with animation  
-- Smooth URL validation and sanitization  
-- Auto Dark/Light Mode (saves preference)  
-- Mobile-friendly QR Codes  
-- Fully responsive design  
 
-### 🔹 Admin Panel Features  
-- View all shortened URLs  
-- Delete URLs (with confirmation popup)  
-- Import URLs using JSON file  
-- Export database to JSON  
-- Shows JSON format guide  
-- Strict JSON validation  
+- Convert long URLs into short, unique codes
+- QR code generation
+- Clean Bitly-style result card
+- Download URl button
+- Copy button with animation
+- Smooth URL validation and sanitization
+- Auto Dark/Light Mode (saves preference)
+- Mobile-friendly QR Codes
+- Fully responsive design
+
+### 🔹 Admin Panel Features
+
+- View all shortened URLs
+- Delete URLs (with confirmation popup)
+- Import URLs using JSON file
+- Export database to JSON
+- Shows JSON format guide
+- Strict JSON validation
 
 ---
 
@@ -58,13 +62,15 @@ This project is perfect for learning **Flask**, **MongoDB**, **Web UI design**, 
 The app uses a **Random Alphanumeric Short Code Generator**.
 
 ### 🔍 Algorithm Details
-- Uses Python’s `string.ascii_letters + string.digits`
-- Randomly picks characters  
-- Generates a 6-character short ID  
-- Checks MongoDB to avoid duplicates  
-- If duplicate → regenerate automatically  
 
-### 🔢 Example  
+- Uses Python’s `string.ascii_letters + string.digits`
+- Randomly picks characters
+- Generates a 6-character short ID
+- Checks MongoDB to avoid duplicates
+- If duplicate → regenerate automatically
+
+### 🔢 Example
+
 ```python
 import random, string
 
@@ -72,17 +78,18 @@ def generate_code(length=6):
     chars = string.ascii_letters + string.digits
     return ''.join(random.choice(chars) for _ in range(length))
 ```
+
 🗃️ Tech Stack
-| Layer        | Technology                               |
+| Layer | Technology |
 | ------------ | ---------------------------------------- |
-| Backend      | Flask (Python)                           |
-| Database     | MongoDB                                  |
-| Frontend     | HTML, CSS (Glassmorphism), Vanilla JS    |
-| QR Generator | `qrserver.com` API                       |
-| Hosting      | Local / PythonAnywhere / Render / Heroku |
-| Component   | Technology                                |
-| UI Style    | Glassmorphism, Gradient UI                |
-| Data Format | JSON                                  
+| Backend | Flask (Python) |
+| Database | MongoDB |
+| Frontend | HTML, CSS (Glassmorphism), Vanilla JS |
+| QR Generator | `qrserver.com` API |
+| Hosting | Local / PythonAnywhere / Render / Heroku |
+| Component | Technology |
+| UI Style | Glassmorphism, Gradient UI |
+| Data Format | JSON
 
 📁 Project Folder Structure
 
@@ -93,17 +100,19 @@ URL_SHORTENING/
 │── requirements.txt
 │
 ├── instance/
-│     └── urls.db
+│ └── urls.db
 │
 ├── templates/
-│     ├── index.html
-│     └── admin.html
+│ ├── index.html
+│ └── admin.html
 │
 └── static/
-      ├── style.css
-      └── images/
-            └── url_shortener_bg.jpg
-
+├── style.css
+└── images/
+└── url_shortener_bg.jpg
+└──logo.png
+├── qr
+└──Xyz.png
 
 ⚙️ How to Run the Project Locally
 
@@ -124,11 +133,22 @@ venv\Scripts\activate
 Mac/Linux:
 source venv/bin/activate
 
-✔️ Step 3 — Install Dependencies
+✔️ Step 3 — import poetry
 
-pip install -r requirements.txt
+pip install poetry
 
-✔️ Step 4 — Run the Application
+✔️ Step 4 — Install Dependencies
+
+poetry install
+
+✔️ Step 5 — Activate Virtual Environment
+
+poetry shell
+✔️ Step 6 — Set Environment Variables
+
+create .env files
+
+✔️ Step 7 — Install Dependencies
 
 python app.py
 
@@ -138,8 +158,8 @@ Running on http://127.0.0.1:5000/
 
 Open your browser and visit:
 
-👉 http://127.0.0.1:5000/  — User Panel
-👉 http://127.0.0.1:5000/admin  — Admin Panel
+👉 http://127.0.0.1:5000/ — User Panel
+👉 http://127.0.0.1:5000/admin — Admin Panel
 🔗 How the App Works
 ▶️ User Flow
 
@@ -161,8 +181,6 @@ User redirected to original URL
 
         http://127.0.0.1:5000/abc123
     Someone clicks it → visit count increases → redirected to original URL
-
-
 
 🧩 Short Code Generation Algorithm
 
@@ -187,46 +205,43 @@ Saves final unique code
 | visit_count  | Integer   | Click count        |
 | meta         | JSON Text | Title, notes, tags |
 
-
 📦 JSON Import Format (Admin)
 
 Example JSON file for bulk import:
 
 [
-  {
-    "short_code": "abc123",
-    "original_url": "https://example.com",
-    "created_at": "2025-11-18T23:59:00Z",
-    "visit_count": 42,
-    "meta": {
-      "title": "Example Page",
-      "notes": "Optional notes",
-      "tags": ["test", "demo"]
-    }
-  }
+{
+"short_code": "abc123",
+"original_url": "https://example.com",
+"created_at": "2025-11-18T23:59:00Z",
+"visit_count": 42,
+"meta": {
+"title": "Example Page",
+"notes": "Optional notes",
+"tags": ["test", "demo"]
+}
+}
 ]
-
-
 
 📤 Export Format
 
 Admin can download all URLs in the same JSON format.
 
 Screenshots:
-Home Page: 
-    ![home page](./assets/images/Image-1.png)
-    ![valid](./assets/images/Valid.png)
-    ![home layout](./assets/images/home.png)
-    ![Dark mode](./assets/images/Dark_mode.png)
+Home Page:
+![home page](./assets/images/Image-1.png)
+![valid](./assets/images/Valid.png)
+![home layout](./assets/images/home.png)
+![Dark mode](./assets/images/Dark_mode.png)
 Admin Page:
-    ![admin](./assets/images/admin.png)
-    ![Jsonformat](./assets/images/admin2.png)
+![admin](./assets/images/admin.png)
+![Jsonformat](./assets/images/admin2.png)
 
 Url Shortening:
-    ![Url](./assets/images/Image-3.png)
-    ![short URl](./assets/images/image-4.png)
-    ![URl](assets/images/Image-5.png)
-    ![bar code](./assets/images/Image-6.png)
+![Url](./assets/images/Image-3.png)
+![short URl](./assets/images/image-4.png)
+![URl](assets/images/Image-5.png)
+![bar code](./assets/images/Image-6.png)
 
 📜License
 [License](LICENSE)
