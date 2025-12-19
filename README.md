@@ -144,6 +144,7 @@ poetry install
 ✔️ Step 5 — Activate Virtual Environment
 
 poetry shell
+
 ✔️ Step 6 — Set Environment Variables
 
 create .env files
