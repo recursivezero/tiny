@@ -1,18 +1,17 @@
-import os
-import string
-import random
-import json
 import datetime
-from flask import Flask, request, redirect, render_template, send_file, session, url_for
-from pymongo import MongoClient
-from flask import render_template, request, redirect, url_for, session
+import json
+import os
+import random
 import re
-from dotenv import load_dotenv
+import string
+
 import qrcode
-from PIL import Image, ImageDraw, ImageFont
+from dotenv import load_dotenv
+from flask import Flask, redirect, render_template, request, send_file, session, url_for
+from PIL import Image
+from pymongo import MongoClient
 
 load_dotenv()
-
 
 
 def sanitize_url(url):
@@ -20,18 +19,20 @@ def sanitize_url(url):
     url = re.sub(r"\s+", "", url)
     return url
 
+
 def is_valid_url(url):
     pattern = re.compile(
         r"^(https?:\/\/)"
         r"([\w\-]+\.)+[\w\-]+"
         r"(\/[\w\-._~:/?#\[\]@!$&'()*+,;=%]*)?$",
-        re.IGNORECASE
+        re.IGNORECASE,
     )
     return re.match(pattern, url)
 
+
 def generate_code(length=6):
     chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(length))
+    return "".join(random.choice(chars) for _ in range(length))
 
 
 def generate_qr_with_logo(data, filename):
@@ -47,16 +48,11 @@ def generate_qr_with_logo(data, filename):
 
     logo = Image.open("static/images/logo.png")
 
-    
     qr_width, qr_height = qr_img.size
     logo_size = qr_width // 3
     logo = logo.resize((logo_size, logo_size))
 
-    
-    pos = (
-        (qr_width - logo_size) // 2,
-        (qr_height - logo_size) // 2
-    )
+    pos = ((qr_width - logo_size) // 2, (qr_height - logo_size) // 2)
 
     qr_img.paste(logo, pos, mask=logo if logo.mode == "RGBA" else None)
 
@@ -64,8 +60,6 @@ def generate_qr_with_logo(data, filename):
     qr_img.save(save_path)
 
     return save_path
-
-
 
 
 app = Flask(__name__)
@@ -76,6 +70,7 @@ client = MongoClient(MONGO_URI)
 
 db = client["url_shortener"]
 urls = db["urls"]
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
@@ -108,14 +103,13 @@ def index():
                 "original_url": original_url,
                 "created_at": datetime.datetime.utcnow(),
                 "visit_count": 0,
-                "meta": {}
+                "meta": {},
             }
 
             urls.insert_one(doc)
 
             new_short_url = request.host_url + short_code
 
-            
             session["new_short_url"] = new_short_url
             session["qr_enabled"] = qr_enabled
             session["qr_type"] = qr_type
@@ -123,15 +117,13 @@ def index():
             session["short_code"] = short_code
 
             return redirect(url_for("index"))
-           
-    
+
     new_short_url = session.pop("new_short_url", None)
     qr_enabled = session.pop("qr_enabled", False)
     qr_type = session.pop("qr_type", "short")
     original_url = session.pop("original_url", None)
     short_code = session.pop("short_code", None)
 
-    
     if qr_enabled and new_short_url and short_code:
         qr_data = new_short_url if qr_type == "short" else original_url
         qr_filename = f"{short_code}.png"
@@ -139,7 +131,6 @@ def index():
         qr_image = f"/static/qr/{qr_filename}"
 
     all_urls = list(urls.find().sort("created_at", -1))
-    
 
     return render_template(
         "index.html",
@@ -150,24 +141,25 @@ def index():
         qr_enabled=qr_enabled,
         qr_type=qr_type,
         all_urls=all_urls,
-        qr_image=qr_image
+        qr_image=qr_image,
     )
 
 
 @app.route("/<short_code>")
 def redirect_short(short_code):
     doc = urls.find_one_and_update(
-        {"short_code": short_code},
-        {"$inc": {"visit_count": 1}}
+        {"short_code": short_code}, {"$inc": {"visit_count": 1}}
     )
     if doc:
         return redirect(doc["original_url"])
     return "Invalid or expired short URL", 404
 
+
 @app.route("/delete/<short_code>")
 def delete_url(short_code):
     urls.delete_one({"short_code": short_code})
     return redirect("/")
+
 
 @app.route("/admin", methods=["GET", "POST"])
 def admin_page():
@@ -191,7 +183,13 @@ def admin_page():
         if not isinstance(data, list):
             return "JSON must contain a list of objects", 400
 
-        required_fields = ["short_code", "original_url", "created_at", "visit_count", "meta"]
+        required_fields = [
+            "short_code",
+            "original_url",
+            "created_at",
+            "visit_count",
+            "meta",
+        ]
 
         for index, item in enumerate(data):
             if not isinstance(item, dict):
@@ -218,37 +216,45 @@ def admin_page():
             if existing:
                 urls.update_one(
                     {"short_code": item["short_code"]},
-                    {"$set": {"visit_count": max(existing["visit_count"], item["visit_count"])}}
+                    {
+                        "$set": {
+                            "visit_count": max(
+                                existing["visit_count"], item["visit_count"]
+                            )
+                        }
+                    },
                 )
             else:
-                urls.insert_one({
-                    "short_code": item["short_code"],
-                    "original_url": item["original_url"],
-                    "created_at": created_at,
-                    "visit_count": item["visit_count"],
-                    "meta": item["meta"]
-                })
+                urls.insert_one(
+                    {
+                        "short_code": item["short_code"],
+                        "original_url": item["original_url"],
+                        "created_at": created_at,
+                        "visit_count": item["visit_count"],
+                        "meta": item["meta"],
+                    }
+                )
 
     all_urls = list(urls.find().sort("created_at", -1))
     return render_template("admin.html", urls=all_urls)
+
 
 @app.route("/export")
 def export_json():
     export = []
     for u in urls.find():
-        export.append({
-            "short_code": u["short_code"],
-            "original_url": u["original_url"],
-            "created_at": u["created_at"].isoformat(),
-            "visit_count": u["visit_count"],
-            "meta": u["meta"]
-        })
+        export.append(
+            {
+                "short_code": u["short_code"],
+                "original_url": u["original_url"],
+                "created_at": u["created_at"].isoformat(),
+                "visit_count": u["visit_count"],
+                "meta": u["meta"],
+            }
+        )
 
     path = "urls_export.json"
     with open(path, "w") as f:
         json.dump(export, f, indent=4)
 
     return send_file(path, as_attachment=True)
-
-if __name__ == "__main__":
-    app.run(debug=True)

@@ -1,6 +1,6 @@
-## 🔗 Short URL Generator
+# 🔗 Short URL Generator
 
-_A modern, Bitly-style URL shortening web application built with Flask & MongoDB_
+> A modern, Bitly-style URL shortening web application built with Flask & MongoDB\_
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-Web%20Framework-black.svg)
@@ -80,87 +80,84 @@ def generate_code(length=6):
 ```
 
 🗃️ Tech Stack
-| Layer | Technology |
+
+| Layer        | Technology                               |
 | ------------ | ---------------------------------------- |
-| Backend | Flask (Python) |
-| Database | MongoDB |
-| Frontend | HTML, CSS (Glassmorphism), Vanilla JS |
-| QR Generator | `qrserver.com` API |
-| Hosting | Local / PythonAnywhere / Render / Heroku |
-| Component | Technology |
-| UI Style | Glassmorphism, Gradient UI |
-| Data Format | JSON
+| Backend      | Flask (Python)                           |
+| Database     | MongoDB                                  |
+| Frontend     | HTML, CSS (Glassmorphism), Vanilla JS    |
+| QR Generator | `qrserver.com` API                       |
+| Hosting      | Local / PythonAnywhere / Render / Heroku |
+| Component    | Technology                               |
+| UI Style     | Glassmorphism, Gradient UI               |
+| Data Format  | JSON                                     |
 
 📁 Project Folder Structure
 
-URL_SHORTENING/
-│── app.py
-│── models.py
-│── database.py
-│── requirements.txt
-│
-├── instance/
-│ └── urls.db
-│
-├── templates/
-│ ├── index.html
-│ └── admin.html
-│
-└── static/
-├── style.css
-└── images/
-└── url_shortener_bg.jpg
-└──logo.png
-├── qr
-└──Xyz.png
+```text
+
+Directory structure:
+└── tiny/
+    ├── CHANGELOG.md
+    ├── LICENSE
+    ├── README.md
+    ├── app/
+    │   ├── __init__.py
+    │   ├── app.py
+    │   ├── assets/
+    │   │   └── images/
+    │   │       ├── Dark_mode.png
+    │   ├── cli.py
+    │   ├── database.py
+    │   ├── models.py
+    │   ├── static/
+    │   │   ├── images/
+    │   │   │   ├── logo.png
+    │   │   │   └── url_shortener_bg.jpg
+    │   │   └── style.css
+    │   └── templates/
+    │       ├── admin.html
+    │       └── index.html
+    ├── package.json
+    ├── pyproject.toml
+    └── poetry.lock
+    ├── requirements.txt
+    └── tiny.code-workspace
+    └── .gitignore
+    └── .flake8
+    └── .env
+```
 
 ⚙️ How to Run the Project Locally
 
-Follow these steps to run the app on your machine.
+## How to start
 
-✔️ Step 1 — Clone the Repository
-
-git clone https://github.com/harshmishra2701/URL-Shortening.git
-cd URL_Shortening
-
-✔️ Step 2 — Create a Virtual Environment
-python -m venv venv
-
-Activate it:
-Windows:
-venv\Scripts\activate
-
-Mac/Linux:
-source venv/bin/activate
-
-✔️ Step 3 — import poetry
-
-pip install poetry
-
-✔️ Step 4 — Install Dependencies
-
+```sh
 poetry install
+poetry install --all-extras
+```
 
-✔️ Step 5 — Activate Virtual Environment
+create `.env` file and add content from `.env.local` file anc change value according to your project
 
+Note: according to your port change the port in `frontend/vite.config.ts` and `VITE_API_URL`
+
+```sh
 poetry shell
+poetry run tiny dev
+```
 
-✔️ Step 6 — Set Environment Variables
+## Lint
 
-create .env files
+to lint the code run
 
-✔️ Step 7 — Install Dependencies
+```sh
+poetry run black .
+#then
+poetry run ruff .
+```
 
-python app.py
+open [http://localhost:8000](http://127.0.0.1:8000)
 
-You will see:
-
-Running on http://127.0.0.1:5000/
-
-Open your browser and visit:
-
-👉 http://127.0.0.1:5000/ — User Panel
-👉 http://127.0.0.1:5000/admin — Admin Panel
 🔗 How the App Works
 ▶️ User Flow
 
@@ -178,10 +175,7 @@ When someone clicks the short link →
 
 Visit count increases
 
-User redirected to original URL
-
-        http://127.0.0.1:5000/abc123
-    Someone clicks it → visit count increases → redirected to original URL
+User redirected to original URL <http://127.0.0.1:5000/abc123> Someone clicks it → visit count increases → redirected to original URL
 
 🧩 Short Code Generation Algorithm
 
@@ -246,6 +240,3 @@ Url Shortening:
 
 📜License
 [License](LICENSE)
-
-👤Author
-Harsh Mishra
