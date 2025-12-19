@@ -1,19 +1,67 @@
-[tool.poetry]
+[project]
 name = "tiny"
 version = "0.1.0"
-description = "URL Shortener with QR Code generation"
-authors = ["Harsh Mishra"]
+description = "A package for URL Shortener with QR Code generation"
+authors = [{ name = "recursivezero", email = "recursivezero@users.noreply.github.com" }]
+maintainers = [{ name = "Harsh Mishra", email = "harshmishra2609@users.noreply.github.com" }]
+license = "MIT"
 readme = "README.md"
-package-mode = false  
+requires-python = ">=3.10,<3.13"
+keywords = [
+  "url-shortener",
+  "qr-code",
+  "flask",
+  "pymongo",
+  "python-dotenv",
+  "qrcode",
+  "pillow",
+]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Topic :: Software Development :: Libraries",
+]
+dependencies =[
+  "flask ==3.0.0",
+  "pymongo ==4.6.0",
+  "python-dotenv ==1.0.1",
+  "qrcode ==8.2",
+  "pillow ==10.4.0"
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<3.13"
-flask = "^3.0.0"
-pymongo = "^4.6.0"
-python-dotenv = "^1.0.1"
-qrcode = "^8.2"
-pillow = "^10.4.0"
+[project.scripts]
+tiny = "app.cli:main"
+lint = "utils.lint:main"
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.10.0"
+flake8 = "^7.1.1"
+mypy = "^1.14.1"
+pip-audit = "^2.9.0"
+pipreqs = "0.5.0"
+ruff = "0.5.3"
+twine = "^6.2.0"
+types-pillow = "^10.2.0.20240822"
+types-pywin32 = "^308.0.0.20250128"
+vulture = "^2.3"
+
+[tool.flake8]
+max_line_length = 190
+
+[tool.poetry.requires-plugins]
+poetry-plugin-export = "^1.9"
+
+[tool.poetry-auto-export]
+output = "requirements.txt"
+without_hashes = true
+without = ["dev"]
+
+[[tool.poetry.packages]]
+include = "*"
+from = "."
+
+[tool.poetry-audit]
+ignore = ["GHSA-9hjg-9r4m-mvj7", "GHSA-3f63-hfp8-52jq", "GHSA-44wm-f244-xhp3"]
