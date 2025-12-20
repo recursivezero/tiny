@@ -225,19 +225,15 @@ Admin can download all URLs in the same JSON format.
 
 Screenshots:
 Home Page:
-![home page](./assets/images/Image-1.png)
-![valid](./assets/images/Valid.png)
-![home layout](./assets/images/home.png)
-![Dark mode](./assets/images/Dark_mode.png)
+![home page](app/assets/images/home1.png)
+![home dark mode](app/assets/images/home_dark_mode.png)
+![home page](app/assets/images/valid.png)
+![home layout](app/assets/images/short_url.png)
+![Dark mode](app/assets/images/qr.png)
+![recent](app/assets/images/recent.png)
 Admin Page:
-![admin](./assets/images/admin.png)
-![Jsonformat](./assets/images/admin2.png)
-
-Url Shortening:
-![Url](./assets/images/Image-3.png)
-![short URl](./assets/images/image-4.png)
-![URl](assets/images/Image-5.png)
-![bar code](./assets/images/Image-6.png)
+![admin](app/assets/images/admin.png)
+![Jsonformat](app/assets/images/admin2.png)
 
 📜License
 [License](LICENSE)
