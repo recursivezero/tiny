@@ -4,7 +4,6 @@ import os
 import random
 import re
 import string
-
 import qrcode
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, send_file, session, url_for
@@ -46,7 +45,7 @@ def generate_qr_with_logo(data, filename):
 
     qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
 
-    logo = Image.open("static/images/logo.png")
+    logo = Image.open("app/static/images/logo.png")
 
     qr_width, qr_height = qr_img.size
     logo_size = qr_width // 3
@@ -56,7 +55,7 @@ def generate_qr_with_logo(data, filename):
 
     qr_img.paste(logo, pos, mask=logo if logo.mode == "RGBA" else None)
 
-    save_path = f"static/qr/{filename}"
+    save_path = f"app/static/qr/{filename}"
     qr_img.save(save_path)
 
     return save_path

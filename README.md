@@ -40,6 +40,7 @@ This project is perfect for learning **Flask**, **MongoDB**, **Web UI design**, 
 - QR code generation
 - Clean Bitly-style result card
 - Download URl button
+- share URL
 - Copy button with animation
 - Smooth URL validation and sanitization
 - Auto Dark/Light Mode (saves preference)
