@@ -3,26 +3,27 @@
 
 <head>
   <title>URL Shortener</title>
-  <link rel="stylesheet" href="/static/style.css">
+
+  <!-- keep your existing stylesheet (optional) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 
   <style>
     :root {
-      --bg-overlay: rgba(0, 0, 0, 0.45);
-      --glass-bg: rgba(255, 255, 255, 0.16);
-      --text-color: white;
-      --input-bg: rgba(255, 255, 255, 0.85);
-      --button-bg: linear-gradient(90deg, #6675FF, #5AB9FF);
-      --recent-bg: rgba(255, 255, 255, 0.2);
+      --bg: #eefaf8;
+      --card: rgba(255, 255, 255, 0.95);
+      --muted: #7b8b8a;
+      --accent-1: #5AB9FF;
+      --accent-2: #4CB39F;
+      --accent-grad: linear-gradient(90deg, #4CB39F, #5AB9FF);
+      --success: #2fb06e;
+      --glass: rgba(255, 255, 255, 0.85);
     }
 
-
-    .dark-theme {
-      --bg-overlay: rgba(0, 0, 0, 0.75);
-      --glass-bg: rgba(0, 0, 0, 0.4);
-      --text-color: #f3f3f3;
-      --input-bg: rgba(50, 50, 50, 0.8);
-      --button-bg: linear-gradient(90deg, #4444ff, #2266ff);
-      --recent-bg: rgba(255, 255, 255, 0.1);
+    /* Preserve your dark theme variables too */
+    body.dark-theme {
+      --bg: #0f1720;
+      --card: rgba(10, 14, 18, 0.92);
+      --muted: #9aa7a6;
     }
 
     body {
