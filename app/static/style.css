@@ -1,6 +1,7 @@
 body {
   font-family: Arial;
-  padding: 20px;
+  margin: 0;
+  padding: 0;
 }
 
 input,
@@ -21,7 +22,6 @@ input {
 .error-box {
   margin-bottom: 15px;
   padding: 10px;
-  background: rgba(255, 0, 0, 0.2);
   color: #ff4d4d;
   border-radius: 8px;
   font-weight: 600;
@@ -50,7 +50,7 @@ input {
 .result-card,
 .recent-box {
   width: 90%;
-  max-width: 450px; /* prevents layout shift */
+  max-width: 450px;
   margin: 10px auto;
 }
 
@@ -132,10 +132,7 @@ input {
   color: #eee;
   font-size: 14px;
 }
-/* ===============================
-   GLOBAL BUTTON HOVER EFFECT
-   (same as your old URL shortener)
-   =============================== */
+
 button,
 .panel-btn,
 .btn-copy,
@@ -167,12 +164,6 @@ button:active,
   transform: scale(0.97);
 }
 
-/* ===============================
-   INPUT + BUTTON HOVER EFFECT
-   (same feel as old URL shortener)
-   =============================== */
-
-/* Smooth transition for inputs */
 .input-field {
   background: #fff;
 }
@@ -193,15 +184,136 @@ button:active,
   transition: all 0.25s ease;
 }
 
-/* Hover effect for inputs */
 input-field:hover,
 .input-field:hover {
   transform: scale(1.03);
   box-shadow: 0 8px 22px rgba(0, 0, 0, 0.18);
 }
 
-/* Focus effect (when typing) */
-.input-field:focus {
+.input-field:focus-within {
   transform: scale(1.04);
   box-shadow: 0 0 0 2px rgba(90, 185, 255, 0.45);
+}
+.short-code {
+  color: #0a0000; /* blue like links */
+  font-weight: 700;
+}
+
+.dark-theme .short-code {
+  color: #ffffff;
+}
+
+.app-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 97%;
+  height: 55px;
+  background: #f2f2f2;
+  display: flex;
+  align-items: center;
+  padding: 0 28px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+}
+
+/* Dark mode */
+.dark-theme .app-header {
+  background: #1e293b;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-logo {
+  width: 36px;
+  height: 36px;
+  background: #2563eb;
+  color: white;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.app-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.dark-theme .app-name {
+  color: #f8fafc;
+}
+
+.header-nav {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 26px;
+}
+
+.nav-link {
+  text-decoration: none;
+  color: #111827;
+  font-weight: 500;
+  position: relative;
+}
+
+.dark-theme .nav-link {
+  color: #e5e7eb;
+}
+
+.nav-link:hover {
+  color: #2563eb;
+}
+
+.nav-link.active::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #111827;
+}
+
+.dark-theme .nav-link.active::after {
+  background: #f8fafc;
+}
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+
+.admin-float-btn {
+  position: fixed;
+  top: 76px;
+  right: 28px;
+  background: #ffffff;
+  color: #0b2b2a;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.15);
+  z-index: 999;
+  transition: all 0.25s ease;
+}
+
+.admin-float-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+}
+
+.dark-theme .admin-float-btn {
+  background: #1f2937;
+  color: #f8fafc;
 }

@@ -37,7 +37,7 @@ This project is perfect for learning **Flask**, **MongoDB**, **Web UI design**, 
 ### 🔹 User Features
 
 - Convert long URLs into short, unique codes
-- QR code generation
+- default checkbox QR code generation
 - Clean Bitly-style result card
 - Download URl button
 - share URL
@@ -225,11 +225,11 @@ Admin can download all URLs in the same JSON format.
 
 Screenshots:
 Home Page:
-![home page](app/assets/images/home1.png)
+![home page](app/assets/images/home.png)
 ![home dark mode](app/assets/images/home_dark_mode.png)
-![home page](app/assets/images/valid.png)
+![home page](app/assets/images/valid1.png)
 ![home layout](app/assets/images/short_url.png)
-![Dark mode](app/assets/images/qr.png)
+![Dark mode](app/assets/images/short_url.png)
 ![recent](app/assets/images/recent.png)
 Admin Page:
 ![admin](app/assets/images/admin.png)
