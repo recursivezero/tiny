@@ -597,9 +597,11 @@ footer {
 .dark-theme .footer-brand h3,
 .dark-theme .footer-brand p,
 .dark-theme .footer-col h4,
-.dark-theme .app-footer a {
+.dark-theme .app-footer a,
+.dark-theme .footer-bottom {
   color: #f8fafc;
 }
+
 .footer-brand h3 {
   margin: 0;
   color: #000000;
@@ -687,9 +689,6 @@ body {
   text-align: center;
   font-size: 14px;
   color: #080808;
-}
-.dark-theme.footer-bottom {
-  color: #ffffff;
 }
 .footer-bottom a {
   color: #030000;
