@@ -11,7 +11,7 @@
 
 </head>
 
-<>
+<body>
 
   <!-- Top Header -->
   <header class="app-header">
@@ -24,6 +24,7 @@
       <a href="#" class="nav-link">Analysis</a>
       <a href="#" class="nav-link">Search</a>
       <a href="#" class="nav-link">Contact</a>
+      <a href="/admin" class="nav-link">Admin</a>
 
 
     </nav>
@@ -33,7 +34,7 @@
     </div>
   </header>
   <!-- Floating Admin Panel Button -->
-  <a href="/admin" class="admin-float-btn">Admin Panel</a>
+
 
   <div class="page">
     <div class="topbar" style="width:100%; max-width:1100px;">
@@ -57,7 +58,7 @@
 
           <div class="input-row">
             <div class="input-field">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" style="opacity:0.9;">
+              <svg width="50" height="50" viewBox="0 0 24 24" fill="none" style="opacity:0.9;">
                 <path d="M10.59 13.41a1 1 0 0 1 0-1.41l2.59-2.59a2 2 0 1 1 2.82 2.82l-1.18 1.18" stroke="#1e6b66"
                   stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" />
                 <path d="M13.41 10.59a1 1 0 0 1 0 1.41L10.82 14a2 2 0 1 1-2.82-2.82l1.18-1.18" stroke="#1e6b66"
@@ -72,8 +73,9 @@
 
           </div>
           {% if error %}
-          <div class="error-box">{{ error }}</div>
+          <div class="error-box" id="urlError">{{ error }}</div>
           {% endif %}
+
           <button class="cta" type="submit">Shorten URL➜</button>
           <div style="display:flex;align-items:center;justify-content:space-between;">
             <label class="small-action qr-inline">
@@ -83,8 +85,8 @@
 
 
             <!-- Recent button (scroll/toggle) -->
-            <button type="button" class="recent-btn" onclick="toggleRecent()" title="Show recent shortened URLs">🕘
-              Recent URLs</button>
+            <button type="button" class="recent-btn" onclick="toggleRecent()"
+              title="Show recent shortened URLs">🕘Recent URLs</button>
           </div>
 
           <div id="qr_options" style="display:none;">
@@ -104,44 +106,37 @@
           <div>
             <div class="result-title">Your shortened URL is ready!</div>
 
-            <div style="color:var(--muted);font-size:13px;margin-top:4px;">Copy or share your short link, download the
+            <div style="color: black;font-size:13px;margin-top:4px;">Copy or share your short link, download the
               QR code, or view details.</div>
           </div>
         </div>
 
         <!-- Short url box -->
         <div class="short-box">
-          <a href="{{ new_short_url }}" target="_blank" id="shortUrlInput" style="
-               padding:10px;
-               border-radius:8px;
-               background:#fff;
-               border:1px solid rgba(0,0,0,0.08);
-               text-decoration:none;
-               color:#0b2b2a;
-               font-weight:600;
-               overflow:hidden;
-               text-overflow:ellipsis;
-               white-space:nowrap;
-             ">
-            {{ new_short_url }}
-          </a>
+          <div class="short-actions">
+            <a href="{{ new_short_url }}" target="_blank" id="shortUrlInput" style="
+          
+            color: black;">
+              {{ new_short_url }}
+            </a>
 
-          <button class="btn-copy" onclick="copyShort(this)">📋</button>
-          <button class="btn-share" onclick="shareShort()">Share</button>
+            <button class="btn-copy" onclick="copyShort(this)">📋</button>
+            <button class="btn-share" onclick="shareShort()">Share</button>
+          </div>
         </div>
 
         <!-- Meta info & QR -->
         <div class="meta-row">
 
           <div>
-            <div style="color:var(--muted);font-size:13px;">Original URL</div>
+            <div style="color:var(--muted);font-size:13px;color: black;">Original URL</div>
             <div style="font-weight:600;margin-top:6px;">{{ original_url or (urls[0].original_url if urls|length > 0
               else '') }}</div>
 
             <div style="display:flex;gap:18px;margin-top:12px;color:var(--muted);font-size:13px;">
               <div>
-                <div style="font-weight:700;">Created:</div>
-                <div>Just now</div>
+                <div style="font-weight:700; color: black;">Created:</div>
+                <div style="color: black;">Just now</div>
               </div>
               <div>
               </div>
@@ -176,7 +171,7 @@
               <th>Short Code</th>
               <th>Original URL</th>
               <th>Visits</th>
-              <th>Action</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -189,15 +184,22 @@
               </td>
 
               <td class="original-url">
-                {{ url.original_url }}
+                <a href="{{ url.original_url }}" target="_blank" style="color: black;" rel="noopener noreferrer">
+                  {{ url.original_url }}
+                </a>
               </td>
+
 
               <td>{{ url.visit_count }}</td>
 
               <td class="action-col">
                 <a href="/{{ url.short_code }}" target="_blank" class="action-btn open-btn">↗</a>
-                <a href="/delete/{{ url.short_code }}" onclick="return confirmDelete('{{ url.short_code }}')"
-                  class="action-btn delete-btn">🗑</a>
+                <a href="#" class="action-btn delete-btn"
+                  onclick="deleteUrl('{{ url.short_code }}', this); return false;">
+                  🗑
+                </a>
+
+
               </td>
             </tr>
             {% endfor %}
@@ -246,7 +248,7 @@
             A8.013 8.013 0 0 0 16 8
             c0-4.42-3.58-8-8-8z" />
           </svg>
-          Tiny
+          tiny
         </a>
       </div>
 
@@ -256,13 +258,12 @@
         <div class="footer-col">
           <h4>Product</h4>
           <a href="#">Features</a>
-          <a href="#">Pricing</a>
           <a href="#">API</a>
         </div>
 
         <div class="footer-col">
           <h4>Support</h4>
-          <a href="#">Documentation</a>
+          <a href="/">Documentation</a>
           <a href="#">Contact</a>
           <a href="#">Help Center</a>
         </div>
@@ -281,6 +282,16 @@
 
   <script>
     // QR options toggle
+
+    const input = document.querySelector('input[name="original_url"]');
+    const errorBox = document.getElementById("urlError");
+
+    if (input && errorBox) {
+      input.addEventListener("input", () => {
+        errorBox.style.display = "none";
+      });
+    }
+
     function toggleQrOptions() {
       const cb = document.getElementById('qr_checkbox');
       const box = document.getElementById('qr_options');
@@ -329,8 +340,20 @@
     }
 
     // Confirm delete
-    function confirmDelete(code) {
-      return confirm('Are you sure you want to delete ' + code + ' ?');
+    function deleteUrl(shortCode, btn) {
+      if (!confirm("Are you sure you want to delete this URL?")) return;
+
+      fetch(`/delete/${shortCode}`, {
+        method: "POST"
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Delete failed");
+
+          // Remove row smoothly
+          const row = btn.closest("tr");
+          if (row) row.remove();
+        })
+        .catch(() => alert("Failed to delete URL"));
     }
 
     // Theme (remember)
@@ -356,9 +379,10 @@
       }
     });
 
+
   </script>
 
 
-  </body>
+</body>
 
 </html>

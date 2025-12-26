@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, send_file, session, url_for
 from PIL import Image
 from pymongo import MongoClient
+from flask import send_file
 
 load_dotenv()
 
@@ -154,10 +155,10 @@ def redirect_short(short_code):
     return "Invalid or expired short URL", 404
 
 
-@app.route("/delete/<short_code>")
+@app.route("/delete/<short_code>", methods=["POST"])
 def delete_url(short_code):
     urls.delete_one({"short_code": short_code})
-    return redirect("/")
+    return "", 204
 
 
 @app.route("/admin", methods=["GET", "POST"])
