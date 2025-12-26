@@ -13,5 +13,5 @@ jobs:
       - name: Format issue title
         uses: recursivezero/tiny/.github/actions/format-issue-title@v2.6
         with:
-          prefix: RTP
+          prefix: RTY
           dry_run: false
