@@ -20,6 +20,7 @@
       <a href="#" class="nav-link">Analysis</a>
       <a href="#" class="nav-link">Search</a>
       <a href="#" class="nav-link">Contact</a>
+      <a href="/admin" class="nav-link">Admin</a>
     </nav>
   </header>
 
@@ -76,46 +77,47 @@
                 background:#4a90e2;color:white;border-radius:8px;cursor:pointer;" onclick="toggleRecent()"
         title="Show recent shortened URLs">🕘Recent
         URLs</button>
-        <div id="recentList" class="recent-table-wrapper" style="display:none;">
-          <table class="recent-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Short Code</th>
-                <th>Original URL</th>
-                <th>Visits</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for url in urls %}
-              <tr>
-                <td>{{ loop.index }}</td>
-        
-                <td class="short-code">
-                  {{ url.short_code }}
-                </td>
-        
-                <td class="original-url">
-                  {{ url.original_url }}
-                </td>
-        
-                <td>{{ url.visit_count }}</td>
-        
-                <td class="action-col">
-                  <a href="/{{ url.short_code }}" target="_blank" class="action-btn open-btn">↗</a>
-                  <a href="#" class="action-btn delete-btn" onclick="deleteUrl('{{ url.short_code }}', this); return false;">
-                    🗑
-                  </a>
-                </td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        </div>
+      <div id="recentList" class="recent-table-wrapper" style="display:none;">
+        <table class="recent-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Short Code</th>
+              <th>Original URL</th>
+              <th>Visits</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for url in urls %}
+            <tr>
+              <td>{{ loop.index }}</td>
+
+              <td class="short-code">
+                {{ url.short_code }}
+              </td>
+
+              <td class="original-url">
+                {{ url.original_url }}
+              </td>
+
+              <td>{{ url.visit_count }}</td>
+
+              <td class="action-col">
+                <a href="/{{ url.short_code }}" target="_blank" class="action-btn open-btn">↗</a>
+                <a href="#" class="action-btn delete-btn"
+                  onclick="deleteUrl('{{ url.short_code }}', this); return false;">
+                  🗑
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-      
+  </div>
+
   </div>
   </div>
   <!-- Recent list (toggle) -->
@@ -222,6 +224,6 @@
 
   </script>
 
-  </body>
+</body>
 
 </html>

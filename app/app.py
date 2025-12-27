@@ -1,38 +1,15 @@
 import datetime
 import json
 import os
-import random
-import re
-import string
+from warnings import catch_warnings
 import qrcode
 from dotenv import load_dotenv
-from flask import Flask, redirect, render_template, request, send_file, session, url_for
+from flask import (Flask,jsonify,redirect,render_template,request,send_file,session, url_for)
+from app.utils.helper import generate_code, is_valid_url, sanitize_url
 from PIL import Image
 from pymongo import MongoClient
-from flask import send_file
 
 load_dotenv()
-
-
-def sanitize_url(url):
-    url = url.strip()
-    url = re.sub(r"\s+", "", url)
-    return url
-
-
-def is_valid_url(url):
-    pattern = re.compile(
-        r"^(https?:\/\/)"
-        r"([\w\-]+\.)+[\w\-]+"
-        r"(\/[\w\-._~:/?#\[\]@!$&'()*+,;=%]*)?$",
-        re.IGNORECASE,
-    )
-    return re.match(pattern, url)
-
-
-def generate_code(length=6):
-    chars = string.ascii_letters + string.digits
-    return "".join(random.choice(chars) for _ in range(length))
 
 
 def generate_qr_with_logo(data, filename):
@@ -258,3 +235,45 @@ def export_json():
         json.dump(export, f, indent=4)
 
     return send_file(path, as_attachment=True)
+
+
+@app.route("/api/shorten", methods=["POST"])
+def api_shorten_url():
+    data = request.get_json()
+
+    if not data or "url" not in data:
+        return jsonify({"success": False, "error": "URL is required"}), 400
+
+    original_url = sanitize_url(data["url"])
+
+    if not is_valid_url(original_url):
+        return jsonify(
+            {
+                "success": False,
+                "error": "Invalid URL. Must start with http:// or https://",
+            }
+        ), 400
+
+    short_code = generate_code()
+    while urls.find_one({"short_code": short_code}):
+        short_code = generate_code()
+
+    urls.insert_one(
+        {
+            "short_code": short_code,
+            "original_url": original_url,
+            "created_at": datetime.datetime.utcnow(),
+            "visit_count": 0,
+        }
+    )
+
+    short_url = request.host_url + short_code
+
+    return jsonify(
+        {
+            "success": True,
+            "original_url": original_url,
+            "short_url": short_url,
+            "short_code": short_code,
+        }
+    ), 201
