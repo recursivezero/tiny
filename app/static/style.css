@@ -1,5 +1,6 @@
 html,
 body {
+  height: 100%;
   margin: 0;
   font-family: Arial;
   padding: 0;
@@ -19,6 +20,12 @@ input {
 .admin-box {
   margin: 120px auto 60px;
   /* space from header + footer */
+}
+.app-layout {
+  min-height: calc(100vh - var(--header-height));
+  display: flex;
+  flex-direction: column;
+  margin-top: var(--header-height);
 }
 button {
   padding: 8px;
@@ -234,6 +241,7 @@ body.dark-theme section {
 }
 
 :root {
+  --header-height: 55px;
   --bg: #eefaf8;
   --card: rgba(255, 255, 255, 0.95);
   --muted: #7b8b8a;
@@ -263,11 +271,16 @@ body.dark-theme {
 
 .page {
   flex: 1;
-  padding-top: 64px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 60px 30px;
+
+  padding-top: 80px;
+  /* header height */
+  padding-bottom: 20px;
+  padding-left: 30px;
+  padding-right: 30px;
+
   gap: 28px;
 }
 
@@ -498,8 +511,10 @@ footer {
 .app-footer {
   background: white;
   color: #e5e7eb;
-  padding: 10px 10px;
-  margin-top: auto;
+  padding: 8px 10px;
+  margin-top: auto; 
+  position: relative;
+  
 }
 .dark-theme .app-footer {
   background: linear-gradient(180deg, #0b1220, #050b14);
@@ -729,5 +744,63 @@ td {
 }
 
 .recent-table-wrapper {
-  margin-bottom: 80px;
+  margin-bottom: 20px;
+}
+/* =========================
+   Coming Soon Page
+========================= */
+
+.coming-soon-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 120px 20px 60px;
+}
+
+.coming-soon-card {
+  max-width: 520px;
+  width: 100%;
+  background: var(--card);
+  border-radius: 16px;
+  padding: 50px 40px;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08);
+}
+
+.coming-icon {
+  font-size: 48px;
+  margin-bottom: 18px;
+}
+
+.coming-soon-card h1 {
+  font-size: 34px;
+  margin-bottom: 14px;
+  color: #000;
+}
+
+.dark-theme .coming-soon-card h1 {
+  color: #fff;
+}
+
+.coming-soon-card p {
+  font-size: 15px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin-bottom: 28px;
+}
+
+.coming-btn {
+  display: inline-block;
+  padding: 12px 22px;
+  border-radius: 10px;
+  background: var(--accent-grad);
+  color: #fff;
+  font-weight: 700;
+  text-decoration: none;
+  transition: 0.25s ease;
+}
+
+.coming-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 12px 28px rgba(77, 163, 185, 0.25);
 }

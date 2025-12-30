@@ -34,7 +34,7 @@ dependencies = [
 
 [project.scripts]
 tiny = "app.cli:main"
-lint = "utils.lint:main"
+lint = "app.utils.lint:main"
 
 [build-system]
 requires = ["poetry-core"]

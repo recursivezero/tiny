@@ -1,52 +1,15 @@
 import datetime
-import json
-import os
-from warnings import catch_warnings
-import qrcode
+from app.qr import generate_qr_with_logo
 from dotenv import load_dotenv
-from flask import (Flask,jsonify,redirect,render_template,request,send_file,session, url_for)
+from flask import Flask, redirect, render_template, request, session, url_for
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
-from PIL import Image
-from pymongo import MongoClient
+from app.db.data import urls
 
 load_dotenv()
 
 
-def generate_qr_with_logo(data, filename):
-    qr = qrcode.QRCode(
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
-        box_size=20,
-        border=1,
-    )
-    qr.add_data(data)
-    qr.make(fit=True)
-
-    qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
-
-    logo = Image.open("app/static/images/logo.png")
-
-    qr_width, qr_height = qr_img.size
-    logo_size = qr_width // 3
-    logo = logo.resize((logo_size, logo_size))
-
-    pos = ((qr_width - logo_size) // 2, (qr_height - logo_size) // 2)
-
-    qr_img.paste(logo, pos, mask=logo if logo.mode == "RGBA" else None)
-
-    save_path = f"app/static/qr/{filename}"
-    qr_img.save(save_path)
-
-    return save_path
-
-
 app = Flask(__name__)
 app.secret_key = "super-secret-key"
-
-MONGO_URI = os.getenv("MONGO_URI")
-client = MongoClient(MONGO_URI)
-
-db = client["url_shortener"]
-urls = db["urls"]
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -138,142 +101,6 @@ def delete_url(short_code):
     return "", 204
 
 
-@app.route("/admin", methods=["GET", "POST"])
-def admin_page():
-    if request.method == "POST":
-        if "json_file" not in request.files:
-            return "No file uploaded!", 400
-
-        json_file = request.files["json_file"]
-
-        if json_file.filename == "":
-            return "Please select a JSON file", 400
-
-        if not json_file.filename.lower().endswith(".json"):
-            return "Invalid file type! Only .json allowed", 400
-
-        try:
-            data = json.load(json_file)
-        except:
-            return "Invalid JSON format!", 400
-
-        if not isinstance(data, list):
-            return "JSON must contain a list of objects", 400
-
-        required_fields = [
-            "short_code",
-            "original_url",
-            "created_at",
-            "visit_count",
-            "meta",
-        ]
-
-        for index, item in enumerate(data):
-            if not isinstance(item, dict):
-                return f"Item {index} must be an object", 400
-            for f in required_fields:
-                if f not in item:
-                    return f"Missing field '{f}' at index {index}", 400
-            if not item["original_url"].startswith(("http://", "https://")):
-                return f"Invalid URL at index {index}", 400
-
-            try:
-                datetime.datetime.fromisoformat(item["created_at"])
-            except:
-                return f"Invalid created_at timestamp at index {index}", 400
-
-            if not isinstance(item["visit_count"], int):
-                return f"visit_count must be integer at index {index}", 400
-
-            if not isinstance(item["meta"], dict):
-                return f"meta must be dictionary at index {index}", 400
-        for item in data:
-            created_at = datetime.datetime.fromisoformat(item["created_at"])
-            existing = urls.find_one({"short_code": item["short_code"]})
-            if existing:
-                urls.update_one(
-                    {"short_code": item["short_code"]},
-                    {
-                        "$set": {
-                            "visit_count": max(
-                                existing["visit_count"], item["visit_count"]
-                            )
-                        }
-                    },
-                )
-            else:
-                urls.insert_one(
-                    {
-                        "short_code": item["short_code"],
-                        "original_url": item["original_url"],
-                        "created_at": created_at,
-                        "visit_count": item["visit_count"],
-                        "meta": item["meta"],
-                    }
-                )
-
-    all_urls = list(urls.find().sort("created_at", -1))
-    return render_template("admin.html", urls=all_urls)
-
-
-@app.route("/export")
-def export_json():
-    export = []
-    for u in urls.find():
-        export.append(
-            {
-                "short_code": u["short_code"],
-                "original_url": u["original_url"],
-                "created_at": u["created_at"].isoformat(),
-                "visit_count": u["visit_count"],
-                "meta": u["meta"],
-            }
-        )
-
-    path = "urls_export.json"
-    with open(path, "w") as f:
-        json.dump(export, f, indent=4)
-
-    return send_file(path, as_attachment=True)
-
-
-@app.route("/api/shorten", methods=["POST"])
-def api_shorten_url():
-    data = request.get_json()
-
-    if not data or "url" not in data:
-        return jsonify({"success": False, "error": "URL is required"}), 400
-
-    original_url = sanitize_url(data["url"])
-
-    if not is_valid_url(original_url):
-        return jsonify(
-            {
-                "success": False,
-                "error": "Invalid URL. Must start with http:// or https://",
-            }
-        ), 400
-
-    short_code = generate_code()
-    while urls.find_one({"short_code": short_code}):
-        short_code = generate_code()
-
-    urls.insert_one(
-        {
-            "short_code": short_code,
-            "original_url": original_url,
-            "created_at": datetime.datetime.utcnow(),
-            "visit_count": 0,
-        }
-    )
-
-    short_url = request.host_url + short_code
-
-    return jsonify(
-        {
-            "success": True,
-            "original_url": original_url,
-            "short_url": short_url,
-            "short_code": short_code,
-        }
-    ), 201
+@app.route("/coming-soon")
+def coming_soon():
+    return render_template("coming-soon.html")
