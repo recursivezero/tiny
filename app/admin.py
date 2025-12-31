@@ -1,7 +1,7 @@
 import datetime
 import json
-from app.utils import urls
-from app.routs import admin
+from db.data import urls
+from routs import admin
 from flask import render_template, request, send_file
 
 

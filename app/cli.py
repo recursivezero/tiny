@@ -3,7 +3,7 @@ import os
 
 import click
 
-from app.app import app
+from app import app
 
 # load_dotenv()
 

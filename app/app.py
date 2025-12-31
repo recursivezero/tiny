@@ -1,10 +1,10 @@
 import datetime
 
-from app.qr import generate_qr_with_logo
+from qr import generate_qr_with_logo
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
-from app.utils.helper import generate_code, is_valid_url, sanitize_url
-from app.db.data import urls
+from utils.helper import generate_code, is_valid_url, sanitize_url
+from db.data import urls
 
 load_dotenv()
 

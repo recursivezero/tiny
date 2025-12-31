@@ -4,7 +4,7 @@ import sys
 commands = [
     ["black", "."],
     ["flake8", "."],
-    ["mypy", "."],
+    ["mypy", "-p", "app"],
     ["ruff", "check", "."],
 ]
 
