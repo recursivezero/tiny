@@ -20,11 +20,12 @@
       <span class="app-name">tiny URL</span>
     </div>
     <nav class="header-nav">
-      <a href="" class="nav-link active">Home</a>
-      <a href="/admin" class="nav-link">Analysis</a>
+      <a href="" class="nav-link">Home</a>
+      <a href="/coming-soon" class="nav-link">Analysis</a>
       <a href="coming-soon" class="nav-link">Search</a>
       <a href="coming-soon" class="nav-link">Contact</a>
-      <a href="#" class="nav-link" onclick="toggleRecent()" title="Show recent shortened URLs">🕘Recent URLs</a>
+
+      <a href="/recent" class="nav-link" title="Show recent shortened URLs">🕘Recent URLs</a>
 
 
     </nav>
@@ -44,8 +45,7 @@
     <!-- Hero -->
     <div class="hero">
       <h1>Shorten Your URLs with Precision</h1>
-      <p>Transform long links into short, memorable URLs. Track clicks, analyze performance, and optimize your sharing
-        strategy.</p>
+      <p>Transform long links into short, memorable URLs.</p>
     </div>
 
     <!-- Main Card -->
@@ -102,9 +102,8 @@
               QR code, or view details.</div>
           </div>
         </div>
-
-        <!-- Short url box -->
-        <div class="short-box">
+        <div class="result-body">
+          <!-- Short url box -->
           <div class="short-actions">
             <a href="{{ new_short_url }}" target="_blank" id="shortUrlInput" style="
           
@@ -118,86 +117,46 @@
         </div>
 
         <!-- Meta info & QR -->
-        <div class="meta-row">
 
-          <div>
-            <div style="color:var(--muted);font-size:13px;color: black;">Original URL</div>
-            <div style="font-weight:600;margin-top:6px;">{{ original_url or (urls[0].original_url if urls|length > 0
+        <div>
+
+          <div class="qr-block">
+            {% if qr_data %}
+            <img src="{{ qr_image }}" alt="QR Code">
+            <div><a class="download-qr" href="{{ qr_image }}" download>Download📥</a></div>
+            {% else %}
+            <div
+              style="width:160px;height:160px;border-radius:12px;background:linear-gradient(180deg,#f2fbff,#e6f4ff);display:inline-block;">
+            </div>
+            {% endif %}
+
+            <div style="padding-top: 15px;color:var(--muted);font-size:13px;color: black;">Original URL</div>
+            <div style="font-weight:600;margin-top:6px;">{{ original_url or (urls[0].original_url if
+              urls|length > 0
               else '') }}</div>
 
             <div style="display:flex;gap:18px;margin-top:12px;color:var(--muted);font-size:13px;">
               <div>
-                <div class="qr-block">
-                  {% if qr_data %}
-                  <img src="{{ qr_image }}" alt="QR Code">
-                  <div><a class="download-qr" href="{{ qr_image }}" download>Download📥</a></div>
-                  {% else %}
-                  <div
-                    style="width:160px;height:160px;border-radius:12px;background:linear-gradient(180deg,#f2fbff,#e6f4ff);display:inline-block;">
-                  </div>
-                  {% endif %}
-                </div>
-              </div>
-              <div>
               </div>
             </div>
+            <div>
+            </div>
           </div>
-
-
         </div>
+
+
+
 
         <div class="action-row">
           <button class="action-secondary" onclick="window.location.href='/analytics'">View Analytics</button>
           <button class="action-secondary" onclick="window.location.href='/input-field'">Edit Details</button>
         </div>
       </div>
-      {% endif %}
-
-      <!-- Recent list (toggle) -->
-      <div id="recentList" class="recent-table-wrapper" style="display:none;">
-        <table class="recent-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Short Code</th>
-              <th>Original URL</th>
-              <th>Visits</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for url in urls %}
-            <tr>
-              <td>{{ loop.index }}</td>
-
-              <td class="short-code">
-                {{ url.short_code }}
-              </td>
-
-              <td class="original-url">
-                <a href="{{ url.original_url }}" target="_blank" style="color: black;" rel="noopener noreferrer">
-                  {{ url.original_url }}
-                </a>
-              </td>
-
-
-              <td>{{ url.visit_count }}</td>
-
-              <td class="action-col">
-                <a href="/{{ url.short_code }}" target="_blank" class="action-btn open-btn">↗</a>
-                <a href="#" class="action-btn delete-btn"
-                  onclick="deleteUrl('{{ url.short_code }}', this); return false;">
-                  🗑
-                </a>
-
-
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
     </div>
+    {% endif %}
+
+    <!-- Recent list (toggle) -->
+</div>
 
 </div>
 </main>
@@ -286,11 +245,6 @@
     });
   }
 
-  function toggleQrOptions() {
-    const cb = document.getElementById('qr_checkbox');
-    const box = document.getElementById('qr_options');
-    box.style.display = cb.checked ? 'block' : 'none';
-  }
 
   // Copy short url
   function copyShort(btn) {
@@ -325,13 +279,6 @@
   }
 
   // Toggle recent list
-  function toggleRecent() {
-    const box = document.getElementById('recentList');
-    box.style.display = box.style.display === 'block' ? 'none' : 'block';
-    if (box.style.display === 'block') {
-      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-    }
-  }
 
   // Confirm delete
   function deleteUrl(shortCode, btn) {

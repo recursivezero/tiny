@@ -104,3 +104,9 @@ def delete_url(short_code):
 @app.route("/coming-soon")
 def coming_soon():
     return render_template("coming-soon.html")
+
+
+@app.route("/recent")
+def recent_urls():
+    recent_urls_list = list(urls.find().sort("created_at", -1))
+    return render_template("recent.html", urls=recent_urls_list)

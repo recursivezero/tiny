@@ -1,11 +1,13 @@
 import datetime
 from flask import request, jsonify
-from app.utils.api import api
 from app.utils.helper import generate_code, sanitize_url, is_valid_url
 from app.utils import urls
+from flask import Flask
+
+app = Flask(__name__)
 
 
-@api.route("/api/shorten", methods=["POST"])
+@app.route("/api/shorten", methods=["POST"])
 def api_shorten_url():
     data = request.get_json()
 
