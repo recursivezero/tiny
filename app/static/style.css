@@ -154,9 +154,6 @@ button {
   background: linear-gradient(180deg, #0b1220, #050b14);
 }
 
-.page {
-  background: transparent;
-}
 
 footer {
   margin-top: 0;
@@ -274,14 +271,10 @@ body.dark-theme {
   display: flex;
   flex-direction: column;
   align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  min-height: 80vh;
 
-  padding-top: 80px;
-  /* header height */
-  padding-bottom: 20px;
-  padding-left: 30px;
-  padding-right: 30px;
-
-  gap: 28px;
 }
 
 
