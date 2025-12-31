@@ -30,6 +30,7 @@ dependencies = [
   "python-dotenv ==1.0.1",
   "qrcode ==8.2",
   "pillow ==10.4.0",
+  "redis (>=7.1.0,<8.0.0)",
 ]
 
 [project.scripts]
