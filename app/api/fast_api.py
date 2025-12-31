@@ -1,7 +1,7 @@
 import datetime
 from flask import request, jsonify
 from app.utils.helper import generate_code, sanitize_url, is_valid_url
-from app.utils import urls
+from app.db.data import urls
 from flask import Flask
 
 app = Flask(__name__)

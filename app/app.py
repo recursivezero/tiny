@@ -1,4 +1,5 @@
 import datetime
+
 from app.qr import generate_qr_with_logo
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for

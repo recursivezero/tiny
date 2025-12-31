@@ -511,7 +511,6 @@ footer {
 }
 
 .app-footer {
-  width: 100%;
   background: white;
   color: #e5e7eb;
   padding: 8px 10px;
@@ -524,7 +523,6 @@ footer {
 }
 
 .footer-container {
-  width: 100%;
   margin: auto;
   display: flex;
   gap: 60px;
