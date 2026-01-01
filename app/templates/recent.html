@@ -80,7 +80,8 @@
 
               <!-- CREATED TIME -->
               <td class="created-time">
-                {{ url.created_at.strftime("%d %b %Y, %I:%M %p") }}
+                {{ format_date(url.created_at) }}
+                <span class="time-ago">• {{ time_ago(url.created_at) }}</span>
               </td>
 
               <td>{{ url.visit_count }}</td>
