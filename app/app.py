@@ -2,14 +2,12 @@ import datetime
 
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
-
 from app.db.data import urls
 from app.qr import generate_qr_with_logo
 from app.utils.helper import (
     generate_code,
     is_valid_url,
     sanitize_url,
-    time_ago,
     format_date,
 )
 
@@ -118,5 +116,5 @@ def coming_soon():
 def recent_urls():
     recent_urls_list = list(urls.find().sort("created_at", -1))
     return render_template(
-        "recent.html", urls=recent_urls_list, time_ago=time_ago, format_date=format_date
+        "recent.html", urls=recent_urls_list, format_date=format_date
     )

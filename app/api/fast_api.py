@@ -1,55 +1,77 @@
-import datetime
-from flask import request, jsonify, Flask
-from utils.helper import generate_code, sanitize_url, is_valid_url
-from db.data import urls
+from datetime import datetime, timezone
+
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+
+from app.db.data import urls as urls_collection
+from app.utils.helper import generate_code, is_valid_url, sanitize_url
+from app import __version__
 
 
-app = Flask(__name__)
+app = FastAPI(
+    title="Tiny API",
+    version=__version__,
+    description="Tiny URL Shortener API built with FastAPI",
+)
 
 
-@app.route("/api/shorten", methods=["POST"])
-def api_shorten_url():
-    data = request.get_json()
 
-    if not data or "url" not in data:
-        return jsonify({"success": False, "error": "URL is required"}), 400
 
-    original_url = sanitize_url(data["url"])
+class ShortenRequest(BaseModel):
+    url: str = Field(..., example="https://example.com")
+
+
+class ShortenResponse(BaseModel):
+    input_url: str
+    output_url: str
+    created_on: datetime
+
+
+class VersionResponse(BaseModel):
+    version: str
+
+
+@app.post(
+    "/api/shorten",
+    response_model=ShortenResponse,
+    status_code=201,
+    summary="Shorten a URL",
+    description="Generate a short URL for a given long URL",
+    tags=["URL"],
+)
+def shorten_url(payload: ShortenRequest):
+    original_url = sanitize_url(payload.url)
 
     if not is_valid_url(original_url):
-        return (
-            jsonify(
-                {
-                    "success": False,
-                    "error": "Invalid URL. Must start with http:// or https://",
-                }
-            ),
-            400,
-        )
+        raise HTTPException(status_code=400, detail="Invalid URL")
 
     short_code = generate_code()
-    while urls.find_one({"short_code": short_code}):
+    while urls_collection.find_one({"short_code": short_code}):
         short_code = generate_code()
 
-    urls.insert_one(
+    created_at = datetime.now(timezone.utc)
+
+    urls_collection.insert_one(
         {
             "short_code": short_code,
             "original_url": original_url,
-            "created_at": datetime.datetime.utcnow(),
+            "created_at": created_at,
             "visit_count": 0,
         }
     )
 
-    short_url = request.host_url + short_code
-
-    return (
-        jsonify(
-            {
-                "success": True,
-                "original_url": original_url,
-                "short_url": short_url,
-                "short_code": short_code,
-            }
-        ),
-        201,
+    return ShortenResponse(
+        input_url=original_url,
+        output_url=f"http://127.0.0.1:8001/{short_code}",
+        created_on=created_at,
     )
+
+
+@app.get(
+    "/api/version",
+    response_model=VersionResponse,
+    summary="API version",
+    tags=["Meta"],
+)
+def version():
+    return VersionResponse(version=__version__)
