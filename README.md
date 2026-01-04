@@ -1,6 +1,6 @@
 # 🔗 Short URL Generator
 
-> A modern, Bitly-style URL shortening web application built with Flask & MongoDB\_
+> A modern, Bitly-style tiny URL web application built with Flask, FastAPI & MongoDB
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
 ![Flask](https://img.shields.io/badge/Flask-Web%20Framework-black.svg)
@@ -12,23 +12,13 @@
 
 ## 📌 Overview
 
-**Short URL Generator** is a sleek, fast and modern URL shortening platform built using Flask and MongoDB.  
+**tiny URL** is a sleek, fast, and modern URL shortening platform built using **Flask**, **FastAPI**, and **MongoDB**.  
 It converts long URLs into short, shareable links — just like Bitly.
 
-It supports:
+The project supports both:
 
-- URL shortening
-- QR Code generation (Short URL or Original URL)
-- Visit counting
-- MongoDB database
-- JSON import/export (Admin Panel)
-- Input validation + sanitization
-- Light/Dark Mode with memory
-- Glassmorphism UI
-- Copy-to-clipboard button
-- Delete confirmation popup
-
-This project is perfect for learning **Flask**, **MongoDB**, **Web UI design**, and **clean backend development**.
+- 🌐 **Flask Web UI** (end users)
+- 🚀 **FastAPI REST API** (developers / integrations)
 
 ---
 
@@ -37,26 +27,37 @@ This project is perfect for learning **Flask**, **MongoDB**, **Web UI design**, 
 ### 🔹 User Features
 
 - Convert long URLs into short, unique codes
-- default checkbox QR code generation
+- Default checkbox QR code generation
 - Clean Bitly-style result card
-- Download URl button
-- share URL
+- Download URL button
+- Share URL
 - Copy button with animation
 - Smooth URL validation and sanitization
 - Auto Dark/Light Mode (saves preference)
 - Mobile-friendly QR Codes
 - Fully responsive design
-- Recent Table
+- Recent URLs page
+- Glassmorphism UI
+
+---
 
 ### 🔹 Admin Panel Features
 
 - View all shortened URLs
-- Delete URLs (with confirmation popup)
 - Import URLs using JSON file
 - Export database to JSON
 - Shows JSON format guide
 - Strict JSON validation
-- Recent Table
+
+---
+
+### 🔹 API & Developer Features
+
+- REST API for URL shortening
+- API version endpoint
+- Swagger / OpenAPI documentation
+- API landing page
+- CLI to run UI or API independently
 
 ---
 
@@ -84,51 +85,57 @@ def generate_code(length=6):
 
 🗃️ Tech Stack
 
-| Layer        | Technology                               |
-| ------------ | ---------------------------------------- |
-| Backend      | Flask (Python)                           |
-| Database     | MongoDB                                  |
-| Frontend     | HTML, CSS (Glassmorphism), Vanilla JS    |
-| QR Generator | `qrserver.com` API                       |
-| Hosting      | Local / PythonAnywhere / Render / Heroku |
-| Component    | Technology                               |
-| UI Style     | Glassmorphism, Gradient UI               |
-| Data Format  | JSON                                     |
+| Layer       | Technology                 |
+| ----------- | -------------------------- |
+| UI Backend  | Flask                      |
+| API Backend | FastAPI                    |
+| Database    | MongoDB                    |
+| Frontend    | HTML, CSS, Vanilla JS      |
+| UI Style    | Glassmorphism, Gradient UI |
+| API Server  | Uvicorn                    |
+| Validation  | Pydantic v2                |
+| CLI         | Click                      |
+| Data        | JSON                       |
 
 📁 Project Folder Structure
 
 ```text
 
 Directory structure:
-└── tiny/
-    ├── CHANGELOG.md
-    ├── LICENSE
-    ├── README.md
-    ├── app/
-    │   ├── __init__.py
-    │   ├── app.py
-    │   ├── assets/
-    │   │   └── images/
-    │   │       ├── Dark_mode.png
-    │   ├── cli.py
-    │   ├── database.py
-    │   ├── models.py
-    │   ├── static/
-    │   │   ├── images/
-    │   │   │   ├── logo.png
-    │   │   │   └── url_shortener_bg.jpg
-    │   │   └── style.css
-    │   └── templates/
-    │       ├── admin.html
-    │       └── index.html
-    ├── package.json
-    ├── pyproject.toml
-    └── poetry.lock
-    ├── requirements.txt
-    └── tiny.code-workspace
-    └── .gitignore
-    └── .flake8
-    └── .env
+tiny/
+├── CHANGELOG.md
+├── LICENSE
+├── README.md
+├── app/
+│   ├──__init__.py
+│   ├── app.py
+│   ├── cli.py
+│   ├── api/
+│   │   └── fast_api.py
+|   ├──assets/images
+│   ├── db/
+|   |    └──__init__.py
+|   |     └──data.py
+│   ├── utils/
+|   |     └──__init__.py
+|   |     └──_version.py
+|   |     └── helper.py
+|   |     └── lint.py
+│   ├── static/
+|   |     └── images
+|   |      └── qr
+│   └── templates/
+|           └── index.html
+|           └── recent.html
+|           └── admin.html
+├── pyproject.toml
+|    └── poetry.lock
+├──README.md
+|    └── CHANGELOG.md
+|    └── requirements.txt
+├── tiny.code-workspace
+└── .gitignore
+
 ```
 
 ⚙️ How to Run the Project Locally
@@ -163,45 +170,77 @@ open [http://localhost:8000](http://127.0.0.1:8000)
 
 🔗 How the App Works
 ▶️ User Flow
+1.User enters a long URL
 
-User enters a long URL
+2.System sanitizes + validates input
 
-System sanitizes + validates input
+3.Generates a unique short code
 
-Generates a unique short code
+4.Saves it in MongoDB
 
-Saves it in MongoDB
+5.Displays short URL + QR code
 
-Displays short URL + QR code
+5.Clicking the short URL:
 
-When someone clicks the short link →
+- Increases visit count
 
-Visit count increases
+- Redirects to original URL
 
-User redirected to original URL <http://127.0.0.1:5000/abc123> Someone clicks it → visit count increases → redirected to original URL
+`🔌 REST API (FastAPI)`
 
-🧩 Short Code Generation Algorithm
+Tiny provides a FastAPI-based REST API for programmatic URL shortening.
 
-Uses characters: a–z, A–Z, 0–9
+▶ Run API Server
 
-Random 6-character string
+```sh
+poetry run tiny api
+```
 
-Ensures uniqueness by checking database
+📍 API Base URL
 
-If code exists → generate again
+open [http://localhost:8001](http://127.0.0.1:8001)
 
-Saves final unique code
+🌙 tiny API Landing Page
 
-🗄️ Database Schema (SQLAlchemy Model)
+open [http://localhost:8001](http://127.0.0.1:8001)
 
-| Field        | Type      | Description        |
-| ------------ | --------- | ------------------ |
-| id           | Integer   | Primary Key        |
-| short_code   | String    | Unique short ID    |
-| original_url | String    | Long URL           |
-| created_at   | DateTime  | Timestamp          |
-| visit_count  | Integer   | Click count        |
-| meta         | JSON Text | Title, notes, tags |
+📘 Swagger Docs
+
+open [http://localhost:8001/docs](http://127.0.0.1:8001/docs)
+
+➤ Shorten URL
+
+POST `/api/shorten`
+
+Request:
+
+```json
+{
+  "url": "https://example.com"
+}
+```
+
+Response:
+
+```json
+{
+  "input_url": "https://examplecom",
+  "output_url": "http://127.0.0.1:8001/AbX92p",
+  "created_on": "2026-01-03T13:25:10+00:00"
+}
+```
+
+➤ API Version
+
+GET `/api/version`
+
+Response:
+
+```json
+{
+  "version": "0.0.1"
+}
+```
 
 📦 JSON Import Format (Admin)
 
