@@ -1,0 +1,36 @@
+▶️ Step 1: Start the FastAPI server
+
+```
+poetry run tiny api
+```
+
+Server will start at:
+`(http://127.0.0.1:8001)`
+
+▶️ Step 2: Create request JSON file
+
+Create a file named request.json in the project root:
+
+```json
+{
+  "url": "https://example.com"
+}
+```
+
+▶️ Step 3: Send request using curl (Windows PowerShell)
+
+```
+curl.exe -X POST "http://127.0.0.1:8001/api/shorten" `
+  -H "accept: application/json" `
+  -H "Content-Type: application/json" `
+  --data-binary "@request.json"
+```
+
+▶️ Step 4: Expected Response
+
+```json
+{
+  "short_url": "http://127.0.0.1:8001/abc123",
+  "original_url": "https://example.com"
+}
+```

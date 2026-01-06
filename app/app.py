@@ -42,7 +42,7 @@ def index():
         elif not is_valid_url(original_url):
             error = "Please enter a valid URL (must start with http:// or https://)."
         else:
-            # 🔍 Check if URL already exists (oldest one)
+          
             existing = urls.find_one(
                 {"original_url": original_url},
                 sort=[("created_at", 1)],
