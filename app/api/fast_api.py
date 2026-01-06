@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
-from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel, Field
 
 from app.db.data import urls as urls_collection
@@ -17,10 +16,12 @@ app = FastAPI(
 )
 
 
-
-
 class ShortenRequest(BaseModel):
-    url: str = Field(..., example="https://example.com")
+    url: str = Field(
+        ...,
+        description="The original long URL to shorten",
+        examples=["https://example.com"],
+    )
 
 
 class ShortenResponse(BaseModel):
@@ -31,6 +32,8 @@ class ShortenResponse(BaseModel):
 
 class VersionResponse(BaseModel):
     version: str
+
+
 @app.get("/", response_class=HTMLResponse, tags=["Home"])
 async def read_root(request: Request):
     return """
@@ -96,6 +99,7 @@ async def read_root(request: Request):
         </body>
     </html>
     """
+
 
 @app.post(
     "/api/shorten",

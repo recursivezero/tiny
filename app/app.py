@@ -2,6 +2,7 @@ import datetime
 
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
+
 from app.db.data import urls
 from app.qr import generate_qr_with_logo
 from app.utils.helper import (
@@ -22,6 +23,7 @@ app.secret_key = "super-secret-key"
 def index():
     new_short_url = None
     error = None
+    info_message = None
     qr_data = None
     qr_enabled = False
     qr_type = "short"
@@ -40,19 +42,33 @@ def index():
         elif not is_valid_url(original_url):
             error = "Please enter a valid URL (must start with http:// or https://)."
         else:
-            short_code = generate_code()
-            while urls.find_one({"short_code": short_code}):
+            # 🔍 Check if URL already exists (oldest one)
+            existing = urls.find_one(
+                {"original_url": original_url},
+                sort=[("created_at", 1)],
+            )
+
+            if existing:
+                short_code = existing["short_code"]
+                session["info_message"] = (
+                    "Already shortened before — using existing short URL."
+                )
+            else:
+                session.pop("info_message", None)
+
                 short_code = generate_code()
+                while urls.find_one({"short_code": short_code}):
+                    short_code = generate_code()
 
-            doc = {
-                "short_code": short_code,
-                "original_url": original_url,
-                "created_at": datetime.datetime.utcnow(),
-                "visit_count": 0,
-                "meta": {},
-            }
-
-            urls.insert_one(doc)
+                urls.insert_one(
+                    {
+                        "short_code": short_code,
+                        "original_url": original_url,
+                        "created_at": datetime.datetime.utcnow(),
+                        "visit_count": 0,
+                        "meta": {},
+                    }
+                )
 
             new_short_url = request.host_url + short_code
 
@@ -69,6 +85,7 @@ def index():
     qr_type = session.pop("qr_type", "short")
     original_url = session.pop("original_url", None)
     short_code = session.pop("short_code", None)
+    info_message = session.pop("info_message", None)
 
     if qr_enabled and new_short_url and short_code:
         qr_data = new_short_url if qr_type == "short" else original_url
@@ -83,6 +100,7 @@ def index():
         urls=all_urls,
         new_short_url=new_short_url,
         error=error,
+        info_message=info_message,
         qr_data=qr_data,
         qr_enabled=qr_enabled,
         qr_type=qr_type,
@@ -94,7 +112,8 @@ def index():
 @app.route("/<short_code>")
 def redirect_short(short_code):
     doc = urls.find_one_and_update(
-        {"short_code": short_code}, {"$inc": {"visit_count": 1}}
+        {"short_code": short_code},
+        {"$inc": {"visit_count": 1}},
     )
     if doc:
         return redirect(doc["original_url"])
@@ -116,5 +135,7 @@ def coming_soon():
 def recent_urls():
     recent_urls_list = list(urls.find().sort("created_at", -1))
     return render_template(
-        "recent.html", urls=recent_urls_list, format_date=format_date
+        "recent.html",
+        urls=recent_urls_list,
+        format_date=format_date,
     )

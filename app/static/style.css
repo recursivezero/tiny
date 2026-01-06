@@ -821,3 +821,11 @@ td {
   transform: scale(1.05);
   box-shadow: 0 12px 28px rgba(77, 163, 185, 0.25);
 }
+.info-box {
+  margin-bottom: 15px;
+    padding: 10px;
+    color: #0e34f6;
+    border-radius: 8px;
+    font-weight: 700;
+    
+  }
