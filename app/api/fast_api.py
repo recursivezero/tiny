@@ -1,4 +1,6 @@
 from datetime import datetime, timezone
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import HTMLResponse
 
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
@@ -29,7 +31,71 @@ class ShortenResponse(BaseModel):
 
 class VersionResponse(BaseModel):
     version: str
+@app.get("/", response_class=HTMLResponse, tags=["Home"])
+async def read_root(request: Request):
+    return """
+    <html>
+        <head>
+            <title>🌙 tiny API 🌙</title>
+            <style>
+                body {
+                    margin: 0;
+                    height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    background: linear-gradient(180deg, #0b1220, #050b14);
+                    font-family: "Poppins", system-ui, Arial, sans-serif;
+                    color: #f8fafc;
+                }
 
+                .card {
+                    background: rgba(255, 255, 255, 0.06);
+                    backdrop-filter: blur(12px);
+                    border-radius: 16px;
+                    padding: 50px 40px;
+                    text-align: center;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                    max-width: 520px;
+                    width: 90%;
+                }
+
+                h1 {
+                    font-size: 2.8em;
+                    margin-bottom: 12px;
+                    background: linear-gradient(90deg, #5ab9ff, #4cb39f);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                }
+
+                p {
+                    font-size: 1.1em;
+                    color: #cbd5e1;
+                    margin-bottom: 30px;
+                }
+
+                a {
+                    display: inline-block;
+                    padding: 14px 26px;
+                    border-radius: 12px;
+                    background: linear-gradient(90deg, #4cb39f, #5ab9ff);
+                    color: #fff;
+                    text-decoration: none;
+                    font-weight: 700;
+                    transition: transform 0.2s ease, box-shadow 0.2s ease;
+                }
+
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <h1>🚀 tiny API</h1>
+                <p>FastAPI backend for the Tiny URL shortener</p>
+                <a href="/docs">View API Documentation</a>
+            </div>
+        </body>
+    </html>
+    """
 
 @app.post(
     "/api/shorten",

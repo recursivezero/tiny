@@ -43,6 +43,7 @@ button {
 .dark-theme h1 {
   background: linear-gradient(90deg, #ffffff, #dddddd, #ffffff);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.4);
 }
@@ -50,6 +51,7 @@ button {
 .dark-theme p {
   background: linear-gradient(90deg, #ffffff, #dddddd, #ffffff);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.4);
 }
