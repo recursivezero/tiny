@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Admin Panel – URL Shortener</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+  <!-- HEADER -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="app-logo">🔗</div>
+      <span class="app-name">tiny URL</span>
+    </div>
+
+    <nav class="header-nav">
+      <a href="/" class="nav-link">Home</a>
+      <a href="#" class="nav-link">Analysis</a>
+      <a href="#" class="nav-link">Search</a>
+      <a href="#" class="nav-link">Contact</a>
+      <a href="/admin" class="nav-link">Admin</a>
+    </nav>
+  </header>
+
+  <!-- ADMIN CONTENT -->
+  <div class="page">
+    <div class="topbar" style="width:100%; max-width:1100px;"></div>
+
+
+    <div class="hero">
+      <h1>⚙ Admin Panel</h1>
+
+      <div class="card">
+        <form method="POST" enctype="multipart/form-data">
+
+          <button type="button" onclick="toggleJsonHelp()" style="margin-top:15px;padding:10px 15px;border:none;
+          background:#4a90e2;color:white;border-radius:8px;cursor:pointer;">
+            📄View JSON Format
+          </button>
+          <div id="jsonHelpBox" style="display:none;margin-top:15px;background:rgba(255,255,255,0.2);
+          padding:15px;border-radius:10px;backdrop-filter:blur(8px);">
+
+            <h3 style="margin-top:0;color:#000;">Valid JSON Upload Format</h3>
+
+            <pre style="white-space:pre-wrap;text-align:center;font-size:14px;color:#070707;">
+[
+  {
+    "short_code": "abc123",
+    "original_url": "https://example.com",
+    "created_at": "2025-02-01T10:00:00",
+    "visit_count": 5,
+    "meta": {}
+  }
+]
+</pre>
+
+            <p style="font-size:14px;color:#0b0b0b;">
+              ✔ JSON must be a list of objects<br>
+              ✔ All fields are required<br>
+              ✔ Date must be in ISO format<br>
+              ✔ short_code must be unique
+            </p>
+          </div>
+
+
+          <h3>Upload JSON File</h3>
+          <input type="file" name="json_file" accept=".json" required>
+          <br>
+          <button type="submit" style="margin-top:15px;padding:10px 15px;border:none;
+          background:#4a90e2;color:white;border-radius:8px;cursor:pointer;">Upload & Import</button>
+        </form>
+        <a class="download-qr" href="/export">⬇ Download All URLs (JSON)</a>
+      </div>
+      <button type="button" style="margin-top:15px;padding:10px 15px;border:none;
+                background:#4a90e2;color:white;border-radius:8px;cursor:pointer;" onclick="toggleRecent()"
+        title="Show recent shortened URLs">🕘Recent
+        URLs</button>
+      <div id="recentList" class="recent-table-wrapper" style="display:none;">
+        <table class="recent-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Short Code</th>
+              <th>Original URL</th>
+              <th>Visits</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for url in urls %}
+            <tr>
+              <td>{{ loop.index }}</td>
+
+              <td class="short-code">
+                {{ url.short_code }}
+              </td>
+
+              <td class="original-url">
+                {{ url.original_url }}
+              </td>
+
+              <td>{{ url.visit_count }}</td>
+
+              <td class="action-col">
+                <a href="/{{ url.short_code }}" target="_blank" class="action-btn open-btn">↗</a>
+                <a href="#" class="action-btn delete-btn"
+                  onclick="deleteUrl('{{ url.short_code }}', this); return false;">
+                  🗑
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  </div>
+  </div>
+  <!-- Recent list (toggle) -->
+
+  </div>
+  <!-- FOOTER -->
+  <footer class="app-footer">
+    <div class="footer-container">
+
+      <div class="footer-brand">
+        <div class="footer-logo">🔗</div>
+        <h3>tiny URL</h3>
+        <p>
+          A modern URL shortener with analytics, QR codes, and a clean UI.
+          Built for speed, simplicity, and scalability.
+        </p>
+
+        <a href="https://github.com/recursivezero/tiny" target="_blank" class="github-btn">
+          <svg height="18" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 
+                        3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
+                        0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49
+                        -2.69-.94-.09-.23-.48-.94-.82-1.13
+                        -.28-.15-.68-.52-.01-.53.63-.01
+                        1.08.58 1.23.82.72 1.21 1.87.87
+                        2.33.66.07-.52.28-.87.51-1.07
+                        -1.78-.2-3.64-.89-3.64-3.95
+                        0-.87.31-1.59.82-2.15
+                        -.08-.2-.36-1.02.08-2.12
+                        0 0 .67-.21 2.2.82
+                        .64-.18 1.32-.27 2-.27
+                        .68 0 1.36.09 2 .27
+                        1.53-1.04 2.2-.82 2.2-.82
+                        .44 1.1.16 1.92.08 2.12
+                        .51.56.82 1.27.82 2.15
+                        0 3.07-1.87 3.75-3.65 3.95
+                        .29.25.54.73.54 1.48
+                        0 1.07-.01 1.93-.01 2.2
+                        0 .21.15.46.55.38
+                        A8.013 8.013 0 0 0 16 8
+                        c0-4.42-3.58-8-8-8z" />
+          </svg>
+          tiny
+        </a>
+      </div>
+
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="#">Features</a>
+          <a href="#">API</a>
+        </div>
+
+        <div class="footer-col">
+          <h4>Support</h4>
+          <a href="#">Documentation</a>
+          <a href="#">Contact</a>
+          <a href="#">Help Center</a>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      © 2025
+      <a href="https://recursivezero.com/" target="_blank">Recursive Zero Pvt Ltd</a>.
+      All rights reserved.
+    </div>
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    function deleteUrl(shortCode, btn) {
+      if (!confirm("Are you sure you want to delete this URL?")) return;
+
+      fetch(`/delete/${shortCode}`, {
+        method: "POST"
+      })
+        .then(res => {
+          if (!res.ok) throw new Error("Delete failed");
+
+          // Remove row smoothly
+          const row = btn.closest("tr");
+          if (row) row.remove();
+        })
+        .catch(() => alert("Failed to delete URL"));
+    }
+    function toggleJsonHelp() {
+      const box = document.getElementById("jsonHelpBox");
+      box.style.display = box.style.display === "none" ? "block" : "none";
+    }
+    function toggleRecent() {
+      const box = document.getElementById('recentList');
+      box.style.display = box.style.display === 'block' ? 'none' : 'block';
+      if (box.style.display === 'block') {
+        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+
+    // Confirm delete
+    function confirmDelete(code) {
+      return confirm('Are you sure you want to delete ' + code + ' ?');
+    }
+
+  </script>
+
+</body>
+
+</html>

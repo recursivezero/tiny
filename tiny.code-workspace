@@ -7,94 +7,43 @@
   "settings": {
     "window.zoomLevel": 0.5,
     "editor.suggestSelection": "first",
-    "files.exclude": {
-      ".git/**": true
-    },
     "editor.bracketPairColorization.enabled": true,
     "diffEditor.ignoreTrimWhitespace": false,
-    "[typescript]": {
-      "editor.formatOnSave": true,
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
-      "editor.codeActionsOnSave": {
-        "source.fixAll": "always",
-        "source.organizeImports": "explicit",
-      },
-    },
-    "[typescriptreact]": {
-      "editor.formatOnSave": true,
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
-      "editor.codeActionsOnSave": {
-        "source.fixAll": "always",
-        "source.organizeImports": "explicit",
-      },
-    },
     "[html]": {
-      "editor.defaultFormatter": "vscode.html-language-features",
-    },
-    "eslint.validate": [
-      "mdx",
-      "markdown",
-      "javascript",
-      "javascriptreact",
-      "typescript",
-      "typescriptreact",
-      "astro"
-    ],
-    "eslint.options": {
-      "extensions": [
-        ".js",
-        ".jsx",
-        ".md",
-        ".mdx",
-        ".ts",
-        ".tsx",
-        ".astro"
-      ],
+      "editor.defaultFormatter": "vscode.html-language-features"
     },
     "editor.tabSize": 2,
     "editor.insertSpaces": true,
     "editor.minimap.renderCharacters": false,
     "editor.comments.insertSpace": false,
-    "typescript.updateImportsOnFileMove.enabled": "always",
     "editor.codeActionsOnSave": {
       "source.fixAll": "explicit",
-      "source.organizeImports": "explicit",
+      "source.organizeImports": "explicit"
     },
-    "typescript.inlayHints.parameterTypes.enabled": true,
-    "typescript.inlayHints.parameterNames.suppressWhenArgumentMatchesName": false,
-    "typescript.inlayHints.functionLikeReturnTypes.enabled": true,
     "editor.fontFamily": "'Fira Code', 'Droid Sans Mono', 'monospace', monospace, 'Droid Sans Fallback'",
     "editor.fontLigatures": true,
     "zenMode.centerLayout": false,
     "prettier.printWidth": 120,
     "workbench.list.multiSelectModifier": "alt",
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter": null,
     "editor.linkedEditing": true,
     "editor.multiCursorModifier": "alt",
     "scss.lint.emptyRules": "ignore",
     "editor.formatOnSave": true,
-    "typescript.preferences.quoteStyle": "double",
-    "javascript.preferences.quoteStyle": "double",
     "prettier.singleQuote": false,
     "explorer.confirmDelete": false,
     "editor.snippetSuggestions": "top",
     "explorer.confirmDragAndDrop": false,
-    "typescript.format.insertSpaceAfterOpeningAndBeforeClosingJsxExpressionBraces": true,
-    "javascript.updateImportsOnFileMove.enabled": "always",
     "workbench.iconTheme": "file-icons",
     "git.confirmSync": false,
     "workbench.startupEditor": "none",
     "window.autoDetectColorScheme": true,
     "explorer.fileNesting.enabled": true,
     "explorer.fileNesting.patterns": {
-      "*.ts": "${capture}.js",
-      "*.js": "${capture}.js.map, ${capture}.min.js, ${capture}.d.ts",
-      "*.jsx": "${capture}.js",
-      "*.tsx": "${capture}.ts",
-      "tsconfig.json": "tsconfig.*.json, jsconfig.json",
-      "package.json": "package-lock.json",
-      ".gitignore": ".prettier*, .editorconfig, .eslint*, .npm*, .nojekyll",
-      "readme.md": "*.md",
+      "pyproject.toml": "poetry.lock,ruff.toml,.pip-audit.toml",
+      ".gitignore": ".prettier*, .poetryignore, .editorconfig, .eslint*, .npm*, .markdown*, .flake8, .env*, mypy.ini",
+      "README.md": "*.md, requirements.txt,packages.txt",
+      "LICENSE": "LICENSE-*"
     },
     "git.enableSmartCommit": true,
     "git.autofetch": true,
@@ -107,12 +56,11 @@
     ],
     "search.showLineNumbers": true,
     "workbench.editorAssociations": {
-      "*.log": "default",
+      "*.log": "default"
     },
     "editor.minimap.enabled": true,
     "workbench.colorTheme": "Tokyo Night Storm",
     "editor.fontSize": 14,
-    "[javascriptreact]": { },
     "editor.accessibilitySupport": "off",
     "editor.minimap.size": "fit",
     "cSpell.customDictionaries": {
@@ -120,68 +68,56 @@
         "name": "myDictionary",
         "path": "~/myDictionary.txt",
         "scope": "user",
-        "addWords": true,
+        "addWords": true
       },
-      "custom": true,
+      "custom": true
     },
     "debug.javascript.codelens.npmScripts": "never",
-    "emmet.includeLanguages": {
-      "javascript": "javascriptreact",
-    },
-    "js/ts.implicitProjectConfig.checkJs": true,
     "editor.detectIndentation": false,
-    "markdownlint.config": {
-      "MD007": false,
-    },
     "workbench.colorCustomizations": {
-      "activityBar.activeBackground": "#2f7c47",
-      "activityBar.background": "#2f7c47",
+      "activityBar.activeBackground": "#526d1b",
+      "activityBar.background": "#526d1b",
       "activityBar.foreground": "#e7e7e7",
       "activityBar.inactiveForeground": "#e7e7e799",
-      "activityBarBadge.background": "#422c74",
+      "activityBarBadge.background": "#133a4d",
       "activityBarBadge.foreground": "#e7e7e7",
       "commandCenter.border": "#e7e7e799",
-      "sash.hoverBorder": "#2f7c47",
-      "statusBar.background": "#215732",
+      "sash.hoverBorder": "#526d1b",
+      "statusBar.background": "#334411",
       "statusBar.foreground": "#e7e7e7",
-      "statusBarItem.hoverBackground": "#2f7c47",
-      "statusBarItem.remoteBackground": "#215732",
+      "statusBarItem.hoverBackground": "#526d1b",
+      "statusBarItem.remoteBackground": "#334411",
       "statusBarItem.remoteForeground": "#e7e7e7",
-      "titleBar.activeBackground": "#215732",
+      "titleBar.activeBackground": "#334411",
       "titleBar.activeForeground": "#e7e7e7",
-      "titleBar.inactiveBackground": "#21573299",
+      "titleBar.inactiveBackground": "#33441199",
       "titleBar.inactiveForeground": "#e7e7e799",
       "sideBar.border": "#2f7c47"
     },
-    "peacock.color": "#215732",
-    "cSpell.words": [ ],
-    "css.lint.unknownAtRules": "ignore",
+    "peacock.color": "#334411",
+    "cSpell.words": [],
     "files.autoSave": "onFocusChange",
     "editor.dragAndDrop": false,
     "editor.tabCompletion": "onlySnippets",
     "editor.formatOnSaveMode": "file",
     "files.eol": "\r\n",
     "files.readonlyExclude": {
-      "dist/**": true,
+      "dist/**": true
     },
     "window.title": "${rootNameShort}${separator}${activeEditorShort}${separator}${activeFolderMedium}",
     "explorer.fileNesting.expand": false,
     "search.exclude": {
+      ".venv": true,
+      ".venv-dist": true,
+      ".venv**": true,
       "dist/**": true,
-      "package-lock.json": true,
+      "package-lock.json": true
     },
     "peacock.affectSideBarBorder": true,
     "prettier.quoteProps": "consistent",
     "prettier.documentSelectors": [
       "**/*.astro"
     ],
-    "[astro]": {
-      "editor.defaultFormatter": "esbenp.prettier-vscode",
-      "editor.codeActionsOnSave": {
-        "source.fixAll": "always",
-        "source.organizeImports": "explicit",
-      },
-    },
     "git.branchProtection": [
       "develop",
       "main"
@@ -190,15 +126,45 @@
     "git.postCommitCommand": "push",
     "workbench.tree.enableStickyScroll": false,
     "editor.stickyScroll.enabled": true,
-    "workbench.editor.pinnedTabSizing": "compact",
+    "workbench.editor.pinnedTabSizing": "shrink",
     "prettier.trailingComma": "none",
     "editor.inlayHints.enabled": "offUnlessPressed",
     "workbench.layoutControl.enabled": false,
     "[markdown]": {
-      "diffEditor.ignoreTrimWhitespace": false,
+      "diffEditor.ignoreTrimWhitespace": true
     },
-    "files.associations": {
-      "CODEOWNERS": "plaintext",
+    "files.readonlyInclude": {
+      ".githooks/**": true,
+      ".venv/**": true
     },
-  },
+    "workbench.editor.pinnedTabsOnSeparateRow": true,
+    "python.defaultInterpreterPath": "",
+    "python.terminal.activateEnvironment": false,
+    "python.analysis.importFormat": "absolute",
+    "python.analysis.extraPaths": [
+      "./src"
+    ],
+    "files.exclude": {
+      ".poetry/**": true,
+      "**/.git": false
+    },
+    "mcp": {
+      "inputs": [],
+      "servers": {}
+    },
+    "chat.mcp.serverSampling": {
+      "tz-script.code-workspace: my-mcp-server-c37295de": {
+        "allowedModels": [
+          "copilot/gpt-4.1",
+          "copilot/claude-3.5-sonnet"
+        ]
+      }
+    },
+    "gitstash.explorer.display.fileSorting": "tree",
+    "folderStructure.ignorePatterns": [
+      "node_modules",
+      ".*",
+      "__pycache__"
+    ],
+  }
 }

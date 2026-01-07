@@ -6,3 +6,8 @@ All notable changes to this repository will be documented in this file.
 
 - Initial release.
 - Health Files
+
+## [0.1.0]
+
+- Restructure folder structure
+- added poetry dev script
