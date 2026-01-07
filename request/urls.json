@@ -1,0 +1,32 @@
+[
+  {
+    "url": "https://example.com"
+  },
+  {
+    "url": "https://google.com"
+  },
+  {
+    "url": "https://github.com"
+  },
+  {
+    "url": "https://stackoverflow.com"
+  },
+  {
+    "url": "https://microsoft.com"
+  },
+  {
+    "url": "https://apple.com"
+  },
+  {
+    "url": "https://openai.com"
+  },
+  {
+    "url": "https://python.org"
+  },
+  {
+    "url": "https://fastapi.tiangolo.com"
+  },
+  {
+    "url": "https://docs.github.com"
+  }
+]

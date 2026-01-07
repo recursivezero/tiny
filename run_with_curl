@@ -9,26 +9,31 @@ poetry run tiny api
 Server will start at:
 `(http://127.0.0.1:8001)`
 
-▶️ Step 2: Create request JSON file
+▶️ Step 2: Create request folder
 
-Create a file named request.json in the project root:
+in request folder Create a file named input.json in the project root:
 
 ```json
 {
-  "url": "https://example.com"
+  "url": "https://recursivezero.com"
 }
 ```
 
 ▶️ Step 3: Send request using curl (Windows PowerShell)
 
 ```#
-$body = Get-Content .\request\input.json -Raw
+$data = Get-Content .\request\urls.json -Raw | ConvertFrom-Json
 
-Invoke-RestMethod `
-  -Uri "http://127.0.0.1:8001/api/shorten" `
-  -Method POST `
-  -ContentType "application/json" `
-  -Body $body
+foreach ($item in $data) {
+    $body = @{ url = $item.url } | ConvertTo-Json
+
+    Invoke-RestMethod `
+      -Uri "http://127.0.0.1:8001/api/shorten" `
+      -Method POST `
+      -ContentType "application/json" `
+      -Body $body
+}
+
 
 ```
 

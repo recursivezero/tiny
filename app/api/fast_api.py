@@ -1,12 +1,20 @@
 from datetime import datetime, timezone
-from fastapi.responses import HTMLResponse
+import os
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
+from dotenv import load_dotenv
 
 from app.db.data import urls as urls_collection
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
 from app import __version__
+
+# Load env
+load_dotenv()
+
+DOMAIN = os.getenv("DOMAIN", "http://127.0.0.1")
+PORT = os.getenv("PORT", "8000")
 
 
 app = FastAPI(
@@ -25,17 +33,26 @@ class ShortenRequest(BaseModel):
 
 
 class ShortenResponse(BaseModel):
+    success: bool = True
     input_url: str
-    output_url: str
+    short_code: str
     created_on: datetime
+
+
+class ErrorResponse(BaseModel):
+    success: bool = False
+    error: str
+    input_url: str
+    message: str
 
 
 class VersionResponse(BaseModel):
     version: str
 
 
+
 @app.get("/", response_class=HTMLResponse, tags=["Home"])
-async def read_root(request: Request):
+async def read_root(_: Request):
     return """
     <html>
         <head>
@@ -101,19 +118,42 @@ async def read_root(request: Request):
     """
 
 
+
 @app.post(
     "/api/shorten",
     response_model=ShortenResponse,
+    responses={400: {"model": ErrorResponse}},
     status_code=201,
     summary="Shorten a URL",
-    description="Generate a short URL for a given long URL",
     tags=["URL"],
 )
 def shorten_url(payload: ShortenRequest):
     original_url = sanitize_url(payload.url)
 
+   
     if not is_valid_url(original_url):
-        raise HTTPException(status_code=400, detail="Invalid URL")
+        return JSONResponse(
+            status_code=400,
+            content={
+                "success": False,
+                "message": "Invalid URL format",
+                "input_url": payload.url,
+            },
+        )
+
+   
+    existing = urls_collection.find_one(
+        {"original_url": original_url},
+        sort=[("created_at", 1)],
+    )
+
+    if existing:
+        return {
+            "success": True,
+            "input_url": original_url,
+            "short_code": existing["short_code"],
+            "created_on": existing["created_at"],
+        }
 
     short_code = generate_code()
     while urls_collection.find_one({"short_code": short_code}):
@@ -130,11 +170,35 @@ def shorten_url(payload: ShortenRequest):
         }
     )
 
-    return ShortenResponse(
-        input_url=original_url,
-        output_url=f"http://127.0.0.1:8001/{short_code}",
-        created_on=created_at,
+    return {
+        "success": True,
+        "input_url": original_url,
+        "short_code": short_code,
+        "created_on": created_at,
+    }
+
+@app.get("/{short_code}", tags=["Redirect"])
+def redirect_to_original(short_code: str):
+    record = urls_collection.find_one({"short_code": short_code})
+
+    if not record:
+        return JSONResponse(
+            status_code=404,
+            content={
+                "success": False,
+                "error": "Short URL not found",
+                "input_url": short_code,
+                "message": "The provided short code does not exist",
+            },
+        )
+
+    urls_collection.update_one(
+        {"_id": record["_id"]},
+        {"$inc": {"visit_count": 1}},
     )
+
+    return RedirectResponse(url=record["original_url"])
+
 
 
 @app.get(
