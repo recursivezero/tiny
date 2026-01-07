@@ -1,4 +1,4 @@
-# 🔗 Short URL Generator
+# 🔗 tiny URL Generator
 
 > A modern, Bitly-style tiny URL web application built with Flask, FastAPI & MongoDB
 
@@ -38,16 +38,6 @@ The project supports both:
 - Fully responsive design
 - Recent URLs page
 - Glassmorphism UI
-
----
-
-### 🔹 Admin Panel Features
-
-- View all shortened URLs
-- Import URLs using JSON file
-- Export database to JSON
-- Shows JSON format guide
-- Strict JSON validation
 
 ---
 
@@ -186,7 +176,7 @@ open [http://localhost:8000](http://127.0.0.1:8000)
 
 - Redirects to original URL
 
-`🔌 REST API (FastAPI)`
+## 🔌 REST API (FastAPI)
 
 Tiny provides a FastAPI-based REST API for programmatic URL shortening.
 
@@ -242,27 +232,8 @@ Response:
 }
 ```
 
-📦 JSON Import Format (Admin)
-
-Example JSON file for bulk import:
-
-[
-{
-"short_code": "abc123",
-"original_url": "https://example.com",
-"created_at": "2025-11-18T23:59:00Z",
-"visit_count": 42,
-"meta": {
-"title": "Example Page",
-"notes": "Optional notes",
-"tags": ["test", "demo"]
-}
-}
-]
-
-📤 Export Format
-
-Admin can download all URLs in the same JSON format.
+📜Docs
+[run_with_curl](run_with_curl)
 
 Screenshots:
 Home Page:
@@ -271,9 +242,9 @@ Home Page:
 ![home page](app/assets/images/valid.png)
 ![home layout](app/assets/images/short_url.png)
 ![recent](app/assets/images/recent.png)
-Admin Page:
-![admin](app/assets/images/admin.png)
-![Jsonformat](app/assets/images/admin2.png)
+tiny API Page:
+![API](app/assets/images/API_page.png)
+![API1](app/assets/images/api_page2.png)
 
 📜License
 [License](LICENSE)

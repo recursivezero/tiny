@@ -1,6 +1,8 @@
+# Run API using curl
+
 ▶️ Step 1: Start the FastAPI server
 
-```
+```#
 poetry run tiny api
 ```
 
@@ -19,7 +21,7 @@ Create a file named request.json in the project root:
 
 ▶️ Step 3: Send request using curl (Windows PowerShell)
 
-```
+```#
 $body = Get-Content .\request\input.json -Raw
 
 Invoke-RestMethod `
