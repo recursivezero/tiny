@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
 import os
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, APIRouter
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
 from dotenv import load_dotenv
@@ -10,18 +10,23 @@ from app.db.data import urls as urls_collection
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
 from app import __version__
 
-# Load env
+
 load_dotenv()
 
 DOMAIN = os.getenv("DOMAIN", "http://127.0.0.1")
 PORT = os.getenv("PORT", "8000")
 
+MAX_URL_LENGTH = 2048
 
 app = FastAPI(
     title="Tiny API",
     version=__version__,
     description="Tiny URL Shortener API built with FastAPI",
 )
+
+# API v1 Router
+
+api_v1 = APIRouter(prefix="/api/v1", tags=["API v1"])
 
 
 class ShortenRequest(BaseModel):
@@ -50,7 +55,6 @@ class VersionResponse(BaseModel):
     version: str
 
 
-
 @app.get("/", response_class=HTMLResponse, tags=["Home"])
 async def read_root(_: Request):
     return """
@@ -68,7 +72,6 @@ async def read_root(_: Request):
                     font-family: "Poppins", system-ui, Arial, sans-serif;
                     color: #f8fafc;
                 }
-
                 .card {
                     background: rgba(255, 255, 255, 0.06);
                     backdrop-filter: blur(12px);
@@ -79,7 +82,6 @@ async def read_root(_: Request):
                     max-width: 520px;
                     width: 90%;
                 }
-
                 h1 {
                     font-size: 2.8em;
                     margin-bottom: 12px;
@@ -87,13 +89,11 @@ async def read_root(_: Request):
                     -webkit-background-clip: text;
                     -webkit-text-fill-color: transparent;
                 }
-
                 p {
                     font-size: 1.1em;
                     color: #cbd5e1;
                     margin-bottom: 30px;
                 }
-
                 a {
                     display: inline-block;
                     padding: 14px 26px;
@@ -102,9 +102,7 @@ async def read_root(_: Request):
                     color: #fff;
                     text-decoration: none;
                     font-weight: 700;
-                    transition: transform 0.2s ease, box-shadow 0.2s ease;
                 }
-
             </style>
         </head>
         <body>
@@ -119,29 +117,59 @@ async def read_root(_: Request):
 
 
 
-@app.post(
-    "/api/shorten",
+@api_v1.post(
+    "/shorten",
     response_model=ShortenResponse,
-    responses={400: {"model": ErrorResponse}},
+    responses={
+        400: {"model": ErrorResponse},
+        413: {"model": ErrorResponse},
+    },
     status_code=201,
     summary="Shorten a URL",
-    tags=["URL"],
 )
 def shorten_url(payload: ShortenRequest):
-    original_url = sanitize_url(payload.url)
+    raw_url = payload.url.strip()
 
    
+    if len(raw_url) > MAX_URL_LENGTH:
+        return JSONResponse(
+            status_code=413,
+            content={
+                "success": False,
+                "error": "URL_TOO_LONG",
+                "input_url": payload.url,
+                "message": "URL length exceeds the maximum allowed limit",
+            },
+        )
+
+    
+    if not raw_url.startswith(("http://", "https://")):
+        return JSONResponse(
+            status_code=400,
+            content={
+                "success": False,
+                "error": "INVALID_PROTOCOL",
+                "input_url": payload.url,
+                "message": "URL must start with http:// or https://",
+            },
+        )
+
+  
+    original_url = sanitize_url(raw_url)
+
+    
     if not is_valid_url(original_url):
         return JSONResponse(
             status_code=400,
             content={
                 "success": False,
-                "message": "Invalid URL format",
+                "error": "INVALID_URL",
                 "input_url": payload.url,
+                "message": "URL format is invalid",
             },
         )
 
-   
+    
     existing = urls_collection.find_one(
         {"original_url": original_url},
         sort=[("created_at", 1)],
@@ -155,6 +183,7 @@ def shorten_url(payload: ShortenRequest):
             "created_on": existing["created_at"],
         }
 
+    
     short_code = generate_code()
     while urls_collection.find_one({"short_code": short_code}):
         short_code = generate_code()
@@ -176,7 +205,15 @@ def shorten_url(payload: ShortenRequest):
         "short_code": short_code,
         "created_on": created_at,
     }
+    
+# API v1 – Version
 
+@api_v1.get("/version", response_model=VersionResponse, summary="API version")
+def version():
+    return VersionResponse(version=__version__)
+
+
+# Redirect (NOT versioned)
 @app.get("/{short_code}", tags=["Redirect"])
 def redirect_to_original(short_code: str):
     record = urls_collection.find_one({"short_code": short_code})
@@ -186,7 +223,7 @@ def redirect_to_original(short_code: str):
             status_code=404,
             content={
                 "success": False,
-                "error": "Short URL not found",
+                "error": "NOT_FOUND",
                 "input_url": short_code,
                 "message": "The provided short code does not exist",
             },
@@ -201,11 +238,4 @@ def redirect_to_original(short_code: str):
 
 
 
-@app.get(
-    "/api/version",
-    response_model=VersionResponse,
-    summary="API version",
-    tags=["Meta"],
-)
-def version():
-    return VersionResponse(version=__version__)
+app.include_router(api_v1)

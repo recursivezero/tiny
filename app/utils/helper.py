@@ -2,14 +2,11 @@ import re
 import string
 import random
 from datetime import timezone
-
+import validators
 
 def is_valid_url(url: str) -> bool:
-    pattern = re.compile(
-        r"^(https?:\/\/)" r"([\da-z\.-]+)\.([a-z\.]{2,6})" r"([\/\w \.-]*)*\/?$",
-        re.IGNORECASE,
-    )
-    return bool(pattern.match(url))
+    return bool(validators.url(url))
+
 
 
 def sanitize_url(url: str) -> str:
