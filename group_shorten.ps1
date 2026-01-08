@@ -64,7 +64,6 @@ if (-not $file) {
     $file = Read-Host "Enter path to JSON file"
 }
 
-# Validate file path
 if (-not (Test-Path $file)) {
     Write-Host "❌ File not found: $file" -ForegroundColor Red
     exit 1
@@ -72,20 +71,20 @@ if (-not (Test-Path $file)) {
 
 # Read and parse JSON file
 try {
-    $data = Get-Content $file -Raw -Encoding UTF8 | ConvertFrom-Json
+    $data = Get-Content $file -Raw | ConvertFrom-Json
 } catch {
-    Write-Host "❌ Invalid JSON file format" -ForegroundColor Red
+    Write-Host "❌ Invalid JSON file" -ForegroundColor Red
     exit 1
 }
 
-$apiUrl = "http://127.0.0.1:8001/api/shorten"
+$apiUrl = "http://127.0.0.1:8001/api/v1/shorten"
 
 Write-Host "`n🚀 Processing URLs..." -ForegroundColor Cyan
 
 foreach ($item in $data) {
 
     if (-not $item.url) {
-        Write-Host "⚠️ Missing url field, skipping..." -ForegroundColor Yellow
+        Write-Host "⚠️ Missing url field, skipping" -ForegroundColor Yellow
         continue
     }
 
@@ -98,23 +97,25 @@ foreach ($item in $data) {
             -ContentType "application/json" `
             -Body $body
 
-        Write-Host "✅ SUCCESS:" $item.url "→ short_code:" $response.short_code `
+        Write-Host "✅ SUCCESS:" $item.url "→" $response.short_code `
             -ForegroundColor Green
     }
     catch {
-        try {
-            $errorResponse = $_.ErrorDetails.Message | ConvertFrom-Json
+        $rawError = $_.ErrorDetails.Message
 
+        try {
+            $err = $rawError | ConvertFrom-Json
             Write-Host "❌ ERROR:" $item.url `
-                "-" $errorResponse.error `
-                "-" $errorResponse.message `
+                "-" $err.error `
+                "-" $err.message `
                 -ForegroundColor Yellow
         }
         catch {
-            Write-Host "❌ ERROR:" $item.url "- Unknown error occurred" `
+            Write-Host "❌ ERROR:" $item.url `
+                "-" $rawError `
                 -ForegroundColor Red
         }
     }
 }
 
-Write-Host "`n🎉 Done processing all URLs!" -ForegroundColor Cyan
+Write-Host "`n🎉 Done!" -ForegroundColor Cyan

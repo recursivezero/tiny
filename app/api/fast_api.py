@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import os
+import traceback
 
 from fastapi import FastAPI, Request, APIRouter
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
@@ -11,6 +12,7 @@ from app.utils.helper import generate_code, is_valid_url, sanitize_url
 from app import __version__
 
 
+# Load env
 load_dotenv()
 
 DOMAIN = os.getenv("DOMAIN", "http://127.0.0.1")
@@ -24,17 +26,29 @@ app = FastAPI(
     description="Tiny URL Shortener API built with FastAPI",
 )
 
-# API v1 Router
+# -------------------------------------------------
+# Global JSON error handler
+# -------------------------------------------------
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    traceback.print_exc()
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "error": "INTERNAL_SERVER_ERROR",
+            "message": "Something went wrong on the server",
+        },
+    )
 
+# -------------------------------------------------
+# API v1 Router
+# -------------------------------------------------
 api_v1 = APIRouter(prefix="/api/v1", tags=["API v1"])
 
 
 class ShortenRequest(BaseModel):
-    url: str = Field(
-        ...,
-        description="The original long URL to shorten",
-        examples=["https://example.com"],
-    )
+    url: str = Field(..., examples=["https://example.com"])
 
 
 class ShortenResponse(BaseModel):
@@ -120,12 +134,8 @@ async def read_root(_: Request):
 @api_v1.post(
     "/shorten",
     response_model=ShortenResponse,
-    responses={
-        400: {"model": ErrorResponse},
-        413: {"model": ErrorResponse},
-    },
+    responses={400: {"model": ErrorResponse}, 413: {"model": ErrorResponse}},
     status_code=201,
-    summary="Shorten a URL",
 )
 def shorten_url(payload: ShortenRequest):
     raw_url = payload.url.strip()
@@ -136,14 +146,13 @@ def shorten_url(payload: ShortenRequest):
             status_code=413,
             content={
                 "success": False,
-                "error": "URL_TOO_LONG",
                 "input_url": payload.url,
-                "message": "URL length exceeds the maximum allowed limit",
+                "message": "URL length exceeds maximum limit",
             },
         )
 
-    
-    if not raw_url.startswith(("http://", "https://")):
+    # 2️⃣ Protocol presence check (http / https only)
+    if not raw_url.startswith(("http", "https")):
         return JSONResponse(
             status_code=400,
             content={
@@ -154,10 +163,10 @@ def shorten_url(payload: ShortenRequest):
             },
         )
 
-  
+    # 3️⃣ Sanitize AFTER protocol presence
     original_url = sanitize_url(raw_url)
 
-    
+    # 4️⃣ URL structure validation
     if not is_valid_url(original_url):
         return JSONResponse(
             status_code=400,
@@ -169,11 +178,22 @@ def shorten_url(payload: ShortenRequest):
             },
         )
 
-    
-    existing = urls_collection.find_one(
-        {"original_url": original_url},
-        sort=[("created_at", 1)],
-    )
+    # 5️⃣ Check existing URL
+    try:
+        existing = urls_collection.find_one(
+            {"original_url": original_url},
+            sort=[("created_at", 1)],
+        )
+    except Exception:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "DB_CONNECTION_ERROR",
+                "input_url": payload.url,
+                "message": "Database is not available",
+            },
+        )
 
     if existing:
         return {
@@ -183,21 +203,32 @@ def shorten_url(payload: ShortenRequest):
             "created_on": existing["created_at"],
         }
 
-    
+    # 6️⃣ Create new short code
     short_code = generate_code()
     while urls_collection.find_one({"short_code": short_code}):
         short_code = generate_code()
 
     created_at = datetime.now(timezone.utc)
 
-    urls_collection.insert_one(
-        {
-            "short_code": short_code,
-            "original_url": original_url,
-            "created_at": created_at,
-            "visit_count": 0,
-        }
-    )
+    try:
+        urls_collection.insert_one(
+            {
+                "short_code": short_code,
+                "original_url": original_url,
+                "created_at": created_at,
+                "visit_count": 0,
+            }
+        )
+    except Exception:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "DB_WRITE_ERROR",
+                "input_url": payload.url,
+                "message": "Failed to store URL",
+            },
+        )
 
     return {
         "success": True,
@@ -205,18 +236,33 @@ def shorten_url(payload: ShortenRequest):
         "short_code": short_code,
         "created_on": created_at,
     }
-    
-# API v1 – Version
 
-@api_v1.get("/version", response_model=VersionResponse, summary="API version")
-def version():
+
+# -------------------------------------------------
+# API v1 – Version
+# -------------------------------------------------
+@api_v1.get("/version", response_model=VersionResponse)
+def api_version():
     return VersionResponse(version=__version__)
 
 
-# Redirect (NOT versioned)
+# -------------------------------------------------
+# Redirect (not versioned)
+# -------------------------------------------------
 @app.get("/{short_code}", tags=["Redirect"])
 def redirect_to_original(short_code: str):
-    record = urls_collection.find_one({"short_code": short_code})
+    try:
+        record = urls_collection.find_one({"short_code": short_code})
+    except Exception:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error": "DB_CONNECTION_ERROR",
+                "input_url": short_code,
+                "message": "Database is not available",
+            },
+        )
 
     if not record:
         return JSONResponse(
@@ -225,7 +271,7 @@ def redirect_to_original(short_code: str):
                 "success": False,
                 "error": "NOT_FOUND",
                 "input_url": short_code,
-                "message": "The provided short code does not exist",
+                "message": "Short code does not exist",
             },
         )
 
@@ -237,5 +283,5 @@ def redirect_to_original(short_code: str):
     return RedirectResponse(url=record["original_url"])
 
 
-
+# Register router
 app.include_router(api_v1)
