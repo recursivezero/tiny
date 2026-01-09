@@ -90,6 +90,42 @@ def generate_code(length=6):
 📁 Project Folder Structure
 
 ```text
+├── CHANGELOG.md
+├── LICENSE
+├── README.md
+├── app/
+│   ├── __init__.py
+│   ├── admin.py
+│   ├── api/
+│   │   ├── __init__.py
+│   │   └── fast_api.py
+│   ├── app.py
+│   ├── assets/
+│   │   └── images/
+│   ├── cli.py
+│   ├── db/
+│   │   ├── __init__.py
+│   │   └── data.py
+│   ├── qr.py
+│   ├── static/
+│   │   ├── images/
+│   │   │   ├── logo.png
+│   │   └── style.css
+│   ├── templates/
+│   │   ├── admin.html
+│   │   ├── coming-soon.html
+│   │   ├── index.html
+│   │   └── recent.html
+│   └── utils/
+│       ├── __init__.py
+│       ├── helper.py
+│       └── lint.py
+├── mypy.ini
+├── package.json
+├── poetry.lock
+├── pyproject.toml
+├── requirements.txt
+└── tiny.code-workspace
 
 Directory structure:
 tiny/
@@ -134,7 +170,7 @@ tiny/
 
 ```sh
 poetry install
-poetry install --all-extras
+poetry install --all-extras --with dev
 ```
 
 create `.env` file and add content from `.env.local` file anc change value according to your project
