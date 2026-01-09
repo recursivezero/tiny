@@ -90,7 +90,6 @@ def generate_code(length=6):
 📁 Project Folder Structure
 
 ```text
-
 Directory structure:
 tiny/
 ├── CHANGELOG.md
@@ -134,7 +133,7 @@ tiny/
 
 ```sh
 poetry install
-poetry install --all-extras
+poetry install --all-extras --with dev
 ```
 
 create `.env` file and add content from `.env.local` file anc change value according to your project
