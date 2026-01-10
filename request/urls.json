@@ -3,30 +3,60 @@
     "url": "https://example.com"
   },
   {
-    "url": "https://google.com"
-  },
-  {
-    "url": "https://github.com"
+    "url": "http://google.com"
   },
   {
     "url": "https://stackoverflow.com"
   },
   {
-    "url": "https://microsoft.com"
+    "url": "https://github.com"
   },
   {
-    "url": "https://apple.com"
+    "url": "ftp://fileserver.com"
   },
   {
-    "url": "https:"
+    "url": "https://openai.com/blog"
   },
   {
-    "url": "https://python.org"
+    "url": "http://localhost:8000"
   },
   {
-    "url": "https://fastapi.tiangolo.com"
+    "url": "https://sub.domain.co.in"
   },
   {
-    "url": "https://thisdomaindoesnotexist123.com"
+    "url": "www.github.com"
+  },
+  {
+    "url": "example.com"
+  },
+  {
+    "url": "https://"
+  },
+  {
+    "url": "http://invalid..url"
+  },
+  {
+    "url": "https:/missing-slash.com"
+  },
+  {
+    "url": "htp://typo-protocol.com"
+  },
+  {
+    "url": "http://256.256.256.256"
+  },
+  {
+    "url": "https:// space.com"
+  },
+  {
+    "url": "https://example..com"
+  },
+  {
+    "url": "http:///too-many-slashes.com"
+  },
+  {
+    "url": "https://-invaliddomain.com"
+  },
+  {
+    "url": "https://domain_with_underscore.com"
   }
 ]

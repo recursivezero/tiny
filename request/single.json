@@ -1,3 +1,47 @@
-{
-  "url": "https:"
-}
+[
+  {
+    "url": "https://sub.domain.co.in"
+  },
+  {
+    "url": "https://openai.com/blog"
+  },
+  {
+    "url": "https://github.com/recursivezero/tiny/commit/a24b5c31f92bf924ebf64e863b37ee1892d5f0d9"
+  },
+  {
+    "url": "https://www.github.com"
+  },
+  {
+    "url": "https://thisdomaindoesnotexist123.com"
+  },
+  {
+    "url": "https://fastapi.tiangolo.com"
+  },
+  {
+    "url": "https://python.org"
+  },
+  {
+    "url": "https://apple.com"
+  },
+  {
+    "url": "https://microsoft.com"
+  },
+  {
+    "url": "https://github.com"
+  },
+  {
+    "url": "https://google.com"
+  },
+  {
+    "url": "https://stackoverflow.com"
+  },
+  {
+    "url": "http://google.com"
+  },
+  {
+    "url": "https://recursivezero.com"
+  },
+  {
+    "url": "https://example.com"
+  }
+]

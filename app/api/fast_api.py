@@ -1,16 +1,18 @@
-from datetime import datetime, timezone
 import os
+import re
 import traceback
+from datetime import datetime, timezone
 
-from fastapi import FastAPI, Request, APIRouter
+from dotenv import load_dotenv
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
-from dotenv import load_dotenv
 
+from app import __version__
 from app.db.data import urls as urls_collection
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
-from app import __version__
 
+SHORT_CODE_PATTERN = re.compile(r"^[A-Za-z0-9]{6}$")
 
 # Load env
 load_dotenv()
@@ -25,6 +27,7 @@ app = FastAPI(
     version=__version__,
     description="Tiny URL Shortener API built with FastAPI",
 )
+
 
 # -------------------------------------------------
 # Global JSON error handler
@@ -41,14 +44,15 @@ async def global_exception_handler(request: Request, exc: Exception):
         },
     )
 
+
 # -------------------------------------------------
 # API v1 Router
 # -------------------------------------------------
-api_v1 = APIRouter(prefix="/api/v1", tags=["API v1"])
+api_v1 = APIRouter(prefix=os.getenv("API_VERSION", "/api/v1"), tags=["v1"])
 
 
 class ShortenRequest(BaseModel):
-    url: str = Field(..., examples=["https://example.com"])
+    url: str = Field(..., examples=["https://abcdkbd.com"])
 
 
 class ShortenResponse(BaseModel):
@@ -130,7 +134,6 @@ async def read_root(_: Request):
     """
 
 
-
 @api_v1.post(
     "/shorten",
     response_model=ShortenResponse,
@@ -140,7 +143,6 @@ async def read_root(_: Request):
 def shorten_url(payload: ShortenRequest):
     raw_url = payload.url.strip()
 
-   
     if len(raw_url) > MAX_URL_LENGTH:
         return JSONResponse(
             status_code=413,
@@ -238,38 +240,31 @@ def shorten_url(payload: ShortenRequest):
     }
 
 
-# -------------------------------------------------
 # API v1 – Version
-# -------------------------------------------------
-@api_v1.get("/version", response_model=VersionResponse)
+
+
+@app.get("/version", response_model=VersionResponse)
 def api_version():
     return VersionResponse(version=__version__)
 
 
-# -------------------------------------------------
-# Redirect (not versioned)
-# -------------------------------------------------
+# ----------------------------------------
+# Register API router FIRST
+# ----------------------------------------
+
+
 @app.get("/{short_code}", tags=["Redirect"])
 def redirect_to_original(short_code: str):
-    try:
-        record = urls_collection.find_one({"short_code": short_code})
-    except Exception:
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "error": "DB_CONNECTION_ERROR",
-                "input_url": short_code,
-                "message": "Database is not available",
-            },
-        )
+    if not SHORT_CODE_PATTERN.match(short_code):
+        raise HTTPException(status_code=404)
+
+    record = urls_collection.find_one({"short_code": short_code})
 
     if not record:
         return JSONResponse(
             status_code=404,
             content={
                 "success": False,
-                "error": "NOT_FOUND",
                 "input_url": short_code,
                 "message": "Short code does not exist",
             },
@@ -281,6 +276,16 @@ def redirect_to_original(short_code: str):
     )
 
     return RedirectResponse(url=record["original_url"])
+
+
+@api_v1.get("/help", tags=["Help"])
+def get_help():
+    return JSONResponse(
+        status_code=200,
+        content={
+            "message": "Welcome to the Tiny URL Shortener API! Visit /docs for API documentation."
+        },
+    )
 
 
 # Register router

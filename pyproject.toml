@@ -73,3 +73,7 @@ ignore = ["GHSA-9hjg-9r4m-mvj7", "GHSA-3f63-hfp8-52jq", "GHSA-44wm-f244-xhp3"]
 
 [[tool.poetry.packages]]
 include = "app"
+
+[tool.poetry]
+name = "tiny"
+version = "0.1.0"
