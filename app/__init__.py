@@ -1,0 +1,3 @@
+from app.utils._version import get_version
+
+__version__ = get_version()

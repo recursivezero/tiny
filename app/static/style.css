@@ -43,6 +43,7 @@ button {
 .dark-theme h1 {
   background: linear-gradient(90deg, #ffffff, #dddddd, #ffffff);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.4);
 }
@@ -50,6 +51,7 @@ button {
 .dark-theme p {
   background: linear-gradient(90deg, #ffffff, #dddddd, #ffffff);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
   text-shadow: 0px 0px 10px rgba(255, 255, 255, 0.4);
 }
@@ -819,3 +821,11 @@ td {
   transform: scale(1.05);
   box-shadow: 0 12px 28px rgba(77, 163, 185, 0.25);
 }
+.info-box {
+  margin-bottom: 15px;
+    padding: 10px;
+    color: #0e34f6;
+    border-radius: 8px;
+    font-weight: 700;
+    
+  }

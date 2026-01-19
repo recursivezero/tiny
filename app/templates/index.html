@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>URL Shortener</title>
+  <title>tiny URL</title>
 
   <!-- keep your existing stylesheet (optional) -->
   <link rel="stylesheet" href="/static/style.css">
@@ -75,6 +75,12 @@
           {% if error %}
           <div class="error-box" id="urlError">{{ error }}</div>
           {% endif %}
+          {% if info_message %}
+          <div class="info-box">
+            {{ info_message }}
+          </div>
+          {% endif %}
+
 
           <button class="cta" type="submit">Shorten URL➜</button>
           <div style="display:flex;align-items:center;justify-content:space-between;">
@@ -130,10 +136,18 @@
             </div>
             {% endif %}
 
-            <div style="padding-top: 15px;color:var(--muted);font-size:13px;color: black;">Original URL</div>
-            <div style="font-weight:600;margin-top:6px;">{{ original_url or (urls[0].original_url if
-              urls|length > 0
-              else '') }}</div>
+            <div style="padding-top: 15px;color:var(--muted);font-weight:600;color: black;">Original URL</div>
+            {% set display_url = original_url or (urls[0].original_url if urls|length > 0 else '') %}
+
+            {% if display_url %}
+            <div style="font-weight:600;margin-top:6px;">
+              <a href="{{ display_url }}" target="_blank" rel="noopener noreferrer"
+                style="color: #0e34f6;; text-decoration:none; word-break:break-all;">
+                {{ display_url }}
+              </a>
+            </div>
+            {% endif %}
+
 
             <div style="display:flex;gap:18px;margin-top:12px;color:var(--muted);font-size:13px;">
               <div>
