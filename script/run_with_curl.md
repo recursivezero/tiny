@@ -1,4 +1,4 @@
-#
+# Run with Curl
 
 ## PowerShell Script: group_shorten.ps1
 
