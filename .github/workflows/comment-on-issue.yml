@@ -18,6 +18,7 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/comment-on-issue
         with:
           issue_number: ${{ github.event.inputs.issue_number }}
