@@ -4,6 +4,12 @@ on:
   issues:
     types: [opened, labeled]
 
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number"
+        required: true
+
 permissions:
   issues: write
 
@@ -14,9 +20,21 @@ jobs:
       - uses: actions/github-script@v8
         with:
           script: |
-            console.log(JSON.stringify(context.payload, null, 2));
+            let issue_number;
+            console.log("eventName==>", context.eventName);
+            if (context.eventName === "issues") {
+              issue_number = context.payload.issue.number;
+            }
+
+            if (context.eventName === "workflow_dispatch") {
+              issue_number = Number(core.getInput("issue_number"));
+            }
+
+            if (!issue_number) {
+              throw new Error(`Unsupported trigger: ${context.eventName}`);
+            }
             github.rest.issues.createComment({
-              issue_number: context.issue.number,
+              issue_number: issue_number,
               owner: context.repo.owner,
               repo: context.repo.repo,
               body: '👋 Thanks for reporting!'
