@@ -30,7 +30,7 @@ jobs:
             }
 
             if (context.eventName === "workflow_dispatch") {
-              issue_number = Number(core.getInput("issue_number"));
+              issue_number = Number(context.payload.inputs.issue_number);
             }
 
             if (!issue_number || Number.isNaN(issue_number)) {
