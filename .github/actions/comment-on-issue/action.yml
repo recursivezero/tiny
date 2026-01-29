@@ -1,0 +1,8 @@
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/github-script@v8
+      env:
+        ISSUE_NUMBER: ${{ inputs.issue_number }}
+      with:
+        script-file: .github/scripts/comment.js

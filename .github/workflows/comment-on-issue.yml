@@ -8,8 +8,8 @@ on:
     inputs:
       issue_number:
         description: "Issue number"
-        type: number
         required: true
+        type: number
 
 permissions:
   issues: write
@@ -18,30 +18,6 @@ jobs:
   comment:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v8
+      - uses: ./.github/actions/comment-on-issue
         with:
-          script: |
-            let issue_number;
-            console.log("inputs:", process.env);
-
-            console.log("eventName==>", context.eventName);
-            if (context.eventName === "issues") {
-              issue_number = context.payload.issue.number;
-            }
-
-            if (context.eventName === "workflow_dispatch") {
-              issue_number = Number(context.payload.inputs.issue_number);
-            }
-
-            if (!issue_number || Number.isNaN(issue_number)) {
-              throw new Error(
-                `Invalid issue_number for event ${context.eventName}. Got: "${core.getInput("issue_number")}"`
-              );
-            }
-
-            github.rest.issues.createComment({
-              issue_number: issue_number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '👋 Thanks for reporting!'
-            })
+          issue_number: ${{ github.event.inputs.issue_number }}
