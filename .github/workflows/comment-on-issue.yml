@@ -8,6 +8,7 @@ on:
     inputs:
       issue_number:
         description: "Issue number"
+        type: number
         required: true
 
 permissions:
@@ -30,9 +31,12 @@ jobs:
               issue_number = Number(core.getInput("issue_number"));
             }
 
-            if (!issue_number) {
-              throw new Error(`Unsupported trigger: ${context.eventName}`);
+            if (!issue_number || Number.isNaN(issue_number)) {
+              throw new Error(
+                `Invalid issue_number for event ${context.eventName}. Got: "${core.getInput("issue_number")}"`
+              );
             }
+
             github.rest.issues.createComment({
               issue_number: issue_number,
               owner: context.repo.owner,
