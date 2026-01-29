@@ -2,8 +2,7 @@ name: "Comment on New Issue"
 
 on:
   issues:
-    types: [opened]
-  workflow_dispatch:
+    types: [opened, labeled]
 
 permissions:
   issues: write
