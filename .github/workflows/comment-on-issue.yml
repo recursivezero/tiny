@@ -22,6 +22,8 @@ jobs:
         with:
           script: |
             let issue_number;
+            console.log("inputs:", process.env);
+
             console.log("eventName==>", context.eventName);
             if (context.eventName === "issues") {
               issue_number = context.payload.issue.number;
