@@ -246,4 +246,5 @@ tiny API Page:
 ![API1](app/assets/images/api_page2.png)
 
 📜License
-[License](LICENSE)
+
+[MIT](LICENSE)
