@@ -1,12 +1,11 @@
-import re
 import string
 import random
 from datetime import timezone
 import validators
 
+
 def is_valid_url(url: str) -> bool:
     return bool(validators.url(url))
-
 
 
 def sanitize_url(url: str) -> str:

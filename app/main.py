@@ -6,13 +6,13 @@ from flask import Flask, redirect, render_template, request, session, url_for
 from app.db.data import urls
 from app.qr import generate_qr_with_logo
 from app.utils.helper import (
+    format_date,
     generate_code,
     is_valid_url,
     sanitize_url,
-    format_date,
 )
 
-load_dotenv()
+load_dotenv(dotenv_path="/mnt/d/projects/tiny/.env.local")
 
 
 app = Flask(__name__)
@@ -42,7 +42,6 @@ def index():
         elif not is_valid_url(original_url):
             error = "Please enter a valid URL (must start with http:// or https://)."
         else:
-
             existing = urls.find_one(
                 {"original_url": original_url},
                 sort=[("created_at", 1)],

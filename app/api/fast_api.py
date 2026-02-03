@@ -10,6 +10,7 @@ from pydantic import BaseModel, Field
 
 from app import __version__
 from app.db.data import urls as urls_collection
+from app.db.data import url_stats as stats_collection
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
 
 SHORT_CODE_PATTERN = re.compile(r"^[A-Za-z0-9]{6}$")
@@ -22,6 +23,9 @@ PORT = os.getenv("PORT", "8000")
 
 MAX_URL_LENGTH = 2048
 
+# -------------------------------------------------
+# App
+# -------------------------------------------------
 app = FastAPI(
     title="Tiny API",
     version=__version__,
@@ -30,7 +34,7 @@ app = FastAPI(
 
 
 # -------------------------------------------------
-# Global JSON error handler
+# Global error handler
 # -------------------------------------------------
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -46,11 +50,14 @@ async def global_exception_handler(request: Request, exc: Exception):
 
 
 # -------------------------------------------------
-# API v1 Router
+# Router
 # -------------------------------------------------
 api_v1 = APIRouter(prefix=os.getenv("API_VERSION", "/api/v1"), tags=["v1"])
 
 
+# -------------------------------------------------
+# Models
+# -------------------------------------------------
 class ShortenRequest(BaseModel):
     url: str = Field(..., examples=["https://abcdkbd.com"])
 
@@ -73,6 +80,9 @@ class VersionResponse(BaseModel):
     version: str
 
 
+# -------------------------------------------------
+# Home
+# -------------------------------------------------
 @app.get("/", response_class=HTMLResponse, tags=["Home"])
 async def read_root(_: Request):
     return """
@@ -141,6 +151,7 @@ async def read_root(_: Request):
     status_code=201,
 )
 def shorten_url(payload: ShortenRequest):
+    print(" SHORTEN ENDPOINT HIT ", payload.url)
     raw_url = payload.url.strip()
 
     if len(raw_url) > MAX_URL_LENGTH:
@@ -168,7 +179,6 @@ def shorten_url(payload: ShortenRequest):
     # 3️⃣ Sanitize AFTER protocol presence
     original_url = sanitize_url(raw_url)
 
-    # 4️⃣ URL structure validation
     if not is_valid_url(original_url):
         return JSONResponse(
             status_code=400,
@@ -212,25 +222,20 @@ def shorten_url(payload: ShortenRequest):
 
     created_at = datetime.now(timezone.utc)
 
-    try:
-        urls_collection.insert_one(
-            {
-                "short_code": short_code,
-                "original_url": original_url,
-                "created_at": created_at,
-                "visit_count": 0,
-            }
-        )
-    except Exception:
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "error": "DB_WRITE_ERROR",
-                "input_url": payload.url,
-                "message": "Failed to store URL",
-            },
-        )
+    urls_collection.insert_one(
+        {
+            "short_code": short_code,
+            "original_url": original_url,
+            "created_at": created_at,
+        }
+    )
+
+    stats_collection.insert_one(
+        {
+            "short_code": short_code,
+            "visit_count": 0,
+        }
+    )
 
     return {
         "success": True,
@@ -261,18 +266,12 @@ def redirect_to_original(short_code: str):
     record = urls_collection.find_one({"short_code": short_code})
 
     if not record:
-        return JSONResponse(
-            status_code=404,
-            content={
-                "success": False,
-                "input_url": short_code,
-                "message": "Short code does not exist",
-            },
-        )
+        raise HTTPException(status_code=404, detail="Short code not found")
 
-    urls_collection.update_one(
-        {"_id": record["_id"]},
+    stats_collection.update_one(
+        {"short_code": short_code},
         {"$inc": {"visit_count": 1}},
+        upsert=True,
     )
 
     return RedirectResponse(url=record["original_url"])
@@ -289,4 +288,5 @@ def get_help():
 
 
 # Register router
+# -------------------------------------------------
 app.include_router(api_v1)

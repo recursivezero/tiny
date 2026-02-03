@@ -2,7 +2,7 @@ import click
 import uvicorn
 
 from app import __version__
-from app.app import app as flask_app
+from app.main import app as flask_app
 
 
 @click.group(invoke_without_command=True)
