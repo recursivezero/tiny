@@ -19,15 +19,17 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/github-script@v8
         with:
-        script: |
-          // Use workflow_dispatch input if present, otherwise fall back to issue event
-          const issue_number = context.payload.inputs?.issue_number
-            ? parseInt(context.payload.inputs.issue_number, 10)
-            : context.issue.number;
-          await github.issues.createComment({
-            ...context.repo,
-            issue_number,
-            body: "👋 Thank you for opening this issue! We will look into it as soon as possible."
-          });
+          script: |
+            // For workflow_dispatch, use the input; for issue events, use context.issue.number
+            const issue_number = context.payload.inputs?.issue_number
+              ? parseInt(context.payload.inputs.issue_number, 10)
+              : context.issue.number;
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number,
+              body: "👋 Thank you for opening this issue! We will look into it as soon as possible."
+            });
