@@ -5,4 +5,11 @@ runs:
       env:
         ISSUE_NUMBER: ${{ inputs.issue_number }}
       with:
-        script-file: .github/scripts/comment.js
+        script: |
+          const issue_number = parseInt(process.env.ISSUE_NUMBER, 10);
+
+          await github.issues.createComment({
+            ...context.repo,
+            issue_number,
+            body: "👋, Thank you for opening this issue! We will look into it as soon as possible."
+          });
