@@ -1,4 +1,5 @@
 import datetime
+import os
 
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
@@ -12,7 +13,7 @@ from app.utils.helper import (
     sanitize_url,
 )
 
-load_dotenv(dotenv_path="/mnt/d/projects/tiny/.env.local")
+load_dotenv()
 
 
 app = Flask(__name__)
@@ -68,8 +69,8 @@ def index():
                         "meta": {},
                     }
                 )
-
-            new_short_url = request.host_url + short_code
+            print(f"Generated short URL: {os.getenv('DOMAIN', request.host_url)}")
+            new_short_url = os.getenv("DOMAIN", request.host_url) + short_code
 
             session["new_short_url"] = new_short_url
             session["qr_enabled"] = qr_enabled

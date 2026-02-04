@@ -59,7 +59,7 @@ foreach ($item in $data) {
     $body = @{ url = $item.url } | ConvertTo-Json
 
     Invoke-RestMethod `
-      -Uri "http://127.0.0.1:8001/api/shorten" `
+      -Uri "http://127.0.0.1:8001/api/v1/shorten" `
       -Method POST `
       -ContentType "application/json" `
       -Body $body

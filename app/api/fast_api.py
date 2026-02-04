@@ -21,7 +21,7 @@ load_dotenv()
 DOMAIN = os.getenv("DOMAIN", "http://127.0.0.1")
 PORT = os.getenv("PORT", "8000")
 
-print(f"[*] Starting Tiny API on {DOMAIN}:{PORT}")
+print(f"Starting Tiny API on {DOMAIN}:{PORT}")
 
 MAX_URL_LENGTH = 2048
 

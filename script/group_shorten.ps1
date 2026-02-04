@@ -1,4 +1,4 @@
-<#
+﻿<#
 =========================================================
  PowerShell Script: group_shorten.ps1
 ---------------------------------------------------------
@@ -64,15 +64,17 @@ if (-not $file) {
     $file = Read-Host "Enter path to JSON file"
 }
 
+# Validate file
 if (-not (Test-Path $file)) {
     Write-Host "❌ File not found: $file" -ForegroundColor Red
     exit 1
 }
 
-# Read and parse JSON file
+# Load JSON
 try {
     $data = Get-Content $file -Raw | ConvertFrom-Json
-} catch {
+}
+catch {
     Write-Host "❌ Invalid JSON file" -ForegroundColor Red
     exit 1
 }
@@ -83,12 +85,37 @@ Write-Host "`n🚀 Processing URLs..." -ForegroundColor Cyan
 
 foreach ($item in $data) {
 
-    if (-not $item.url) {
-        Write-Host "⚠️ Missing url field, skipping" -ForegroundColor Yellow
+    # Support string + object format
+    $url = if ($item -is [string]) { $item } else { $item.url }
+
+    if (-not $url) {
+        Write-Host "⚠️ Empty URL, skipped" -ForegroundColor Yellow
         continue
     }
 
-    $body = @{ url = $item.url } | ConvertTo-Json
+    # -------- LOCAL URL VALIDATION --------
+    if ($url -notmatch '^[a-zA-Z]+://') {
+        Write-Host "❌ ERROR:" $url "- Missing protocol (http/https)" -ForegroundColor yellow
+        continue
+    }
+
+    if ($url -notmatch '^https?://') {
+        Write-Host "❌ ERROR:" $url "- Unsupported protocol" -ForegroundColor yellow
+        continue
+    }
+
+    if ($url -match 'https?:/[^/]') {
+        Write-Host "❌ ERROR:" $url "- Malformed URL (missing /)" -ForegroundColor yellow
+        continue
+    }
+
+    if ($url -match '\.\.') {
+        Write-Host "❌ ERROR:" $url "- Invalid domain format" -ForegroundColor yellow
+        continue
+    }
+
+    # -------- API REQUEST --------
+    $body = @{ url = $url } | ConvertTo-Json
 
     try {
         $response = Invoke-RestMethod `
@@ -97,24 +124,10 @@ foreach ($item in $data) {
             -ContentType "application/json" `
             -Body $body
 
-        Write-Host "✅ SUCCESS:" $item.url "→" $response.short_code `
-            -ForegroundColor Green
+        Write-Host "✅ SUCCESS:" $url "→" $response.short_code -ForegroundColor Green
     }
     catch {
-        $rawError = $_.ErrorDetails.Message
-
-        try {
-            $err = $rawError | ConvertFrom-Json
-            Write-Host "❌ ERROR:" $item.url `
-                "-" $err.error `
-                "-" $err.message `
-                -ForegroundColor Yellow
-        }
-        catch {
-            Write-Host "❌ ERROR:" $item.url `
-                "-" $rawError `
-                -ForegroundColor Red
-        }
+        Write-Host "❌ ERROR:" $url "- Rejected by API" -ForegroundColor Yellow
     }
 }
 
