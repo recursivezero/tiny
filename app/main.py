@@ -25,6 +25,11 @@ def db_available():
     return urls is not None
 
 
+def build_short_url(short_code: str, request_host_url: str) -> str:
+    base_url = os.getenv("DOMAIN", request_host_url).rstrip("/")
+    return f"{base_url}/{short_code}"
+
+
 @app.route("/", methods=["GET", "POST"])
 def index():
     new_short_url = None
@@ -53,7 +58,7 @@ def index():
 
             print("⚠️ DB not connected. Generating short URL without saving.")
 
-            new_short_url = os.getenv("DOMAIN", request.host_url) + short_code
+            new_short_url = build_short_url(short_code, request.host_url)
 
             session["new_short_url"] = new_short_url
             session["qr_enabled"] = qr_enabled
@@ -79,7 +84,7 @@ def index():
                     "⚠️ DB disconnected during request. Generating short URL without saving."
                 )
 
-                new_short_url = os.getenv("DOMAIN", request.host_url) + short_code
+                new_short_url = build_short_url(short_code, request.host_url)
 
                 session["new_short_url"] = new_short_url
                 session["qr_enabled"] = qr_enabled
@@ -124,8 +129,7 @@ def index():
                         "⚠️ DB disconnected during insert. Falling back to offline mode."
                     )
 
-            print(f"Generated short URL: {os.getenv('DOMAIN', request.host_url)}")
-            new_short_url = os.getenv("DOMAIN", request.host_url) + short_code
+            new_short_url = build_short_url(short_code, request.host_url)
 
             session["new_short_url"] = new_short_url
             session["qr_enabled"] = qr_enabled

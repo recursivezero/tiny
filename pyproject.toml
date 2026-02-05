@@ -26,7 +26,6 @@ classifiers = [
 ]
 dependencies = [
   "flask ==3.0.0",
-  "pymongo ==4.6.0",
   "python-dotenv ==1.0.1",
   "qrcode ==8.2",
   "pillow ==10.4.0",
@@ -56,6 +55,7 @@ twine = "^6.2.0"
 types-pillow = "^10.2.0.20240822"
 types-pywin32 = "^308.0.0.20250128"
 vulture = "^2.3"
+pymongo = "^4.16.0"
 
 [tool.flake8]
 max_line_length = 190
