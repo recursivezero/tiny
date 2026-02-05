@@ -1,18 +1,62 @@
 [
   {
-    "url": "https://example.com/test-1"
+    "url": "https://example.com"
   },
   {
-    "url": "https://example.com/test-2"
+    "url": "http://google.com"
   },
   {
-    "url": "https://example.com/test-3"
-  },
-
-  {
-    "url": "https://example.com?run=1"
+    "url": "https://github.com"
   },
   {
-    "url": "https://example.com?run=2"
+    "url": "https://openai.com/blog"
+  },
+  {
+    "url": "https://sub.domain.co.in/path?query=1"
+  },
+  {
+    "url": "https://fastapi.tiangolo.com"
+  },
+  {
+    "url": "https://python.org"
+  },
+  {
+    "url": "https://microsoft.com"
+  },
+  {
+    "url": "https://stackoverflow.com/questions/1"
+  },
+  {
+    "url": "https://www.github.com"
+  },
+  {
+    "url": "www.github.com"
+  },
+  {
+    "url": "example.com"
+  },
+  {
+    "url": "http://invalid..url"
+  },
+  {
+    "url": "https:/missing-slash.com"
+  },
+  {
+    "url": "ftp://fileserver"
+  },
+  {
+    "url": "htp://wrong-protocol.com"
+  },
+  {
+    "url": "https://thisdomaindoesnotexist123.com"
+  },
+  {
+    "url": "https:// space.com"
+  },
+  {
+    "url": "://missing-scheme.com"
+  },
+  {
+    "url": "https://in valid.com"
   }
 ]

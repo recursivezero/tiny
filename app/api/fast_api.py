@@ -7,10 +7,10 @@ from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
+from pymongo.errors import PyMongoError
 
 from app import __version__
-from app.db.data import urls as urls_collection
-from app.db.data import url_stats as stats_collection
+from app.db import data as db_data
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
 
 SHORT_CODE_PATTERN = re.compile(r"^[A-Za-z0-9]{6}$")
@@ -192,22 +192,39 @@ def shorten_url(payload: ShortenRequest):
             },
         )
 
-    # 5️⃣ Check existing URL
+    # 🔁 Try reconnect if DB dropped
     try:
-        existing = urls_collection.find_one(
-            {"original_url": original_url},
-            sort=[("created_at", 1)],
-        )
+        if db_data.urls is None or db_data.url_stats is None:
+            db_data.connect_db()
     except Exception:
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "error": "DB_CONNECTION_ERROR",
-                "input_url": payload.url,
-                "message": "Database is not available",
-            },
+        pass
+
+    # 🔌 Offline fallback if DB still unavailable
+    if db_data.urls is None or db_data.url_stats is None:
+        short_code = generate_code()
+        created_at = datetime.now(timezone.utc)
+        print("⚠️ DB disconnected at runtime. API offline mode.")
+        return {
+            "success": True,
+            "input_url": original_url,
+            "short_code": short_code,
+            "created_on": created_at,
+        }
+
+    try:
+        existing = db_data.urls.find_one(
+            {"original_url": original_url}, sort=[("created_at", 1)]
         )
+    except PyMongoError:
+        short_code = generate_code()
+        created_at = datetime.now(timezone.utc)
+        print("⚠️ DB error during request. API offline mode.")
+        return {
+            "success": True,
+            "input_url": original_url,
+            "short_code": short_code,
+            "created_on": created_at,
+        }
 
     if existing:
         return {
@@ -219,25 +236,27 @@ def shorten_url(payload: ShortenRequest):
 
     # 6️⃣ Create new short code
     short_code = generate_code()
-    while urls_collection.find_one({"short_code": short_code}):
-        short_code = generate_code()
+    while True:
+        try:
+            if not db_data.urls.find_one({"short_code": short_code}):
+                break
+            short_code = generate_code()
+        except PyMongoError:
+            break
 
     created_at = datetime.now(timezone.utc)
 
-    urls_collection.insert_one(
-        {
-            "short_code": short_code,
-            "original_url": original_url,
-            "created_at": created_at,
-        }
-    )
-
-    stats_collection.insert_one(
-        {
-            "short_code": short_code,
-            "visit_count": 0,
-        }
-    )
+    try:
+        db_data.urls.insert_one(
+            {
+                "short_code": short_code,
+                "original_url": original_url,
+                "created_at": created_at,
+            }
+        )
+        db_data.url_stats.insert_one({"short_code": short_code, "visit_count": 0})
+    except PyMongoError:
+        print("⚠️ DB disconnected during insert. API offline mode.")
 
     return {
         "success": True,
@@ -265,16 +284,31 @@ def redirect_to_original(short_code: str):
     if not SHORT_CODE_PATTERN.match(short_code):
         raise HTTPException(status_code=404)
 
-    record = urls_collection.find_one({"short_code": short_code})
+    try:
+        if db_data.urls is None or db_data.url_stats is None:
+            db_data.connect_db()
+    except Exception:
+        pass
+
+    if db_data.urls is None:
+        raise HTTPException(
+            status_code=404, detail="Short code not available (offline mode)"
+        )
+
+    try:
+        record = db_data.urls.find_one({"short_code": short_code})
+    except PyMongoError:
+        raise HTTPException(status_code=503, detail="Database disconnected")
 
     if not record:
         raise HTTPException(status_code=404, detail="Short code not found")
 
-    stats_collection.update_one(
-        {"short_code": short_code},
-        {"$inc": {"visit_count": 1}},
-        upsert=True,
-    )
+    try:
+        db_data.url_stats.update_one(
+            {"short_code": short_code}, {"$inc": {"visit_count": 1}}, upsert=True
+        )
+    except PyMongoError:
+        pass
 
     return RedirectResponse(url=record["original_url"])
 

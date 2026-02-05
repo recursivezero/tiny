@@ -3,6 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
+from pymongo.errors import PyMongoError
 
 from app.db.data import urls
 from app.qr import generate_qr_with_logo
@@ -18,6 +19,10 @@ load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "super-secret-key"
+
+
+def db_available():
+    return urls is not None
 
 
 @app.route("/", methods=["GET", "POST"])
@@ -42,11 +47,50 @@ def index():
             error = "URL cannot be empty."
         elif not is_valid_url(original_url):
             error = "Please enter a valid URL (must start with http:// or https://)."
-        else:
-            existing = urls.find_one(
-                {"original_url": original_url},
-                sort=[("created_at", 1)],
+        elif not db_available():
+            # DB is down → generate short URL but don't store
+            short_code = generate_code()
+
+            print("⚠️ DB not connected. Generating short URL without saving.")
+
+            new_short_url = os.getenv("DOMAIN", request.host_url) + short_code
+
+            session["new_short_url"] = new_short_url
+            session["qr_enabled"] = qr_enabled
+            session["qr_type"] = qr_type
+            session["original_url"] = original_url
+            session["short_code"] = short_code
+
+            session["info_message"] = (
+                "Database is not connected. Short URL generated but NOT saved."
             )
+
+            return redirect(url_for("index"))
+        else:
+            try:
+                existing = urls.find_one(
+                    {"original_url": original_url},
+                    sort=[("created_at", 1)],
+                )
+            except PyMongoError:
+                # DB disconnected mid-request → fallback to offline mode
+                short_code = generate_code()
+                print(
+                    "⚠️ DB disconnected during request. Generating short URL without saving."
+                )
+
+                new_short_url = os.getenv("DOMAIN", request.host_url) + short_code
+
+                session["new_short_url"] = new_short_url
+                session["qr_enabled"] = qr_enabled
+                session["qr_type"] = qr_type
+                session["original_url"] = original_url
+                session["short_code"] = short_code
+                session["info_message"] = (
+                    "Database connection lost. Short URL generated but NOT saved."
+                )
+
+                return redirect(url_for("index"))
 
             if existing:
                 short_code = existing["short_code"]
@@ -57,18 +101,29 @@ def index():
                 session.pop("info_message", None)
 
                 short_code = generate_code()
-                while urls.find_one({"short_code": short_code}):
-                    short_code = generate_code()
+                while True:
+                    try:
+                        if not urls.find_one({"short_code": short_code}):
+                            break
+                        short_code = generate_code()
+                    except PyMongoError:
+                        break
 
-                urls.insert_one(
-                    {
-                        "short_code": short_code,
-                        "original_url": original_url,
-                        "created_at": datetime.datetime.utcnow(),
-                        "visit_count": 0,
-                        "meta": {},
-                    }
-                )
+                try:
+                    urls.insert_one(
+                        {
+                            "short_code": short_code,
+                            "original_url": original_url,
+                            "created_at": datetime.datetime.utcnow(),
+                            "visit_count": 0,
+                            "meta": {},
+                        }
+                    )
+                except PyMongoError:
+                    print(
+                        "⚠️ DB disconnected during insert. Falling back to offline mode."
+                    )
+
             print(f"Generated short URL: {os.getenv('DOMAIN', request.host_url)}")
             new_short_url = os.getenv("DOMAIN", request.host_url) + short_code
 
@@ -93,7 +148,13 @@ def index():
         generate_qr_with_logo(qr_data, qr_filename)
         qr_image = f"/static/qr/{qr_filename}"
 
-    all_urls = list(urls.find().sort("created_at", -1))
+    all_urls = []
+    try:
+        if db_available():
+            all_urls = list(urls.find().sort("created_at", -1))
+    except PyMongoError:
+        print("⚠️ DB disconnected while fetching recent URLs.")
+        all_urls = []
 
     return render_template(
         "index.html",
@@ -111,10 +172,17 @@ def index():
 
 @app.route("/<short_code>")
 def redirect_short(short_code):
-    doc = urls.find_one_and_update(
-        {"short_code": short_code},
-        {"$inc": {"visit_count": 1}},
-    )
+    if not db_available():
+        return "Database is not connected. Redirection is unavailable right now.", 503
+
+    try:
+        doc = urls.find_one_and_update(
+            {"short_code": short_code},
+            {"$inc": {"visit_count": 1}},
+        )
+    except PyMongoError:
+        return "Database connection lost. Try again later.", 503
+
     if doc:
         return redirect(doc["original_url"])
     return "Invalid or expired short URL", 404
@@ -122,7 +190,14 @@ def redirect_short(short_code):
 
 @app.route("/delete/<short_code>", methods=["POST"])
 def delete_url(short_code):
-    urls.delete_one({"short_code": short_code})
+    if not db_available():
+        return "Database is not connected.", 503
+
+    try:
+        urls.delete_one({"short_code": short_code})
+    except PyMongoError:
+        return "Database connection lost.", 503
+
     return "", 204
 
 
@@ -133,7 +208,14 @@ def coming_soon():
 
 @app.route("/recent")
 def recent_urls():
-    recent_urls_list = list(urls.find().sort("created_at", -1))
+    recent_urls_list = []
+    try:
+        if db_available():
+            recent_urls_list = list(urls.find().sort("created_at", -1))
+    except PyMongoError:
+        print("⚠️ DB disconnected while loading recent URLs.")
+        recent_urls_list = []
+
     return render_template(
         "recent.html",
         urls=recent_urls_list,
