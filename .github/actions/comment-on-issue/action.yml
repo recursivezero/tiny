@@ -1,0 +1,20 @@
+name: "Comment on Issue"
+description: "Posts a comment on a given issue"
+
+inputs:
+  issue_number:
+    description: "The issue number to comment on"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/github-script@v8
+      with:
+        script: |
+          const issue_number = parseInt('${{ inputs.issue_number }}', 10);
+          await github.issues.createComment({
+            ...context.repo,
+            issue_number,
+            body: "👋 Thank you for opening this issue! We will look into it as soon as possible."
+          });

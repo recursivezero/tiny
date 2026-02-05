@@ -1,0 +1,35 @@
+name: "Comment on New Issue"
+
+on:
+  issues:
+    types: [opened, labeled]
+
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number"
+        required: true
+        type: number
+
+permissions:
+  issues: write
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/github-script@v8
+        with:
+          script: |
+            // For workflow_dispatch, use the input; for issue events, use context.issue.number
+            const issue_number = context.payload.inputs?.issue_number
+              ? parseInt(context.payload.inputs.issue_number, 10)
+              : context.issue.number;
+
+            await github.rest.issues.createComment({
+              ...context.repo,
+              issue_number,
+              body: "👋 Thank you for opening this issue! We will look into it as soon as possible."
+            });
