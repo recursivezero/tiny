@@ -1,9 +1,12 @@
 import os
 from typing import Any
 
-from dotenv import load_dotenv
 from pymongo import MongoClient
 from pymongo.errors import ServerSelectionTimeoutError
+
+from app.utils.config import load_env
+
+load_env()  # explicit call
 
 client: Any = None
 db = None
@@ -14,7 +17,6 @@ url_stats = None
 def connect_db():
     global client, db, urls, url_stats
 
-    load_dotenv()  # <-- ensure env is loaded for API process
     MONGO_URI = os.getenv("MONGO_URI")
 
     print("🔎 MONGO_URI =", MONGO_URI)

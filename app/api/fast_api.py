@@ -3,7 +3,6 @@ import re
 import traceback
 from datetime import datetime, timezone
 
-from dotenv import load_dotenv
 from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, Field
@@ -11,12 +10,15 @@ from pymongo.errors import PyMongoError
 
 from app import __version__
 from app.db import data as db_data
+from app.utils.config import load_env
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
+
+load_env()  # explicit call
+
+# Decide which env file to load
 
 SHORT_CODE_PATTERN = re.compile(r"^[A-Za-z0-9]{6}$")
 
-# Load env
-load_dotenv()
 
 DOMAIN = os.getenv("DOMAIN", "http://127.0.0.1")
 PORT = os.getenv("PORT", "8000")

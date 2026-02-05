@@ -1,12 +1,12 @@
 import datetime
 import os
 
-from dotenv import load_dotenv
 from flask import Flask, redirect, render_template, request, session, url_for
 from pymongo.errors import PyMongoError
 
 from app.db.data import urls
 from app.qr import generate_qr_with_logo
+from app.utils.config import load_env
 from app.utils.helper import (
     format_date,
     generate_code,
@@ -14,8 +14,16 @@ from app.utils.helper import (
     sanitize_url,
 )
 
-load_dotenv()
+load_env()  # explicit call
 
+# Decide which env file to load
+env = os.getenv("ENV", "development")
+
+file_map = {
+    "production": ".env",
+    "local": ".env.local",
+    "development": ".env.development",
+}
 
 app = Flask(__name__)
 app.secret_key = "super-secret-key"
