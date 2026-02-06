@@ -73,10 +73,11 @@ Docs:
 http://127.0.0.1:8000/docs
 ```
 
-Terminal 2 – Flask (UI)
+Terminal 2 – Fast (UI)
 
 ```
-poetry run flask --app app.main run
+poetry run uvicorn app.main:app --reload
+
 ```
 
 UI will run at:
