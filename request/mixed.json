@@ -1,0 +1,32 @@
+[
+  {
+    "url": "https://example.com"
+  },
+  {
+    "url": "http://google.com"
+  },
+  {
+    "url": "www.github.com"
+  },
+  {
+    "url": "example.com"
+  },
+  {
+    "url": "http://invalid..url"
+  },
+  {
+    "url": "https:/missing-slash.com"
+  },
+  {
+    "url": "https://www.hackerrank.com/dashboard"
+  },
+  {
+    "url": "https://robomongo.org/download-os.php?useremail=mishraharsh649%40gmail.com&vid=YfrpMEd16WnDew4l&utm_medium=email&_hsenc=p2ANqtz-_w_DquSm3DUeLIpZ6ZW5JdEcyn3Vf9R7vKxSZiiQ9UxclMpdfCZ9Qtx-9DvYSyZET82MTWb0SDQOlbJQJa5Z5PFnsMyg&_hsmi=362980740&utm_content=362980740&utm_source=hs_automation"
+  },
+  {
+    "url": "https://stackoverflow.com"
+  },
+  {
+    "url": "htp://typo-protocol.com"
+  }
+]

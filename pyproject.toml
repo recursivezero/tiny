@@ -1,64 +1,63 @@
 [project]
 name = "tiny"
-version = "0.0.1"
+version = "0.1.1"
 description = "A package for URL Shortener with QR Code generation"
 authors = [
-  { name = "recursivezero", email = "recursivezero@users.noreply.github.com" },
+  { name = "recursivezero", email = "152776938+recursivezero@users.noreply.github.com" },
 ]
 maintainers = [
-  { name = "Harsh Mishra", email = "harshmishra2609@users.noreply.github.com" },
+  { name = "Harsh Mishra", email = "187759129+harshmishra2701@users.noreply.github.com" },
 ]
-license = "MIT"
+license = { text = "MIT" }
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
-keywords = [
-  "url-shortener",
-  "qr-code",
-  "flask",
-  "pymongo",
-  "python-dotenv",
-  "qrcode",
-  "pillow",
-]
+keywords = ["url-shortener", "qr-code", "fastapi", "qrcode"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: Software Development :: Libraries",
 ]
+
+# Use PEP 508 syntax for production dependencies
 dependencies = [
-  "flask ==3.0.0",
-  "pymongo ==4.6.0",
-  "python-dotenv ==1.0.1",
-  "qrcode ==8.2",
-  "pillow ==10.4.0",
-  "redis (>=7.1.0,<8.0.0)",
-  "uvicorn (>=0.40.0,<0.41.0)",
-  "fastapi (>=0.128.0,<0.129.0)",
-  "pydantic (>=2.12.5,<3.0.0)",
-  "validators (>=0.35.0,<0.36.0)",
+  "python-dotenv>=1.0.1",
+  "qrcode>=8.2",
+  "pillow>=10.4.0",
+  "redis>=7.1.0,<8.0.0",
+  "uvicorn>=0.40.0,<0.41.0",
+  "fastapi>=0.128.0,<0.129.0",
+  "pydantic>=2.12.5,<3.0.0",
+  "validators>=0.35.0,<0.36.0",
+  "itsdangerous>=2.2.0,<3.0.0",
+  "python-multipart>=0.0.22,<0.0.23",
 ]
 
 [project.scripts]
 tiny = "app.cli:main"
 lint = "app.utils.lint:main"
 
+# MODERN: Use dependency-groups (PEP 735) instead of tool.poetry.group
+[dependency-groups]
+dev = [
+  "black>=24.10.0",
+  "flake8>=7.1.1",
+  "mypy>=1.14.1",
+  "pip-audit>=2.9.0",
+  "ruff>=0.5.3",
+  "twine>=6.2.0",
+  "vulture>=2.3",
+  "pymongo>=4.16.0",
+  "types-pillow>=10.2.0.20240822",
+  "types-pywin32>=308.0.0.20250128",
+]
+
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0"]
 build-backend = "poetry.core.masonry.api"
 
-[tool.poetry.group.dev.dependencies]
-black = "^24.10.0"
-flake8 = "^7.1.1"
-mypy = "^1.14.1"
-pip-audit = "^2.9.0"
-pipreqs = "0.5.0"
-ruff = "0.5.3"
-twine = "^6.2.0"
-types-pillow = "^10.2.0.20240822"
-types-pywin32 = "^308.0.0.20250128"
-vulture = "^2.3"
-
-[tool.flake8]
-max_line_length = 190
+[tool.poetry]
+# We keep this for Poetry-specific settings like the package location
+packages = [{ include = "app" }]
+requires-poetry = ">=2.0.0"
 
 [tool.poetry.requires-plugins]
 poetry-plugin-export = "^1.9"
@@ -68,8 +67,5 @@ output = "requirements.txt"
 without_hashes = true
 without = ["dev"]
 
-[tool.poetry-audit]
-ignore = ["GHSA-9hjg-9r4m-mvj7", "GHSA-3f63-hfp8-52jq", "GHSA-44wm-f244-xhp3"]
-
-[[tool.poetry.packages]]
-include = "app"
+[tool.flake8]
+max_line_length = 190

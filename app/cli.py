@@ -1,8 +1,7 @@
 import click
 import uvicorn
-from app.app import app as flask_app
 
-__version__ = "0.0.1"
+from app import __version__
 
 
 @click.group(invoke_without_command=True)
@@ -17,15 +16,20 @@ def main(ctx, version):
 
 @main.command()
 def dev():
-    """Run Tiny Flask UI in development mode."""
-    click.echo("🛠 Running Tiny UI (Flask)")
-    flask_app.run(host="127.0.0.1", port=8000, debug=True)
+    """Run Tiny UI in development mode."""
+    click.echo("🛠 Running Tiny UI (FastAPI)")
+    uvicorn.run(
+        "app.main:app",
+        host="127.0.0.1",
+        port=8000,
+        reload=True,
+    )
 
 
 @main.command()
 def api():
     """Run Tiny API server (FastAPI + uvicorn)."""
-    click.echo("🚀 Starting Tiny API server (FastAPI)")
+    click.echo(f"🚀Tiny API server v{__version__}")
     uvicorn.run(
         "app.api.fast_api:app",
         host="127.0.0.1",
