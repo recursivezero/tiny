@@ -236,14 +236,14 @@ Response:
 
 Screenshots:
 Home Page:
-![home page](app/assets/images/home.png)
-![home dark mode](app/assets/images/home_dark.png)
-![home page](app/assets/images/valid.png)
-![home layout](app/assets/images/short_url.png)
-![recent](app/assets/images/recent.png)
+![home page](./assets/images/home.png)
+![home dark mode](./assets/images/home_dark.png)
+![home page](./assets/images/valid.png)
+![home layout](./assets/images/short_url.png)
+![recent](./assets/images/recent.png)
 tiny API Page:
-![API](app/assets/images/API_page.png)
-![API1](app/assets/images/api_page2.png)
+![API](./assets/images/API_page.png)
+![API1](./assets/images/api_page2.png)
 
 📜License
 

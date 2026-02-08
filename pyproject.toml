@@ -3,23 +3,15 @@ name = "tiny"
 version = "0.1.0"
 description = "A package for URL Shortener with QR Code generation"
 authors = [
-  { name = "recursivezero", email = "recursivezero@users.noreply.github.com" },
+  { name = "recursivezero", email = "152776938+recursivezero@users.noreply.github.com" },
 ]
 maintainers = [
-  { name = "Harsh Mishra", email = "harshmishra2609@users.noreply.github.com" },
+  { name = "Harsh Mishra", email = "187759129+harshmishra2701@users.noreply.github.com" },
 ]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.10,<3.13"
-keywords = [
-  "url-shortener",
-  "qr-code",
-  "flask",
-  "pymongo",
-  "python-dotenv",
-  "qrcode",
-  "pillow",
-]
+keywords = ["url-shortener", "qr-code", "fastapi", "qrcode"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Topic :: Software Development :: Libraries",
@@ -70,11 +62,7 @@ without_hashes = true
 without = ["dev"]
 
 [tool.poetry-audit]
-ignore = ["GHSA-9hjg-9r4m-mvj7", "GHSA-3f63-hfp8-52jq", "GHSA-44wm-f244-xhp3"]
-
-[[tool.poetry.packages]]
-include = "app"
+ignore = []
 
 [tool.poetry]
-name = "tiny"
-version = "0.1.0"
+packages = [{ include = "app" }]
