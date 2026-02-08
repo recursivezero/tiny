@@ -18,8 +18,8 @@ def connect_db():
     global client, db, urls, url_stats
 
     MONGO_URI = os.getenv("MONGO_URI")
-
-    print("🔎 MONGO_URI =", MONGO_URI)
+    # Default to "tiny_url" if the ENV variable is missing
+    DB_NAME = os.getenv("DATABASE_NAME", "tiny_url")
 
     if not MONGO_URI:
         print("⚠️ MONGO_URI is not set. Running in NO-DB mode.")
@@ -29,11 +29,11 @@ def connect_db():
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
         client.admin.command("ping")
 
-        db = client["tiny_url"]
+        db = client[DB_NAME]
         urls = db["urls"]
         url_stats = db["url_stats"]
 
-        print("✅ MongoDB connected successfully")
+        print(f"✅ MongoDB connected successfully to database: '{DB_NAME}'")
         return True
 
     except ServerSelectionTimeoutError:

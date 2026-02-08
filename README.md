@@ -1,9 +1,8 @@
 # 🔗 tiny URL Generator
 
-> A modern, Bitly-style tiny URL web application built with Flask, FastAPI & MongoDB
+> A modern, Bitly-style tiny URL web application built with FastAPI & MongoDB
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
-![Flask](https://img.shields.io/badge/Flask-Web%20Framework-black.svg)
 ![MongoDB](https://img.shields.io/badge/Database-MongoDB-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Status](https://img.shields.io/badge/Status-Active-success.svg)
@@ -12,12 +11,11 @@
 
 ## 📌 Overview
 
-**tiny URL** is a sleek, fast, and modern URL shortening platform built using **Flask**, **FastAPI**, and **MongoDB**.  
+**tiny URL** is a sleek, fast, and modern URL shortening platform built using **FastAPI**, and **MongoDB**.  
 It converts long URLs into short, shareable links — just like Bitly.
 
 The project supports both:
 
-- 🌐 **Flask Web UI** (end users)
 - 🚀 **FastAPI REST API** (developers / integrations)
 
 ---
@@ -37,7 +35,6 @@ The project supports both:
 - Mobile-friendly QR Codes
 - Fully responsive design
 - Recent URLs page
-- Glassmorphism UI
 
 ---
 
@@ -75,17 +72,15 @@ def generate_code(length=6):
 
 🗃️ Tech Stack
 
-| Layer       | Technology                 |
-| ----------- | -------------------------- |
-| UI Backend  | Flask                      |
-| API Backend | FastAPI                    |
-| Database    | MongoDB                    |
-| Frontend    | HTML, CSS, Vanilla JS      |
-| UI Style    | Glassmorphism, Gradient UI |
-| API Server  | Uvicorn                    |
-| Validation  | Pydantic v2                |
-| CLI         | Click                      |
-| Data        | JSON                       |
+| Layer       | Technology            |
+| ----------- | --------------------- |
+| API Backend | FastAPI               |
+| Database    | MongoDB               |
+| Frontend    | HTML, CSS, Vanilla JS |
+| API Server  | Uvicorn               |
+| Validation  | Pydantic v2           |
+| CLI         | Click                 |
+| Data        | JSON                  |
 
 📁 Project Folder Structure
 
