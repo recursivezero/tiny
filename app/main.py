@@ -1,5 +1,6 @@
 import datetime
 import os
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
@@ -7,13 +8,27 @@ from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-from pymongo.errors import PyMongoError
 from starlette.middleware.sessions import SessionMiddleware
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pymongo.errors import PyMongoError
+else:
+    try:
+        from pymongo.errors import PyMongoError
+    except ImportError:
+
+        class PyMongoError(Exception):
+            pass
+
+
+# fallback for offline mode
 
 from app.api.fast_api import app as api_app
-from app.db.data import urls
-from app.qr import generate_qr_with_logo
+from app.db import data as db_data
+from app.utils.qr import generate_qr_with_logo
+
 from app.utils.config import load_env
 from app.utils.helper import (
     format_date,
@@ -22,34 +37,33 @@ from app.utils.helper import (
     sanitize_url,
 )
 
-# Decide which env file to load (kept exactly as you had)
-env = os.getenv("ENV", "development")
 
-file_map = {
-    "production": ".env",
-    "local": ".env.local",
-    "development": ".env.development",
-}
+# -----------------------------
+# Lifespan: env + DB connect ONCE
+# -----------------------------
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    load_env()  # ✅ load env ONCE
+    connected = db_data.connect_db()  # ✅ connect DB ONCE
+    app.state.db_available = connected
+    yield
 
-load_env()  # explicit call
 
-app = FastAPI(title="TinyURL")
+app = FastAPI(title="TinyURL", lifespan=lifespan)
 
-# Equivalent of Flask secret_key (session support)
+
 app.add_middleware(SessionMiddleware, secret_key="super-secret-key")
 
-# Static + templates
+
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
-QR_DIR = STATIC_DIR / "qr"
-QR_DIR.mkdir(parents=True, exist_ok=True)
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 
 
-def db_available():
-    return urls is not None
+def db_available(request: Request) -> bool:
+    return getattr(request.app.state, "db_available", False)
 
 
 def build_short_url(short_code: str, request_host_url: str) -> str:
@@ -75,17 +89,15 @@ async def index(request: Request):
     if qr_enabled and new_short_url and short_code:
         qr_data = new_short_url if qr_type == "short" else original_url
         qr_filename = f"{short_code}.png"
-
-        QR_DIR.mkdir(parents=True, exist_ok=True)
         generate_qr_with_logo(qr_data, qr_filename)
         qr_image = f"/static/qr/{qr_filename}"
 
     all_urls = []
-    try:
-        if db_available():
-            all_urls = list(urls.find().sort("created_at", -1))
-    except PyMongoError:
-        all_urls = []
+    if db_available(request) and db_data.urls is not None:
+        try:
+            all_urls = list(db_data.urls.find().sort("created_at", -1))
+        except PyMongoError:
+            all_urls = []
 
     return templates.TemplateResponse(
         "index.html",
@@ -99,6 +111,7 @@ async def index(request: Request):
             "qr_enabled": qr_enabled,
             "qr_type": qr_type,
             "qr_image": qr_image,
+            "db_available": db_available(request),
         },
     )
 
@@ -111,7 +124,6 @@ async def create_short_url(
     qr_type: str = Form("short"),
 ):
     session = request.session
-
     qr_enabled = generate_qr == "on"
     original_url = sanitize_url(original_url)
 
@@ -125,67 +137,36 @@ async def create_short_url(
         )
         return RedirectResponse("/", status_code=303)
 
-    if not db_available():
-        short_code = generate_code()
-        new_short_url = build_short_url(short_code, str(request.base_url))
-        session.update(
-            {
-                "new_short_url": new_short_url,
-                "qr_enabled": qr_enabled,
-                "qr_type": qr_type,
-                "original_url": original_url,
-                "short_code": short_code,
-            }
-        )
-        return RedirectResponse("/", status_code=303)
+    short_code = None
 
-    try:
-        existing = urls.find_one(
-            {"original_url": original_url},
-            sort=[("created_at", 1)],
-        )
-    except PyMongoError:
-        short_code = generate_code()
-        new_short_url = build_short_url(short_code, str(request.base_url))
-        session.update(
-            {
-                "new_short_url": new_short_url,
-                "qr_enabled": qr_enabled,
-                "qr_type": qr_type,
-                "original_url": original_url,
-                "short_code": short_code,
-            }
-        )
-        return RedirectResponse("/", status_code=303)
-
-    if existing:
-        short_code = existing["short_code"]
-        session["info_message"] = "Already shortened before — using existing short URL."
-    else:
-        short_code = generate_code()
-        while True:
-            try:
-                if not urls.find_one({"short_code": short_code}):
-                    break
-                short_code = generate_code()
-            except PyMongoError:
-                break
-
+    if db_available(request) and db_data.urls is not None:
         try:
-            urls.insert_one(
+            existing = db_data.urls.find_one({"original_url": original_url})
+            if existing:
+                short_code = existing["short_code"]
+                session["info_message"] = (
+                    "Already shortened before — using existing short URL."
+                )
+        except PyMongoError:
+            pass
+
+    if not short_code:
+        short_code = generate_code()
+
+    if db_available(request) and db_data.urls is not None:
+        try:
+            db_data.urls.insert_one(
                 {
                     "short_code": short_code,
                     "original_url": original_url,
                     "created_at": datetime.datetime.utcnow(),
                     "visit_count": 0,
-                    "meta": {},
                 }
             )
         except PyMongoError:
-            session
+            pass
 
     new_short_url = build_short_url(short_code, str(request.base_url))
-
     session.update(
         {
             "new_short_url": new_short_url,
@@ -202,62 +183,46 @@ async def create_short_url(
 @app.get("/recent", response_class=HTMLResponse)
 async def recent_urls(request: Request):
     recent_urls_list = []
-    try:
-        if db_available():
-            recent_urls_list = list(urls.find().sort("created_at", -1))
-    except PyMongoError:
-        recent_urls_list = []
+    if db_available(request) and db_data.urls is not None:
+        try:
+            recent_urls_list = list(db_data.urls.find().sort("created_at", -1))
+        except PyMongoError:
+            pass
 
     return templates.TemplateResponse(
         "recent.html",
-        {
-            "request": request,
-            "urls": recent_urls_list,
-            "format_date": format_date,
-        },
+        {"request": request, "urls": recent_urls_list, "format_date": format_date},
     )
 
 
-@app.get("/coming-soon", response_class=HTMLResponse)
-async def coming_soon(request: Request):
-    return templates.TemplateResponse("coming-soon.html", {"request": request})
-
-
 @app.post("/delete/{short_code}")
-async def delete_url(short_code: str):
-    if not db_available():
-        return PlainTextResponse("Database is not connected.", status_code=503)
+async def delete_url(request: Request, short_code: str):
+    if db_available(request) and db_data.urls is not None:
+        try:
+            db_data.urls.delete_one({"short_code": short_code})
+        except PyMongoError:
+            return PlainTextResponse("Database connection lost.", status_code=503)
 
-    try:
-        urls.delete_one({"short_code": short_code})
-    except PyMongoError:
-        return PlainTextResponse("Database connection lost.", status_code=503)
-
-    return PlainTextResponse("", status_code=204)
+    return RedirectResponse("/recent", status_code=303)
 
 
 @app.get("/{short_code}")
-async def redirect_short(short_code: str):
-    if not db_available():
-        return PlainTextResponse(
-            "Database is not connected. Redirection is unavailable right now.",
-            status_code=503,
-        )
+async def redirect_short(request: Request, short_code: str):
+    if not db_available(request) or db_data.urls is None:
+        return PlainTextResponse("Database is not connected.", status_code=503)
 
     try:
-        doc = urls.find_one_and_update(
+        doc = db_data.urls.find_one_and_update(
             {"short_code": short_code},
             {"$inc": {"visit_count": 1}},
         )
     except PyMongoError:
-        return PlainTextResponse(
-            "Database connection lost. Try again later.", status_code=503
-        )
+        return PlainTextResponse("Database connection lost.", status_code=503)
 
-    if doc:
-        return RedirectResponse(doc["original_url"])
+    if not doc:
+        return PlainTextResponse("Invalid or expired short URL", status_code=404)
 
-    return PlainTextResponse("Invalid or expired short URL", status_code=404)
+    return RedirectResponse(doc["original_url"])
 
 
 app.mount("/api", api_app)

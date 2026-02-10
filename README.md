@@ -1,4 +1,4 @@
-# 🔗 tiny URL Generator
+# Tiny URL Generator
 
 > A modern, Bitly-style tiny URL web application built with FastAPI & MongoDB
 
@@ -9,24 +9,25 @@
 
 ---
 
-## 📌 Overview
+## Overview
 
 **tiny URL** is a sleek, fast, and modern URL shortening platform built using **FastAPI**, and **MongoDB**.  
 It converts long URLs into short, shareable links — just like Bitly.
 
-The project supports both:
+The project supports:
 
 - 🚀 **FastAPI REST API** (developers / integrations)
 
 ---
 
-## 🚀 Features
+## Features
 
-### 🔹 User Features
+### User Features
 
 - Convert long URLs into short, unique codes
 - Default checkbox QR code generation
 - Clean Bitly-style result card
+- Copy & share buttons
 - Download URL button
 - Share URL
 - Copy button with animation
@@ -36,31 +37,32 @@ The project supports both:
 - Fully responsive design
 - Recent URLs page
 
----
-
-### 🔹 API & Developer Features
+### API & Developer Features
 
 - REST API for URL shortening
 - API version endpoint
 - Swagger / OpenAPI documentation
 - API landing page
-- CLI to run UI or API independently
+- Cache layer for fast redirects
+- Graceful offline mode (no DB required)
+- Clean startup lifecycle using FastAPI lifespan
+- Optional MongoDB dependency
 
 ---
 
-## 🧠 Short Code Generation Algorithm
+## Short Code Generation Algorithm
 
-The app uses a **Random Alphanumeric Short Code Generator**.
+The app uses a Random Alphanumeric Short Code Generator.
 
-### 🔍 Algorithm Details
+### Algorithm Details
 
-- Uses Python’s `string.ascii_letters + string.digits`
+- Uses `string.ascii_letters + string.digits`
 - Randomly picks characters
 - Generates a 6-character short ID
-- Checks MongoDB to avoid duplicates
-- If duplicate → regenerate automatically
+- Checks MongoDB for collisions (if DB is enabled)
+- Automatically regenerates on collision
 
-### 🔢 Example
+### Example
 
 ```python
 import random, string
@@ -70,7 +72,7 @@ def generate_code(length=6):
     return ''.join(random.choice(chars) for _ in range(length))
 ```
 
-🗃️ Tech Stack
+---
 
 | Layer       | Technology            |
 | ----------- | --------------------- |
@@ -82,36 +84,61 @@ def generate_code(length=6):
 | CLI         | Click                 |
 | Data        | JSON                  |
 
-📁 Project Folder Structure
+| Layer       | Technology            |
+| ----------- | --------------------- |
+| UI Backend  | FastAPI               |
+| API Backend | FastAPI               |
+| Database    | MongoDB (Optional)    |
+| Frontend    | HTML, CSS, Vanilla JS |
+| QR Code     | qrcode + Pillow       |
+| API Server  | Uvicorn               |
+| Validation  | Pydantic v2           |
+| Env Mgmt    | python-dotenv         |
+| Tooling     | Poetry                |
+
+---
+
+## Project Folder Structure
 
 ```text
 Directory structure:
 tiny/
 ├── CHANGELOG.md
 ├── LICENSE
-├── README.md
 ├── app/
 │   ├──__init__.py
-│   ├── app.py
+│   ├── main.py
 │   ├── cli.py
 │   ├── api/
+|   |   └──__init__.py
 │   │   └── fast_api.py
 |   ├──assets/images
 │   ├── db/
 |   |    └──__init__.py
 |   |     └──data.py
-│   ├── utils/
-|   |     └──__init__.py
-|   |     └──_version.py
-|   |     └── helper.py
-|   |     └── lint.py
-│   ├── static/
+|   ├── static/
 |   |     └── images
 |   |      └── qr
-│   └── templates/
-|           └── index.html
-|           └── recent.html
-|           └── admin.html
+|   |      └── style.css
+|   ├── templates/
+|   |        └── index.html
+|   |        └── recent.html
+│   ├── utils/
+|   |     └── __init__.py
+|   |     └── _version.py
+|   |     └── config.py
+|   |     └── helper.py
+|   |     └── lint.py
+|   |     └── qr.py
+|
+├── docs/
+|    └── build-test.md
+|    └─ run_with_curl.md
+|
+├── request/
+|    └── mixed.json
+|    └── single.json
+|    └── urls.json
 ├── pyproject.toml
 |    └── poetry.lock
 ├──README.md
@@ -128,73 +155,120 @@ tiny/
 
 ```sh
 poetry install
-poetry install --all-extras --with dev
 ```
 
-create `.env` file and add content from `.env.local` file anc change value according to your project
-
-Note: according to your port change the port in `frontend/vite.config.ts` and `VITE_API_URL`
+### 3. Install with MongoDB Support (Optional)
 
 ```sh
-poetry shell
+poetry install --with mongodb
+```
+
+---
+
+## Running the App
+
+```sh
+poetry run uvicorn app.main:app --reload
+```
+
+or
+
+```sh
 poetry run tiny dev
 ```
 
-## Lint
+Open:
+http://127.0.0.1:8000
 
-to lint the code run
+---
 
-```sh
-poetry run black .
-#then
-poetry run ruff .
+## Environment Configuration
+
+```
+ENV=development
+DOMAIN=http://127.0.0.1:8000
+MONGO_URI=mongodb://<user>:<password>@localhost:27017/tiny_url?authSource=tiny_url
+DATABASE_NAME=tiny_url
 ```
 
-open [http://localhost:8000](http://127.0.0.1:8000)
+Supported env files:
 
-🔗 How the App Works
-▶️ User Flow
-1.User enters a long URL
+- .env.development
+- .env.local
+- .env (production)
 
-2.System sanitizes + validates input
+---
 
-3.Generates a unique short code
+## Offline Mode (No Database)
 
-4.Saves it in MongoDB
+TinyURL supports graceful offline mode.
 
-5.Displays short URL + QR code
+### What works
 
-5.Clicking the short URL:
+- App starts normally
+- UI loads
+- Short URLs are generated
+- QR codes are generated
 
-- Increases visit count
+### What is disabled
 
-- Redirects to original URL
+- Recent URLs page
+- Persistent redirects after restart
+- Visit count tracking
 
-## 🔌 REST API (FastAPI)
+Offline Mode activates automatically when:
 
-Tiny provides a FastAPI-based REST API for programmatic URL shortening.
+- MongoDB is down
+- OR pymongo is not installed
+- OR MONGO_URI is missing/invalid
 
-▶ Run API Server
+Log message:
 
-```sh
-poetry run tiny api
+```
+⚠️ MongoDB connection failed. Running in NO-DB mode.
 ```
 
-📍 API Base URL
+---
 
-open [http://localhost:8001](http://127.0.0.1:8001)
+## Switching Modes
 
-🌙 tiny API Landing Page
+### With MongoDB
 
-open [http://localhost:8001](http://127.0.0.1:8001)
+```sh
+poetry install --with mongodb
+sudo systemctl start mongod
+poetry run tiny dev
+```
 
-📘 Swagger Docs
+### Without MongoDB
 
-open [http://localhost:8001/docs](http://127.0.0.1:8001/docs)
+```sh
+sudo systemctl stop mongod
+poetry run tiny dev
+```
 
-➤ Shorten URL
+or
 
-POST `/api/shorten`
+```sh
+poetry run pip uninstall pymongo
+poetry run tiny dev
+```
+
+---
+
+## REST API (FastAPI)
+
+### API Base URL
+
+http://127.0.0.1:8000/api
+
+### Swagger Docs
+
+http://127.0.0.1:8000/api/docs
+
+### Shorten URL
+
+POST /api/shorten
 
 Request:
 
@@ -208,23 +282,52 @@ Response:
 
 ```json
 {
-  "input_url": "https://examplecom",
-  "output_url": "http://127.0.0.1:8001/AbX92p",
+  "input_url": "https://example.com",
+  "output_url": "http://127.0.0.1:8000/AbX92p",
   "created_on": "2026-01-03T13:25:10+00:00"
 }
 ```
 
-➤ API Version
+### API Version
 
-GET `/api/version`
+GET /api/version
 
 Response:
 
 ```json
 {
-  "version": "0.0.1"
+  "version": "0.1.0"
 }
 ```
+
+---
+
+## Troubleshooting
+
+### Mongo auth error
+
+Encode special chars:
+
+@ ? %40
+
+Example:
+
+```
+MONGO_URI=mongodb://user%40gmail.com:Pass%40123@localhost:27017/tiny_url?authSource=tiny_url
+```
+
+---
+
+## WSL Notes
+
+```sh
+sudo systemctl start mongod
+poetry run uvicorn app.main:app --reload
+```
+
+---
+
+## License
 
 📜Docs
 [run_with_curl](run_with_curl)
