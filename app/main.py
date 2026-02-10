@@ -2,7 +2,7 @@ import datetime
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
@@ -10,25 +10,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-from typing import TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from pymongo.errors import PyMongoError
-else:
-    try:
-        from pymongo.errors import PyMongoError
-    except ImportError:
-
-        class PyMongoError(Exception):
-            pass
-
-
-# fallback for offline mode
-
 from app.api.fast_api import app as api_app
 from app.db import data as db_data
-from app.utils.qr import generate_qr_with_logo
-
 from app.utils.config import load_env
 from app.utils.helper import (
     format_date,
@@ -36,6 +19,31 @@ from app.utils.helper import (
     is_valid_url,
     sanitize_url,
 )
+from app.utils.qr import generate_qr_with_logo
+
+load_env()  # ✅ load env ONCE
+
+RED = "\033[31m"
+GREEN = "\033[32m"
+BLUE = "\033[34m"
+RESET = "\033[0m"
+
+app_name = os.getenv("APP_NAME", "TinyURL")
+print(f"Environment loaded as {BLUE}{app_name}{RESET}")
+
+# 1. MongoDB error handling: Try to import the real exception class first
+PyMongoError: Any
+try:
+    from pymongo.errors import PyMongoError as _RealPyMongoError
+
+    PyMongoError = _RealPyMongoError
+except (ImportError, ModuleNotFoundError):
+    # 2. Fallback: Define our own only if the real one fails
+    class _FallbackPyMongoError(Exception):
+        pass
+
+    # Assign our fallback to the same local name
+    PyMongoError = _FallbackPyMongoError
 
 
 # -----------------------------
@@ -43,7 +51,6 @@ from app.utils.helper import (
 # -----------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    load_env()  # ✅ load env ONCE
     connected = db_data.connect_db()  # ✅ connect DB ONCE
     app.state.db_available = connected
     yield

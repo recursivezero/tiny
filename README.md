@@ -157,10 +157,10 @@ tiny/
 poetry install
 ```
 
-### 3. Install with MongoDB Support (Optional)
+### 3. Install with other dependent packages
 
 ```sh
-poetry install --with mongodb
+poetry install --all-extras --with dev
 ```
 
 ---
@@ -178,7 +178,7 @@ poetry run tiny dev
 ```
 
 Open:
-http://127.0.0.1:8000
+<http://127.0.0.1:8000>
 
 ---
 
@@ -260,11 +260,11 @@ poetry run tiny dev
 
 ### API Base URL
 
-http://127.0.0.1:8000/api
+<http://127.0.0.1:8000/api>
 
 ### Swagger Docs
 
-http://127.0.0.1:8000/api/docs
+<http://127.0.0.1:8000/api/docs>
 
 ### Shorten URL
 
