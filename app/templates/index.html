@@ -41,6 +41,11 @@
     <div class="topbar" style="width:100%; max-width:1100px;">
 
     </div>
+    {% if not db_available %}
+    <div style="background:#fff3cd;color:#664d03;padding:10px;border-radius:6px;margin-bottom:12px;">
+      ⚠️ Running in Limited Mode (No Database)
+    </div>
+    {% endif %}
 
     <!-- Hero -->
     <div class="hero">

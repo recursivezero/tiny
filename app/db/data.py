@@ -1,48 +1,47 @@
 import os
 from typing import Any
 
-from pymongo import MongoClient
-from pymongo.errors import ServerSelectionTimeoutError
+# --- DEFENSIVE IMPORT ---
+try:
+    from pymongo import MongoClient
 
-from app.utils.config import load_env
-
-load_env()  # explicit call
+    MONGO_INSTALLED = True
+except ImportError:
+    # This allows the app to start even if 'pip install pymongo' wasn't run
+    MONGO_INSTALLED = False
 
 client: Any = None
-db = None
-urls = None
-url_stats = None
+db: Any = None
+urls: Any = None
+url_stats: Any = None
 
 
 def connect_db():
     global client, db, urls, url_stats
 
-    MONGO_URI = os.getenv("MONGO_URI")
+    # 1. Check if the library is even there
+    if not MONGO_INSTALLED:
+        print("⚠️ pymongo is not installed. Running in NO-DB mode.")
+        return False
 
-    print("🔎 MONGO_URI =", MONGO_URI)
+    # 2. Check if the config is there
+    MONGO_URI = os.getenv("MONGO_URI")
+    DB_NAME = os.getenv("DATABASE_NAME", "tiny_url")
 
     if not MONGO_URI:
-        print("⚠️ MONGO_URI is not set. Running in NO-DB mode.")
+        print("⚠️ MONGO_URI missing. Running in NO-DB mode.")
         return False
 
     try:
         client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
         client.admin.command("ping")
 
-        db = client["tiny_url"]
+        db = client[DB_NAME]
         urls = db["urls"]
         url_stats = db["url_stats"]
 
-        print("✅ MongoDB connected successfully")
+        print(f"✅ MongoDB connected: '{DB_NAME}'")
         return True
-
-    except ServerSelectionTimeoutError:
-        print("⚠️ MongoDB not reachable. Running in NO-DB mode.")
-        return False
     except Exception as e:
-        print(f"⚠️ MongoDB error: {e}. Running in NO-DB mode.")
+        print(f"⚠️ MongoDB connection failed: {e}. Running in NO-DB mode.")
         return False
-
-
-# Try once at import time
-connect_db()
