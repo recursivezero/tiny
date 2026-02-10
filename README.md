@@ -108,31 +108,40 @@ Directory structure:
 tiny/
 ├── CHANGELOG.md
 ├── LICENSE
-├── README.md
 ├── app/
 │   ├──__init__.py
 │   ├── main.py
 │   ├── cli.py
 │   ├── api/
+|   |   └──__init__.py
 │   │   └── fast_api.py
 |   ├──assets/images
 │   ├── db/
 |   |    └──__init__.py
 |   |     └──data.py
+|   ├── static/
+|   |     └── images
+|   |      └── qr
+|   |      └── style.css
+|   ├── templates/
+|   |        └── index.html
+|   |        └── recent.html
 │   ├── utils/
-|   |     └──__init__.py
-|   |     └──_version.py
-|   |     └──cache.py
-|   |     └──config.py
+|   |     └── __init__.py
+|   |     └── _version.py
+|   |     └── config.py
 |   |     └── helper.py
 |   |     └── lint.py
 |   |     └── qr.py
-│   ├── static/
-|   |     └── images
-|   |      └── qr
-│   └── templates/
-|           └── index.html
-|           └── recent.html
+|
+├── docs/
+|    └── build-test.md
+|    └─ run_with_curl.md
+|
+├── request/
+|    └── mixed.json
+|    └── single.json
+|    └── urls.json
 ├── pyproject.toml
 |    └── poetry.lock
 ├──README.md
