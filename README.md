@@ -26,7 +26,7 @@ This project is designed with:
 - Clean startup lifecycle (no racing configs)
 - Optional database dependency
 - Graceful degradation when MongoDB is unavailable
-- In-memory cache fallback
+
 - QR code generation with auto folder creation
 
 ---
@@ -86,18 +86,17 @@ def generate_code(length=6):
 
 ## Tech Stack
 
-| Layer       | Technology              |
-| ----------- | ----------------------- |
-| UI Backend  | FastAPI                 |
-| API Backend | FastAPI                 |
-| Database    | MongoDB (Optional)      |
-| Cache       | In-Memory (Python dict) |
-| Frontend    | HTML, CSS, Vanilla JS   |
-| QR Code     | qrcode + Pillow         |
-| API Server  | Uvicorn                 |
-| Validation  | Pydantic v2             |
-| Env Mgmt    | python-dotenv           |
-| Tooling     | Poetry                  |
+| Layer       | Technology            |
+| ----------- | --------------------- |
+| UI Backend  | FastAPI               |
+| API Backend | FastAPI               |
+| Database    | MongoDB (Optional)    |
+| Frontend    | HTML, CSS, Vanilla JS |
+| QR Code     | qrcode + Pillow       |
+| API Server  | Uvicorn               |
+| Validation  | Pydantic v2           |
+| Env Mgmt    | python-dotenv         |
+| Tooling     | Poetry                |
 
 ---
 
@@ -212,7 +211,6 @@ TinyURL supports graceful offline mode.
 - UI loads
 - Short URLs are generated
 - QR codes are generated
-- Redirects work from in-memory cache
 
 ### What is disabled
 

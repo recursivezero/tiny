@@ -10,21 +10,25 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-try:
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
     from pymongo.errors import PyMongoError
-except ImportError:
-    PyMongoError = Exception  # fallback for offline mode
+else:
+    try:
+        from pymongo.errors import PyMongoError
+    except ImportError:
+
+        class PyMongoError(Exception):
+            pass
+
+
+# fallback for offline mode
 
 from app.api.fast_api import app as api_app
 from app.db import data as db_data
 from app.utils.qr import generate_qr_with_logo
-from app.utils.cache import (
-    get_from_cache,
-    get_short_from_cache,
-    set_cache_pair,
-    url_cache,
-    rev_cache,
-)
+
 from app.utils.config import load_env
 from app.utils.helper import (
     format_date,
@@ -147,22 +151,20 @@ async def create_short_url(
             pass
 
     if not short_code:
-        cached_short = get_short_from_cache(original_url)
-        short_code = cached_short or generate_code()
-        set_cache_pair(short_code, original_url)
+        short_code = generate_code()
 
-        if db_available(request) and db_data.urls is not None:
-            try:
-                db_data.urls.insert_one(
-                    {
-                        "short_code": short_code,
-                        "original_url": original_url,
-                        "created_at": datetime.datetime.utcnow(),
-                        "visit_count": 0,
-                    }
-                )
-            except PyMongoError:
-                pass
+    if db_available(request) and db_data.urls is not None:
+        try:
+            db_data.urls.insert_one(
+                {
+                    "short_code": short_code,
+                    "original_url": original_url,
+                    "created_at": datetime.datetime.utcnow(),
+                    "visit_count": 0,
+                }
+            )
+        except PyMongoError:
+            pass
 
     new_short_url = build_short_url(short_code, str(request.base_url))
     session.update(
@@ -201,16 +203,11 @@ async def delete_url(request: Request, short_code: str):
         except PyMongoError:
             return PlainTextResponse("Database connection lost.", status_code=503)
 
-    url_cache.pop(short_code, None)
-    return PlainTextResponse("", status_code=204)
+    return RedirectResponse("/recent", status_code=303)
 
 
 @app.get("/{short_code}")
 async def redirect_short(request: Request, short_code: str):
-    cached_url = get_from_cache(short_code)
-    if cached_url:
-        return RedirectResponse(cached_url)
-
     if not db_available(request) or db_data.urls is None:
         return PlainTextResponse("Database is not connected.", status_code=503)
 
@@ -225,17 +222,7 @@ async def redirect_short(request: Request, short_code: str):
     if not doc:
         return PlainTextResponse("Invalid or expired short URL", status_code=404)
 
-    set_cache_pair(short_code, doc["original_url"])
     return RedirectResponse(doc["original_url"])
 
 
 app.mount("/api", api_app)
-
-
-@app.get("/_debug/cache")
-async def debug_cache():
-    return {
-        "url_cache": url_cache,
-        "rev_cache": rev_cache,
-        "size": {"url_cache": len(url_cache), "rev_cache": len(rev_cache)},
-    }

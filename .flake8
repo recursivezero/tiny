@@ -1,6 +1,7 @@
 [flake8]
 exclude =
     .git,
+    .venv-dev
     __pycache__,
     .poetry,
     .venv,
