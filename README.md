@@ -1,10 +1,9 @@
 # Tiny URL Generator
 
-> A modern, Bitly-style tiny URL web application built with FastAPI, optional MongoDB, and a sleek web UI.
+> A modern, Bitly-style tiny URL web application built with FastAPI & MongoDB
 
-![Python](https://img.shields.io/badge/Python-3.11-blue.svg)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-teal.svg)
-![MongoDB](<https://img.shields.io/badge/Database-MongoDB%20(Optional)-green.svg>)
+![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
+![MongoDB](https://img.shields.io/badge/Database-MongoDB-green.svg)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Status](https://img.shields.io/badge/Status-Active-success.svg)
 
@@ -12,22 +11,12 @@
 
 ## Overview
 
-Tiny URL is a sleek, fast, and modern URL shortening platform built using FastAPI with optional MongoDB persistence.
+**tiny URL** is a sleek, fast, and modern URL shortening platform built using **FastAPI**, and **MongoDB**.  
 It converts long URLs into short, shareable links — just like Bitly.
 
 The project supports:
 
-- Web UI (FastAPI + Jinja templates)
-- REST API (FastAPI)
-- Offline Mode (No MongoDB required)
-
-This project is designed with:
-
-- Clean startup lifecycle (no racing configs)
-- Optional database dependency
-- Graceful degradation when MongoDB is unavailable
-
-- QR code generation with auto folder creation
+- 🚀 **FastAPI REST API** (developers / integrations)
 
 ---
 
@@ -40,12 +29,13 @@ This project is designed with:
 - Clean Bitly-style result card
 - Copy & share buttons
 - Download URL button
-- URL validation and sanitization
-- Fully responsive UI
-- Recent URLs page (when DB is available)
-- Visit count tracking (when DB is available)
-- QR image auto-generation with logo
-- Cache-accelerated redirects
+- Share URL
+- Copy button with animation
+- Smooth URL validation and sanitization
+- Auto Dark/Light Mode (saves preference)
+- Mobile-friendly QR Codes
+- Fully responsive design
+- Recent URLs page
 
 ### API & Developer Features
 
@@ -84,7 +74,15 @@ def generate_code(length=6):
 
 ---
 
-## Tech Stack
+| Layer       | Technology            |
+| ----------- | --------------------- |
+| API Backend | FastAPI               |
+| Database    | MongoDB               |
+| Frontend    | HTML, CSS, Vanilla JS |
+| API Server  | Uvicorn               |
+| Validation  | Pydantic v2           |
+| CLI         | Click                 |
+| Data        | JSON                  |
 
 | Layer       | Technology            |
 | ----------- | --------------------- |
@@ -336,16 +334,15 @@ poetry run uvicorn app.main:app --reload
 
 Screenshots:
 Home Page:
-![home page](app/assets/images/home.png)
-![home dark mode](app/assets/images/home_dark.png)
-![home page](app/assets/images/valid.png)
-![home layout](app/assets/images/short_url.png)
-![recent](app/assets/images/recent.png)
+![home page](./assets/images/home.png)
+![home dark mode](./assets/images/home_dark.png)
+![home page](./assets/images/valid.png)
+![home layout](./assets/images/short_url.png)
+![recent](./assets/images/recent.png)
 tiny API Page:
-![API](app/assets/images/API_page.png)
-![API1](app/assets/images/api_page2.png)
-No DB Mode:
-![NO DB](app/assets/images/no-db.png)
+![API](./assets/images/API_page.png)
+![API1](./assets/images/api_page2.png)
+
 📜License
 
 [MIT](LICENSE)
