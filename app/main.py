@@ -238,6 +238,11 @@ async def redirect_short(request: Request, short_code: str):
     return RedirectResponse(doc["original_url"])
 
 
+@app.get("/coming-soon", response_class=HTMLResponse)
+async def coming_soon(request: Request):
+    return templates.TemplateResponse("coming-soon.html", {"request": request})
+
+
 app.mount("/api", api_app)
 
 

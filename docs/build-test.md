@@ -1,6 +1,6 @@
 # Build & Test Guide (Tiny URL Project)
 
-This document explains how to **build**, **install**, and **run tests locally** for the Tiny URL project using Poetry, FastAPI (API), and Flask (UI).
+This document explains how to **build**, **install**, and **run tests locally** for the Tiny URL project using Poetry, FastAPI (API), and Fast(UI).
 
 ---
 
