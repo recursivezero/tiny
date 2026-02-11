@@ -2,28 +2,28 @@ import os
 import re
 import traceback
 from datetime import datetime, timezone
-from typing import Any
 
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from pymongo.errors import PyMongoError
+else:
+    try:
+        from pymongo.errors import PyMongoError
+    except ImportError:
+
+        class PyMongoError(Exception):
+            pass
+
+
 from app import __version__
 from app.db import data as db_data
+from app.utils.cache import get_short_from_cache, set_cache_pair
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
-
-PyMongoError: Any
-try:
-    from pymongo.errors import PyMongoError as _RealPyMongoError
-
-    PyMongoError = _RealPyMongoError
-except (ImportError, ModuleNotFoundError):
-    # 2. Fallback: Define our own only if the real one fails
-    class _FallbackPyMongoError(Exception):
-        pass
-
-    # Assign our fallback to the same local name
-    PyMongoError = _FallbackPyMongoError
 
 SHORT_CODE_PATTERN = re.compile(r"^[A-Za-z0-9]{6}$")
 MAX_URL_LENGTH = 2048
@@ -156,8 +156,9 @@ def shorten_url(payload: ShortenRequest):
         )
 
     if db_data.urls is None:
-        short_code = generate_code()
-
+        cached_short = get_short_from_cache(original_url)
+        short_code = cached_short or generate_code()
+        set_cache_pair(short_code, original_url)
         return {
             "success": True,
             "input_url": original_url,
