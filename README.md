@@ -317,7 +317,7 @@ pip install --upgrade dist/*.whl
 ## License
 
 📜Docs
-[run_with_curl](run_with_curl)
+[run_with_curl](docs/run_with_curl)
 
 Screenshots:
 Home Page:
@@ -334,7 +334,3 @@ No DB Mode:
 📜License
 
 [MIT](LICENSE)
-
-```
-
-```
