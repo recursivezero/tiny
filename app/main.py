@@ -1,5 +1,4 @@
 import datetime
-import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import TYPE_CHECKING, Optional
@@ -32,7 +31,7 @@ from app.utils.cache import (
     add_recent,
     get_recent,
 )
-from app.utils.config import load_env
+from app.utils.config import load_env, SESSION_SECRET, DOMAIN
 from app.utils.helper import (
     format_date,
     generate_code,
@@ -54,7 +53,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="TinyURL", lifespan=lifespan)
-app.add_middleware(SessionMiddleware, secret_key="super-secret-key")
+app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -68,7 +67,7 @@ def db_available(request: Request) -> bool:
 
 
 def build_short_url(short_code: str, request_host_url: str) -> str:
-    base_url = os.getenv("DOMAIN", request_host_url).rstrip("/")
+    base_url = DOMAIN.rstrip("/")
     return f"{base_url}/{short_code}"
 
 
@@ -207,17 +206,15 @@ async def recent_urls(request: Request):
         except PyMongoError:
             recent_urls_list = get_recent()
     else:
-        # ✅ Force recent URLs from cache when DB is down
         recent_urls_list = get_recent()
 
-    # ✅ Normalize cache data to DB shape so template doesn't crash
     normalized = []
     for item in recent_urls_list:
         normalized.append(
             {
                 "short_code": item.get("short_code"),
                 "original_url": item.get("original_url"),
-                "created_at": item.get("created_at"),  # None is OK
+                "created_at": item.get("created_at"),
                 "visit_count": item.get("visit_count", 0),
             }
         )
@@ -227,30 +224,26 @@ async def recent_urls(request: Request):
         {
             "request": request,
             "urls": normalized,
-            "format_date": format_date,  # keep your existing formatter
+            "format_date": format_date,
         },
     )
 
 
 @app.post("/delete/{short_code}")
 async def delete_url(request: Request, short_code: str):
-    # Delete from DB (if available)
     if db_available(request) and db_data.urls is not None:
         try:
             db_data.urls.delete_one({"short_code": short_code})
         except PyMongoError:
             return PlainTextResponse("Database connection lost.", status_code=503)
 
-    # ✅ Delete from cache (short_code -> url)
     cached = url_cache.pop(short_code, None)
 
-    # ✅ Delete from reverse cache (url -> short_code)
     if cached:
         rev_cache.pop(cached.get("url"), None)
 
-    # ✅ Delete from recent URLs cache
     try:
-        from app.utils.cache import recent_urls  # local import to avoid circulars
+        from app.utils.cache import recent_urls
 
         recent_urls[:] = [
             item for item in recent_urls if item.get("short_code") != short_code
@@ -304,6 +297,5 @@ async def debug_cache():
         "size": {
             "url_cache": len(url_cache),
             "rev_cache": len(rev_cache),
-            "recent": len(get_recent()),
         },
     }

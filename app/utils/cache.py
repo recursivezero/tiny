@@ -1,7 +1,7 @@
 import time
 from typing import TypedDict
 
-CACHE_TTL = 900  # 15 minutes
+from app.utils.config import CACHE_TTL, MAX_RECENT_URLS
 
 
 class UrlCacheItem(TypedDict):
@@ -97,7 +97,7 @@ def cleanup_expired() -> None:
 
 # ---- Recent URLs Cache (Unique, Ordered, DB-shaped) ----
 
-MAX_RECENT = 10
+MAX_RECENT = MAX_RECENT_URLS
 recent_urls: list[dict] = []  # same shape as DB docs
 
 
