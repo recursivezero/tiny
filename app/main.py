@@ -2,16 +2,13 @@ import datetime
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Optional
-
+from typing import TYPE_CHECKING, Optional
 
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pymongo.errors import PyMongoError
@@ -26,13 +23,12 @@ else:
 
 from app.api.fast_api import app as api_app
 from app.db import data as db_data
-from app.utils.qr import generate_qr_with_logo
 from app.utils.cache import (
     get_from_cache,
     get_short_from_cache,
+    rev_cache,
     set_cache_pair,
     url_cache,
-    rev_cache,
 )
 from app.utils.config import load_env
 from app.utils.helper import (
@@ -41,6 +37,7 @@ from app.utils.helper import (
     is_valid_url,
     sanitize_url,
 )
+from app.utils.qr import generate_qr_with_logo
 
 
 # -----------------------------
@@ -55,10 +52,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="TinyURL", lifespan=lifespan)
-
-
 app.add_middleware(SessionMiddleware, secret_key="super-secret-key")
-
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
@@ -80,6 +74,7 @@ def build_short_url(short_code: str, request_host_url: str) -> str:
 async def index(request: Request):
     session = request.session
 
+    # Pop session variables
     new_short_url = session.pop("new_short_url", None)
     qr_enabled = session.pop("qr_enabled", False)
     qr_type = session.pop("qr_type", "short")
@@ -91,16 +86,25 @@ async def index(request: Request):
     qr_image = None
     qr_data = None
 
+    # --- RESTORED GENERATION LOGIC ---
     if qr_enabled and new_short_url and short_code:
         qr_data = new_short_url if qr_type == "short" else original_url
         qr_filename = f"{short_code}.png"
-        generate_qr_with_logo(qr_data, qr_filename)
-        qr_image = f"/static/qr/{qr_filename}"
 
+        # Ensure the directory exists (Ubuntu best practice)
+        qr_dir = STATIC_DIR / "qr"
+        qr_dir.mkdir(parents=True, exist_ok=True)
+
+        # Generate the physical file
+        generate_qr_with_logo(qr_data, str(qr_dir / qr_filename))
+        qr_image = f"/static/qr/{qr_filename}"
+    # --------------------------------
+
+    # Fetch URLs for the Bento Grid
     all_urls = []
     if db_available(request) and db_data.urls is not None:
         try:
-            all_urls = list(db_data.urls.find().sort("created_at", -1))
+            all_urls = list(db_data.urls.find().sort("created_at", -1).limit(10))
         except PyMongoError:
             all_urls = []
 
@@ -110,12 +114,12 @@ async def index(request: Request):
             "request": request,
             "urls": all_urls,
             "new_short_url": new_short_url,
-            "error": error,
-            "info_message": info_message,
+            "qr_image": qr_image,
             "qr_data": qr_data,
             "qr_enabled": qr_enabled,
-            "qr_type": qr_type,
-            "qr_image": qr_image,
+            "original_url": original_url,
+            "error": error,
+            "info_message": info_message,
             "db_available": db_available(request),
         },
     )
