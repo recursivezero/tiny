@@ -29,6 +29,8 @@ from app.utils.cache import (
     rev_cache,
     set_cache_pair,
     url_cache,
+    add_recent,
+    get_recent,
 )
 from app.utils.config import load_env
 from app.utils.helper import (
@@ -45,8 +47,8 @@ from app.utils.qr import generate_qr_with_logo
 # -----------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    load_env()  # ✅ load env ONCE
-    connected = db_data.connect_db()  # ✅ connect DB ONCE
+    load_env()
+    connected = db_data.connect_db()
     app.state.db_available = connected
     yield
 
@@ -74,7 +76,6 @@ def build_short_url(short_code: str, request_host_url: str) -> str:
 async def index(request: Request):
     session = request.session
 
-    # Pop session variables
     new_short_url = session.pop("new_short_url", None)
     qr_enabled = session.pop("qr_enabled", False)
     qr_type = session.pop("qr_type", "short")
@@ -86,27 +87,23 @@ async def index(request: Request):
     qr_image = None
     qr_data = None
 
-    # --- RESTORED GENERATION LOGIC ---
     if qr_enabled and new_short_url and short_code:
         qr_data = new_short_url if qr_type == "short" else original_url
         qr_filename = f"{short_code}.png"
 
-        # Ensure the directory exists (Ubuntu best practice)
         qr_dir = STATIC_DIR / "qr"
         qr_dir.mkdir(parents=True, exist_ok=True)
 
-        # Generate the physical file
         generate_qr_with_logo(qr_data, str(qr_dir / qr_filename))
         qr_image = f"/static/qr/{qr_filename}"
-    # --------------------------------
 
-    # Fetch URLs for the Bento Grid
-    all_urls = []
     if db_available(request) and db_data.urls is not None:
         try:
             all_urls = list(db_data.urls.find().sort("created_at", -1).limit(10))
         except PyMongoError:
-            all_urls = []
+            all_urls = get_recent()
+    else:
+        all_urls = get_recent()
 
     return templates.TemplateResponse(
         "index.html",
@@ -146,36 +143,45 @@ async def create_short_url(
         )
         return RedirectResponse("/", status_code=303)
 
-    short_code = None
-
-    if db_available(request) and db_data.urls is not None:
-        try:
-            existing = db_data.urls.find_one({"original_url": original_url})
-            if existing:
-                short_code = existing["short_code"]
-                session["info_message"] = (
-                    "Already shortened before — using existing short URL."
-                )
-        except PyMongoError:
-            pass
-
-    if not short_code:
-        cached_short = get_short_from_cache(original_url)
-        short_code = cached_short or generate_code()
-        set_cache_pair(short_code, original_url)
+    cached_short = get_short_from_cache(original_url)
+    if cached_short:
+        short_code = cached_short
+        session["info_message"] = "Already shortened before — fetched from cache."
+        add_recent(short_code, original_url)
+    else:
+        short_code = None
 
         if db_available(request) and db_data.urls is not None:
             try:
-                db_data.urls.insert_one(
-                    {
-                        "short_code": short_code,
-                        "original_url": original_url,
-                        "created_at": datetime.datetime.utcnow(),
-                        "visit_count": 0,
-                    }
-                )
+                existing = db_data.urls.find_one({"original_url": original_url})
+                if existing:
+                    short_code = existing["short_code"]
+                    set_cache_pair(short_code, original_url)
+                    session["info_message"] = (
+                        "Already shortened before — fetched from database."
+                    )
+                    add_recent(short_code, original_url)
             except PyMongoError:
                 pass
+
+        if not short_code:
+            short_code = generate_code()
+            set_cache_pair(short_code, original_url)
+
+            if db_available(request) and db_data.urls is not None:
+                try:
+                    db_data.urls.insert_one(
+                        {
+                            "short_code": short_code,
+                            "original_url": original_url,
+                            "created_at": datetime.datetime.utcnow(),
+                            "visit_count": 0,
+                        }
+                    )
+                except PyMongoError:
+                    pass
+
+            add_recent(short_code, original_url)
 
     new_short_url = build_short_url(short_code, str(request.base_url))
     session.update(
@@ -193,28 +199,65 @@ async def create_short_url(
 
 @app.get("/recent", response_class=HTMLResponse)
 async def recent_urls(request: Request):
-    recent_urls_list = []
     if db_available(request) and db_data.urls is not None:
         try:
-            recent_urls_list = list(db_data.urls.find().sort("created_at", -1))
+            recent_urls_list = list(
+                db_data.urls.find().sort("created_at", -1).limit(10)
+            )
         except PyMongoError:
-            pass
+            recent_urls_list = get_recent()
+    else:
+        # ✅ Force recent URLs from cache when DB is down
+        recent_urls_list = get_recent()
+
+    # ✅ Normalize cache data to DB shape so template doesn't crash
+    normalized = []
+    for item in recent_urls_list:
+        normalized.append(
+            {
+                "short_code": item.get("short_code"),
+                "original_url": item.get("original_url"),
+                "created_at": item.get("created_at"),  # None is OK
+                "visit_count": item.get("visit_count", 0),
+            }
+        )
 
     return templates.TemplateResponse(
         "recent.html",
-        {"request": request, "urls": recent_urls_list, "format_date": format_date},
+        {
+            "request": request,
+            "urls": normalized,
+            "format_date": format_date,  # keep your existing formatter
+        },
     )
 
 
 @app.post("/delete/{short_code}")
 async def delete_url(request: Request, short_code: str):
+    # Delete from DB (if available)
     if db_available(request) and db_data.urls is not None:
         try:
             db_data.urls.delete_one({"short_code": short_code})
         except PyMongoError:
             return PlainTextResponse("Database connection lost.", status_code=503)
 
-    url_cache.pop(short_code, None)
+    # ✅ Delete from cache (short_code -> url)
+    cached = url_cache.pop(short_code, None)
+
+    # ✅ Delete from reverse cache (url -> short_code)
+    if cached:
+        rev_cache.pop(cached.get("url"), None)
+
+    # ✅ Delete from recent URLs cache
+    try:
+        from app.utils.cache import recent_urls  # local import to avoid circulars
+
+        recent_urls[:] = [
+            item for item in recent_urls if item.get("short_code") != short_code
+        ]
+    except Exception:
+        pass
+
     return PlainTextResponse("", status_code=204)
 
 
@@ -222,6 +265,7 @@ async def delete_url(request: Request, short_code: str):
 async def redirect_short(request: Request, short_code: str):
     cached_url = get_from_cache(short_code)
     if cached_url:
+        add_recent(short_code, cached_url)
         return RedirectResponse(cached_url)
 
     if not db_available(request) or db_data.urls is None:
@@ -239,6 +283,7 @@ async def redirect_short(request: Request, short_code: str):
         return PlainTextResponse("Invalid or expired short URL", status_code=404)
 
     set_cache_pair(short_code, doc["original_url"])
+    add_recent(short_code, doc["original_url"])
     return RedirectResponse(doc["original_url"])
 
 
@@ -255,5 +300,10 @@ async def debug_cache():
     return {
         "url_cache": url_cache,
         "rev_cache": rev_cache,
-        "size": {"url_cache": len(url_cache), "rev_cache": len(rev_cache)},
+        "recent": get_recent(),
+        "size": {
+            "url_cache": len(url_cache),
+            "rev_cache": len(rev_cache),
+            "recent": len(get_recent()),
+        },
     }

@@ -23,6 +23,10 @@ def generate_code(length: int = 6) -> str:
 
 
 def format_date(dt):
+    if not dt:
+        return "Just now (cache)"
+
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
-    return dt.strftime("%d %b %Y")
+
+    return dt.strftime("%d %b %Y, %I:%M %p")
