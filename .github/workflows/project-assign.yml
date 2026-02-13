@@ -1,0 +1,19 @@
+name: Assign Project
+run-name: Assign project under issue and pull requests
+
+on:
+  issues:
+    types: [opened, labeled]
+  pull_request:
+    types: [opened, reopened]
+
+permissions:
+  issues: write
+
+jobs:
+  sync:
+    uses: recursivezero/action-club/.github/workflows/auto-assign-project.yml@main
+    with:
+      project_number: 5 # That's it!
+    secrets:
+      PROJECT_PAT: ${{ secrets.PROJECT_PAT }}

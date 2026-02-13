@@ -2,7 +2,7 @@ name: "Comment on New Issue"
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened]
 
   workflow_dispatch:
     inputs:
