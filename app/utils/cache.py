@@ -102,28 +102,23 @@ recent_urls: list[dict] = []  # same shape as DB docs
 
 
 def add_recent(short_code: str, original_url: str) -> None:
-    global recent_urls
-
-    # Remove duplicates
-    recent_urls = [
+    recent_urls[:] = [
         item
         for item in recent_urls
         if item["short_code"] != short_code and item["original_url"] != original_url
     ]
 
-    # Insert newest on top (DB-like shape)
     recent_urls.insert(
         0,
         {
             "short_code": short_code,
             "original_url": original_url,
-            "created_at": None,  # DB fallback
-            "visit_count": 0,  # default safe value
+            "created_at": None,
+            "visit_count": 0,
         },
     )
 
-    # Limit size
-    recent_urls = recent_urls[:MAX_RECENT]
+    del recent_urls[MAX_RECENT:]
 
 
 def get_recent() -> list[dict]:

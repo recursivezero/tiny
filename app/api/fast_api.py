@@ -21,7 +21,7 @@ else:
 
 
 from app import __version__
-from app.db import data as db_data
+from app.utils import data as db_data
 from app.utils.cache import get_short_from_cache, set_cache_pair
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
 

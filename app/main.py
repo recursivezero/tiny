@@ -21,7 +21,7 @@ else:
 
 
 from app.api.fast_api import app as api_app
-from app.db import data as db_data
+from app.utils import data as db_data
 from app.utils.cache import (
     get_from_cache,
     get_short_from_cache,
@@ -47,8 +47,7 @@ from app.utils.qr import generate_qr_with_logo
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     load_env()
-    connected = db_data.connect_db()
-    app.state.db_available = connected
+    db_data.connect_db()
     yield
 
 
@@ -60,10 +59,6 @@ STATIC_DIR = BASE_DIR / "static"
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
-
-
-def db_available(request: Request) -> bool:
-    return getattr(request.app.state, "db_available", False)
 
 
 def build_short_url(short_code: str, request_host_url: str) -> str:
@@ -89,16 +84,16 @@ async def index(request: Request):
     if qr_enabled and new_short_url and short_code:
         qr_data = new_short_url if qr_type == "short" else original_url
         qr_filename = f"{short_code}.png"
-
         qr_dir = STATIC_DIR / "qr"
         qr_dir.mkdir(parents=True, exist_ok=True)
-
         generate_qr_with_logo(qr_data, str(qr_dir / qr_filename))
         qr_image = f"/static/qr/{qr_filename}"
 
-    if db_available(request) and db_data.urls is not None:
+    collection = db_data.get_collection()
+
+    if collection is not None:
         try:
-            all_urls = list(db_data.urls.find().sort("created_at", -1).limit(10))
+            all_urls = list(collection.find().sort("created_at", -1).limit(10))
         except PyMongoError:
             all_urls = get_recent()
     else:
@@ -116,12 +111,12 @@ async def index(request: Request):
             "original_url": original_url,
             "error": error,
             "info_message": info_message,
-            "db_available": db_available(request),
+            "db_available": collection is not None,
         },
     )
 
 
-@app.post("/", response_class=RedirectResponse)
+@app.post("/shorten", response_class=RedirectResponse)
 async def create_short_url(
     request: Request,
     original_url: str = Form(""),
@@ -129,7 +124,7 @@ async def create_short_url(
     qr_type: str = Form("short"),
 ):
     session = request.session
-    qr_enabled = generate_qr == "on"
+    qr_enabled = generate_qr == "true"
     original_url = sanitize_url(original_url)
 
     if not original_url:
@@ -150,9 +145,11 @@ async def create_short_url(
     else:
         short_code = None
 
-        if db_available(request) and db_data.urls is not None:
+        collection = db_data.get_collection()
+
+        if collection is not None:
             try:
-                existing = db_data.urls.find_one({"original_url": original_url})
+                existing = collection.find_one({"original_url": original_url})
                 if existing:
                     short_code = existing["short_code"]
                     set_cache_pair(short_code, original_url)
@@ -167,9 +164,9 @@ async def create_short_url(
             short_code = generate_code()
             set_cache_pair(short_code, original_url)
 
-            if db_available(request) and db_data.urls is not None:
+            if collection is not None:
                 try:
-                    db_data.urls.insert_one(
+                    collection.insert_one(
                         {
                             "short_code": short_code,
                             "original_url": original_url,
@@ -198,11 +195,11 @@ async def create_short_url(
 
 @app.get("/recent", response_class=HTMLResponse)
 async def recent_urls(request: Request):
-    if db_available(request) and db_data.urls is not None:
+    collection = db_data.get_collection()
+
+    if collection is not None:
         try:
-            recent_urls_list = list(
-                db_data.urls.find().sort("created_at", -1).limit(10)
-            )
+            recent_urls_list = list(collection.find().sort("created_at", -1).limit(10))
         except PyMongoError:
             recent_urls_list = get_recent()
     else:
@@ -231,14 +228,15 @@ async def recent_urls(request: Request):
 
 @app.post("/delete/{short_code}")
 async def delete_url(request: Request, short_code: str):
-    if db_available(request) and db_data.urls is not None:
+    collection = db_data.get_collection()
+
+    if collection is not None:
         try:
-            db_data.urls.delete_one({"short_code": short_code})
+            collection.delete_one({"short_code": short_code})
         except PyMongoError:
             return PlainTextResponse("Database connection lost.", status_code=503)
 
     cached = url_cache.pop(short_code, None)
-
     if cached:
         rev_cache.pop(cached.get("url"), None)
 
@@ -256,28 +254,35 @@ async def delete_url(request: Request, short_code: str):
 
 @app.get("/{short_code}")
 async def redirect_short(request: Request, short_code: str):
+    collection = db_data.get_collection()
+
+    # Always try to increment visit count if DB is available
+    if collection is not None:
+        try:
+            doc = collection.find_one_and_update(
+                {"short_code": short_code},
+                {"$inc": {"visit_count": 1}},
+            )
+        except PyMongoError:
+            doc = None
+    else:
+        doc = None
+
+    # Then resolve URL (cache first, DB fallback)
     cached_url = get_from_cache(short_code)
     if cached_url:
         add_recent(short_code, cached_url)
         return RedirectResponse(cached_url)
 
-    if not db_available(request) or db_data.urls is None:
+    if doc:
+        set_cache_pair(short_code, doc["original_url"])
+        add_recent(short_code, doc["original_url"])
+        return RedirectResponse(doc["original_url"])
+
+    if collection is None:
         return PlainTextResponse("Database is not connected.", status_code=503)
 
-    try:
-        doc = db_data.urls.find_one_and_update(
-            {"short_code": short_code},
-            {"$inc": {"visit_count": 1}},
-        )
-    except PyMongoError:
-        return PlainTextResponse("Database connection lost.", status_code=503)
-
-    if not doc:
-        return PlainTextResponse("Invalid or expired short URL", status_code=404)
-
-    set_cache_pair(short_code, doc["original_url"])
-    add_recent(short_code, doc["original_url"])
-    return RedirectResponse(doc["original_url"])
+    return PlainTextResponse("Invalid or expired short URL", status_code=404)
 
 
 @app.get("/coming-soon", response_class=HTMLResponse)

@@ -4,7 +4,7 @@
 <main class="main-layout">
   <div class="hero-input-card">
     <h1>tiny URL</h1>
-    <form method="POST" id="shortenForm">
+    <form method="POST" id="shortenForm" action="/shorten">
       <div class="input-wrapper">
         <input type="text" name="original_url" placeholder="Paste your long link here..."
           value="{{ original_url or '' }}" required>
