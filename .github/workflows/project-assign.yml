@@ -3,7 +3,7 @@ run-name: Assign project under issue and pull requests
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, reopened]
   pull_request:
     types: [opened, reopened]
 
