@@ -1,6 +1,5 @@
 # app/db/data.py
 
-import os
 from typing import Any, Optional
 
 # --- DEFENSIVE IMPORT ---
@@ -16,6 +15,9 @@ except ImportError:
         pass
 
     MONGO_INSTALLED = False
+
+
+from app.utils.config import MONGO_URI, MONGO_DB_NAME
 
 
 class _DBState:
@@ -41,8 +43,8 @@ def connect_db() -> bool:
         _state.available = False
         return False
 
-    mongo_uri = os.getenv("MONGO_URI")
-    mongo_db_name = os.getenv("MONGO_DB_NAME", "tiny_url")
+    mongo_uri = MONGO_URI
+    mongo_db_name = MONGO_DB_NAME
 
     if not mongo_uri:
         print("⚠️ MONGO_URI not set. Running in NO-DB mode.")

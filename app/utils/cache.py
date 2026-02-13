@@ -113,8 +113,6 @@ def add_recent(short_code: str, original_url: str) -> None:
         {
             "short_code": short_code,
             "original_url": original_url,
-            "created_at": None,
-            "visit_count": 0,
         },
     )
 
