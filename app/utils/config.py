@@ -56,6 +56,8 @@ DOMAIN = os.getenv("DOMAIN", f"http://{HOST}:{PORT}")
 # -------------------------
 MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB_NAME = "tiny_url"
+MONGO_COLLECTION = os.getenv("MONGO_COLLECTION", "urls")
+
 
 # -------------------------
 # Cache (constants)
@@ -63,7 +65,7 @@ MONGO_DB_NAME = "tiny_url"
 USE_CACHE = True
 CACHE_TTL = 900  # 15 minutes
 MAX_CACHE_SIZE = 10_000
-MAX_RECENT_URLS = 10
+MAX_RECENT_URLS = 20
 
 # -------------------------
 # Security / Sessions

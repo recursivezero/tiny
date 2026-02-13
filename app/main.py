@@ -1,7 +1,6 @@
-import datetime
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from fastapi import FastAPI, Form, Request
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
@@ -9,29 +8,17 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
-if TYPE_CHECKING:
-    from pymongo.errors import PyMongoError
-else:
-    try:
-        from pymongo.errors import PyMongoError
-    except ImportError:
-
-        class PyMongoError(Exception):
-            pass
-
-
 from app.api.fast_api import app as api_app
 from app.utils import data as db_data
 from app.utils.cache import (
     get_from_cache,
     get_short_from_cache,
+    get_recent_from_cache,
     rev_cache,
     set_cache_pair,
     url_cache,
-    add_recent,
-    get_recent,
 )
-from app.utils.config import load_env, SESSION_SECRET, DOMAIN
+from app.utils.config import load_env, SESSION_SECRET, DOMAIN, MAX_RECENT_URLS
 from app.utils.helper import (
     format_date,
     generate_code,
@@ -89,15 +76,9 @@ async def index(request: Request):
         generate_qr_with_logo(qr_data, str(qr_dir / qr_filename))
         qr_image = f"/static/qr/{qr_filename}"
 
-    collection = db_data.get_collection()
-
-    if collection is not None:
-        try:
-            all_urls = list(collection.find().sort("created_at", -1).limit(10))
-        except PyMongoError:
-            all_urls = get_recent()
-    else:
-        all_urls = get_recent()
+    all_urls = db_data.get_recent_urls(MAX_RECENT_URLS) or get_recent_from_cache(
+        MAX_RECENT_URLS
+    )
 
     return templates.TemplateResponse(
         "index.html",
@@ -111,7 +92,7 @@ async def index(request: Request):
             "original_url": original_url,
             "error": error,
             "info_message": info_message,
-            "db_available": collection is not None,
+            "db_available": db_data.get_collection() is not None,
         },
     )
 
@@ -124,7 +105,7 @@ async def create_short_url(
     qr_type: str = Form("short"),
 ):
     session = request.session
-    qr_enabled = generate_qr == "true"
+    qr_enabled = bool(generate_qr)
     original_url = sanitize_url(original_url)
 
     if not original_url:
@@ -141,43 +122,21 @@ async def create_short_url(
     if cached_short:
         short_code = cached_short
         session["info_message"] = "Already shortened before — fetched from cache."
-        add_recent(short_code, original_url)
     else:
         short_code = None
 
-        collection = db_data.get_collection()
-
-        if collection is not None:
-            try:
-                existing = collection.find_one({"original_url": original_url})
-                if existing:
-                    short_code = existing["short_code"]
-                    set_cache_pair(short_code, original_url)
-                    session["info_message"] = (
-                        "Already shortened before — fetched from database."
-                    )
-                    add_recent(short_code, original_url)
-            except PyMongoError:
-                pass
+        existing = db_data.find_by_original_url(original_url)
+        if existing:
+            short_code = existing["short_code"]
+            set_cache_pair(short_code, original_url)
+            session["info_message"] = (
+                "Already shortened before — fetched from database."
+            )
 
         if not short_code:
             short_code = generate_code()
             set_cache_pair(short_code, original_url)
-
-            if collection is not None:
-                try:
-                    collection.insert_one(
-                        {
-                            "short_code": short_code,
-                            "original_url": original_url,
-                            "created_at": datetime.datetime.utcnow(),
-                            "visit_count": 0,
-                        }
-                    )
-                except PyMongoError:
-                    pass
-
-            add_recent(short_code, original_url)
+            db_data.insert_url(short_code, original_url)
 
     new_short_url = build_short_url(short_code, str(request.base_url))
     session.update(
@@ -195,15 +154,9 @@ async def create_short_url(
 
 @app.get("/recent", response_class=HTMLResponse)
 async def recent_urls(request: Request):
-    collection = db_data.get_collection()
-
-    if collection is not None:
-        try:
-            recent_urls_list = list(collection.find().sort("created_at", -1).limit(10))
-        except PyMongoError:
-            recent_urls_list = get_recent()
-    else:
-        recent_urls_list = get_recent()
+    recent_urls_list = db_data.get_recent_urls(
+        MAX_RECENT_URLS
+    ) or get_recent_from_cache(MAX_RECENT_URLS)
 
     normalized = []
     for item in recent_urls_list:
@@ -228,58 +181,28 @@ async def recent_urls(request: Request):
 
 @app.post("/delete/{short_code}")
 async def delete_url(request: Request, short_code: str):
-    collection = db_data.get_collection()
-
-    if collection is not None:
-        try:
-            collection.delete_one({"short_code": short_code})
-        except PyMongoError:
-            return PlainTextResponse("Database connection lost.", status_code=503)
+    db_data.delete_by_short_code(short_code)
 
     cached = url_cache.pop(short_code, None)
     if cached:
         rev_cache.pop(cached.get("url"), None)
-
-    try:
-        from app.utils.cache import recent_urls
-
-        recent_urls[:] = [
-            item for item in recent_urls if item.get("short_code") != short_code
-        ]
-    except Exception:
-        pass
 
     return PlainTextResponse("", status_code=204)
 
 
 @app.get("/{short_code}")
 async def redirect_short(request: Request, short_code: str):
-    collection = db_data.get_collection()
+    doc = db_data.increment_visit(short_code)
 
-    # Always try to increment visit count if DB is available
-    if collection is not None:
-        try:
-            doc = collection.find_one_and_update(
-                {"short_code": short_code},
-                {"$inc": {"visit_count": 1}},
-            )
-        except PyMongoError:
-            doc = None
-    else:
-        doc = None
-
-    # Then resolve URL (cache first, DB fallback)
     cached_url = get_from_cache(short_code)
     if cached_url:
-        add_recent(short_code, cached_url)
         return RedirectResponse(cached_url)
 
     if doc:
         set_cache_pair(short_code, doc["original_url"])
-        add_recent(short_code, doc["original_url"])
         return RedirectResponse(doc["original_url"])
 
-    if collection is None:
+    if not db_data.get_collection():
         return PlainTextResponse("Database is not connected.", status_code=503)
 
     return PlainTextResponse("Invalid or expired short URL", status_code=404)
@@ -298,7 +221,7 @@ async def debug_cache():
     return {
         "url_cache": url_cache,
         "rev_cache": rev_cache,
-        "recent": get_recent(),
+        "recent_from_cache": get_recent_from_cache(MAX_RECENT_URLS),
         "size": {
             "url_cache": len(url_cache),
             "rev_cache": len(rev_cache),

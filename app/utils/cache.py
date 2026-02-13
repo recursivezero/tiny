@@ -12,12 +12,13 @@ class UrlCacheItem(TypedDict):
 class RevCacheItem(TypedDict):
     short_code: str
     expires_at: float
+    last_accessed: float
 
 
 # short_code -> original_url
 url_cache: dict[str, UrlCacheItem] = {}
 
-# original_url -> short_code
+# original_url -> short_code (+ metadata for recent tracking)
 rev_cache: dict[str, RevCacheItem] = {}
 
 
@@ -48,11 +49,15 @@ def get_short_from_cache(original_url: str) -> str | None:
         rev_cache.pop(original_url, None)
         return None
 
+    # Touch for recent tracking
+    data["last_accessed"] = _now()
+
     return data["short_code"]
 
 
 def set_cache_pair(short_code: str, original_url: str) -> None:
-    expires_at = _now() + CACHE_TTL
+    now = _now()
+    expires_at = now + CACHE_TTL
 
     url_cache[short_code] = {
         "url": original_url,
@@ -62,6 +67,7 @@ def set_cache_pair(short_code: str, original_url: str) -> None:
     rev_cache[original_url] = {
         "short_code": short_code,
         "expires_at": expires_at,
+        "last_accessed": now,
     }
 
 
@@ -83,41 +89,39 @@ def cleanup_expired() -> None:
     expired_short_codes = [
         key for key, value in url_cache.items() if value["expires_at"] < now
     ]
-
     for key in expired_short_codes:
         url_cache.pop(key, None)
 
     expired_urls = [
         key for key, value in rev_cache.items() if value["expires_at"] < now
     ]
-
     for key in expired_urls:
         rev_cache.pop(key, None)
 
 
-# ---- Recent URLs Cache (Unique, Ordered, DB-shaped) ----
+# -----------------------
+# Recent URLs (derived from rev_cache)
+# -----------------------
 
-MAX_RECENT = MAX_RECENT_URLS
-recent_urls: list[dict] = []  # same shape as DB docs
 
+def get_recent_from_cache(limit: int = MAX_RECENT_URLS) -> list[dict]:
+    """
+    Returns recent URLs based on cache activity (no duplicates, TTL-aware).
+    Shape matches DB docs.
+    """
+    now = _now()
 
-def add_recent(short_code: str, original_url: str) -> None:
-    recent_urls[:] = [
-        item
-        for item in recent_urls
-        if item["short_code"] != short_code and item["original_url"] != original_url
+    items = [
+        {
+            "short_code": data["short_code"],
+            "original_url": original_url,
+        }
+        for original_url, data in rev_cache.items()
+        if data["expires_at"] >= now
     ]
 
-    recent_urls.insert(
-        0,
-        {
-            "short_code": short_code,
-            "original_url": original_url,
-        },
+    items.sort(
+        key=lambda x: rev_cache[x["original_url"]]["last_accessed"], reverse=True
     )
 
-    del recent_urls[MAX_RECENT:]
-
-
-def get_recent() -> list[dict]:
-    return recent_urls
+    return items[:limit]

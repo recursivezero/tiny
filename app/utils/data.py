@@ -1,81 +1,106 @@
-# app/db/data.py
-
 from typing import Any, Optional
 
-# --- DEFENSIVE IMPORT ---
 try:
     from pymongo import MongoClient
     from pymongo.errors import PyMongoError
 
     MONGO_INSTALLED = True
 except ImportError:
-    MongoClient = None  # type: ignore
-
-    class PyMongoError(Exception):
-        pass
-
+    MongoClient = None
+    PyMongoError = Exception
     MONGO_INSTALLED = False
 
+from app.utils.config import MONGO_URI, MONGO_DB_NAME, MONGO_COLLECTION
 
-from app.utils.config import MONGO_URI, MONGO_DB_NAME
-
-
-class _DBState:
-    client: Optional[Any] = None
-    db: Optional[Any] = None
-    collection: Optional[Any] = None
-    available: bool = False
-
-
-_state = _DBState()
+client: Any = None
+db: Any = None
+collection: Any = None
 
 
 def connect_db() -> bool:
-    """
-    Connect to MongoDB using config from env.
-    Initializes shared collection.
-    """
+    global client, db, collection
+
     if not MONGO_INSTALLED:
         print("⚠️ pymongo not installed. Running in NO-DB mode.")
-        _state.client = None
-        _state.db = None
-        _state.collection = None
-        _state.available = False
-        return False
-
-    mongo_uri = MONGO_URI
-    mongo_db_name = MONGO_DB_NAME
-
-    if not mongo_uri:
-        print("⚠️ MONGO_URI not set. Running in NO-DB mode.")
-        _state.client = None
-        _state.db = None
-        _state.collection = None
-        _state.available = False
         return False
 
     try:
-        client = MongoClient(mongo_uri, serverSelectionTimeoutMS=2000)
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
+        db = client[MONGO_DB_NAME]
+        collection = db[MONGO_COLLECTION]
+
         client.admin.command("ping")
-        db = client[mongo_db_name]
-        collection = db["urls"]
-
-        _state.client = client
-        _state.db = db
-        _state.collection = collection
-        _state.available = True
-
-        print("✅ MongoDB connected")
+        print("✅ MongoDB connected successfully")
         return True
-    except PyMongoError:
+
+    except Exception:
         print("❌ MongoDB connection failed")
-        _state.client = None
-        _state.db = None
-        _state.collection = None
-        _state.available = False
+        client = db = collection = None
         return False
 
 
 def get_collection():
-    """Return the shared Mongo collection or None."""
-    return _state.collection
+    return collection
+
+
+# ------------------------
+# DB Operations
+# ------------------------
+
+
+def find_by_original_url(original_url: str) -> Optional[dict]:
+    if collection is None:
+        return None
+    try:
+        return collection.find_one({"original_url": original_url})
+    except PyMongoError:
+        return None
+
+
+def insert_url(short_code: str, original_url: str) -> bool:
+    if collection is None:
+        return False
+    try:
+        collection.insert_one(
+            {
+                "short_code": short_code,
+                "original_url": original_url,
+                "created_at": __import__("datetime").datetime.utcnow(),
+                "visit_count": 0,
+            }
+        )
+        return True
+    except PyMongoError:
+        return False
+
+
+def delete_by_short_code(short_code: str) -> bool:
+    if collection is None:
+        return False
+    try:
+        collection.delete_one({"short_code": short_code})
+        return True
+    except PyMongoError:
+        return False
+
+
+def get_recent_urls(limit: int = 10) -> list[dict]:
+    if collection is None:
+        return []
+    try:
+        return list(collection.find().sort("created_at", -1).limit(limit))
+    except PyMongoError:
+        return []
+
+
+def increment_visit(short_code: str) -> Optional[dict]:
+    if collection is None:
+        return None
+    try:
+        return collection.find_one_and_update(
+            {"short_code": short_code},
+            {"$inc": {"visit_count": 1}},
+            return_document=True,
+        )
+    except PyMongoError:
+        return None
