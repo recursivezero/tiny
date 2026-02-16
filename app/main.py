@@ -12,13 +12,13 @@ from app.api.fast_api import app as api_app
 from app.utils import data as db_data
 from app.utils.cache import (
     get_from_cache,
-    get_short_from_cache,
     get_recent_from_cache,
+    get_short_from_cache,
     rev_cache,
     set_cache_pair,
     url_cache,
 )
-from app.utils.config import load_env, SESSION_SECRET, DOMAIN, MAX_RECENT_URLS
+from app.utils.config import DOMAIN, MAX_RECENT_URLS, SESSION_SECRET, load_env
 from app.utils.helper import (
     format_date,
     generate_code,
@@ -27,13 +27,14 @@ from app.utils.helper import (
 )
 from app.utils.qr import generate_qr_with_logo
 
+load_env()
+
 
 # -----------------------------
 # Lifespan: env + DB connect ONCE
 # -----------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    load_env()
     db_data.connect_db()
     yield
 
@@ -118,27 +119,40 @@ async def create_short_url(
         )
         return RedirectResponse("/", status_code=303)
 
-    cached_short = get_short_from_cache(original_url)
-    if cached_short:
-        short_code = cached_short
+    # 1. Try Cache First
+    short_code: Optional[str] = get_short_from_cache(original_url)
+
+    if short_code:
         session["info_message"] = "Already shortened before — fetched from cache."
     else:
-        short_code = None
-
+        # 2. Try Database
         existing = db_data.find_by_original_url(original_url)
-        if existing:
-            short_code = existing["short_code"]
-            set_cache_pair(short_code, original_url)
+        # Pull the value and check it in one go
+        db_code = existing.get("short_code") if existing else None
+        if isinstance(db_code, str):
+            short_code = db_code
+            set_cache_pair(short_code, original_url)  # Cache it for future
             session["info_message"] = (
                 "Already shortened before — fetched from database."
             )
 
+        # 3. Generate New if still None
         if not short_code:
             short_code = generate_code()
             set_cache_pair(short_code, original_url)
             db_data.insert_url(short_code, original_url)
 
+    # --- TYPE GUARD FOR MYPY ---
+    # At this point, short_code could still technically be Optional[str]
+    # if generate_code() wasn't strictly typed. We cast or assert.
+    if not isinstance(short_code, str):
+        # This acts as a final safety net for production
+        session["error"] = "Internal server error: Code generation failed."
+        return RedirectResponse("/", status_code=303)
+
+    # Mypy now knows short_code is strictly 'str'
     new_short_url = build_short_url(short_code, str(request.base_url))
+
     session.update(
         {
             "new_short_url": new_short_url,
@@ -201,8 +215,7 @@ async def redirect_short(request: Request, short_code: str):
     if doc:
         set_cache_pair(short_code, doc["original_url"])
         return RedirectResponse(doc["original_url"])
-
-    if not db_data.get_collection():
+    if db_data.get_collection() is None:
         return PlainTextResponse("Database is not connected.", status_code=503)
 
     return PlainTextResponse("Invalid or expired short URL", status_code=404)

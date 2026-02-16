@@ -2,12 +2,11 @@ import os
 import re
 import traceback
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
-
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from pymongo.errors import PyMongoError
@@ -155,7 +154,7 @@ def shorten_url(payload: ShortenRequest):
             },
         )
 
-    if db_data.urls is None:
+    if db_data.collection is None:
         cached_short = get_short_from_cache(original_url)
         short_code = cached_short or generate_code()
         set_cache_pair(short_code, original_url)
@@ -167,7 +166,7 @@ def shorten_url(payload: ShortenRequest):
         }
 
     try:
-        existing = db_data.urls.find_one({"original_url": original_url})
+        existing = db_data.collection.find_one({"original_url": original_url})
     except PyMongoError:
         existing = None
 
@@ -181,7 +180,7 @@ def shorten_url(payload: ShortenRequest):
 
     short_code = generate_code()
     try:
-        db_data.urls.insert_one(
+        db_data.collection.insert_one(
             {
                 "short_code": short_code,
                 "original_url": original_url,

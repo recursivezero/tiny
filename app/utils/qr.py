@@ -1,26 +1,32 @@
+from pathlib import Path
+from typing import cast
+
 import qrcode
 from PIL import Image
-from pathlib import Path
 
 
-def generate_qr_with_logo(data, filename):
+def generate_qr_with_logo(data: str, filename: str) -> str:
+    # 1. Use direct attribute access or explicit import for constants
     qr = qrcode.QRCode(
-        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,  # type: ignore
         box_size=20,
         border=1,
     )
     qr.add_data(data)
     qr.make(fit=True)
 
-    qr_img = qr.make_image(fill_color="black", back_color="white").convert("RGB")
+    # 2. Cast the result to PIL.Image.Image so Pylance sees .convert()
+    # The default factory for qrcode is a PIL-based image
+    qr_img = cast(
+        Image.Image, qr.make_image(fill_color="black", back_color="white")
+    ).convert("RGB")
 
-    # ✅ Resolve project app directory (app/)
-    APP_DIR = Path(__file__).resolve().parents[1]  # goes up to /app
+    APP_DIR = Path(__file__).resolve().parents[1]
     STATIC_DIR = APP_DIR / "static"
     QR_DIR = STATIC_DIR / "qr"
     IMAGES_DIR = STATIC_DIR / "images"
 
-    # ✅ Ensure QR dir exists
     QR_DIR.mkdir(parents=True, exist_ok=True)
 
     logo_path = IMAGES_DIR / "logo.png"
@@ -36,7 +42,9 @@ def generate_qr_with_logo(data, filename):
 
     pos = ((qr_width - logo_size) // 2, (qr_height - logo_size) // 2)
 
-    qr_img.paste(logo, pos, mask=logo if logo.mode == "RGBA" else None)
+    # Use the logo itself as a mask if it has an alpha channel
+    mask = logo if logo.mode == "RGBA" else None
+    qr_img.paste(logo, pos, mask=mask)
 
     save_path = QR_DIR / filename
     qr_img.save(save_path)

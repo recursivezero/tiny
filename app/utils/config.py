@@ -15,10 +15,6 @@ def load_env():
     print(f"MODE value: {os.getenv('MODE')}")
 
 
-# ✅ IMPORTANT: Load env immediately when config is imported
-load_env()
-
-
 # -------------------------
 # Helpers
 # -------------------------

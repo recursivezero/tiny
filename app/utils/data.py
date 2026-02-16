@@ -6,11 +6,12 @@ try:
 
     MONGO_INSTALLED = True
 except ImportError:
-    MongoClient = None
-    PyMongoError = Exception
+    MongoClient: Any = None  # type: ignore
+    Collection: Any  # type: ignore
+    PyMongoError = Exception  # type: ignore
     MONGO_INSTALLED = False
 
-from app.utils.config import MONGO_URI, MONGO_DB_NAME, MONGO_COLLECTION
+from app.utils.config import MONGO_COLLECTION, MONGO_DB_NAME, MONGO_URI
 
 client: Any = None
 db: Any = None
@@ -21,25 +22,25 @@ def connect_db() -> bool:
     global client, db, collection
 
     if not MONGO_INSTALLED:
-        print("⚠️ pymongo not installed. Running in NO-DB mode.")
         return False
 
     try:
-        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
-        db = client[MONGO_DB_NAME]
+        # Create instance
+        new_client: Any = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
+        new_client.admin.command("ping")
+        client = new_client
+        db = new_client[MONGO_DB_NAME]
         collection = db[MONGO_COLLECTION]
-
-        client.admin.command("ping")
-        print("✅ MongoDB connected successfully")
         return True
 
     except Exception:
-        print("❌ MongoDB connection failed")
         client = db = collection = None
         return False
 
+    return False
 
-def get_collection():
+
+def get_collection() -> Optional[dict[str, Any]]:
     return collection
 
 
