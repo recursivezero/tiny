@@ -1,9 +1,10 @@
 # Tiny URL Generator
 
-> A modern, Bitly-style tiny URL web application built with FastAPI & MongoDB
+> A modern, Bitly-style tiny URL web application built with FastAPI, optional MongoDB, and a sleek web UI.
 
-![Python](https://img.shields.io/badge/Python-3.10-blue.svg)
-![MongoDB](https://img.shields.io/badge/Database-MongoDB-green.svg)
+![Python](https://img.shields.io/badge/Python-3.11-blue.svg)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-teal.svg)
+![MongoDB](<https://img.shields.io/badge/Database-MongoDB%20(Optional)-green.svg>)
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Status](https://img.shields.io/badge/Status-Active-success.svg)
 
@@ -11,12 +12,22 @@
 
 ## Overview
 
-**tiny URL** is a sleek, fast, and modern URL shortening platform built using **FastAPI**, and **MongoDB**.  
+Tiny URL is a sleek, fast, and modern URL shortening platform built using FastAPI with optional MongoDB persistence.
 It converts long URLs into short, shareable links — just like Bitly.
 
 The project supports:
 
-- 🚀 **FastAPI REST API** (developers / integrations)
+- Web UI (FastAPI + Jinja templates)
+- REST API (FastAPI)
+- Offline Mode (No MongoDB required)
+
+This project is designed with:
+
+- Clean startup lifecycle (no racing configs)
+- Optional database dependency
+- Graceful degradation when MongoDB is unavailable
+- In-memory cache fallback
+- QR code generation with auto folder creation
 
 ---
 
@@ -29,13 +40,12 @@ The project supports:
 - Clean Bitly-style result card
 - Copy & share buttons
 - Download URL button
-- Share URL
-- Copy button with animation
-- Smooth URL validation and sanitization
-- Auto Dark/Light Mode (saves preference)
-- Mobile-friendly QR Codes
-- Fully responsive design
-- Recent URLs page
+- URL validation and sanitization
+- Fully responsive UI
+- Recent URLs page (when DB is available)
+- Visit count tracking (when DB is available)
+- QR image auto-generation with logo
+- Cache-accelerated redirects
 
 ### API & Developer Features
 
@@ -74,122 +84,36 @@ def generate_code(length=6):
 
 ---
 
-| Layer       | Technology            |
-| ----------- | --------------------- |
-| API Backend | FastAPI               |
-| Database    | MongoDB               |
-| Frontend    | HTML, CSS, Vanilla JS |
-| API Server  | Uvicorn               |
-| Validation  | Pydantic v2           |
-| CLI         | Click                 |
-| Data        | JSON                  |
+## Tech Stack
 
-| Layer       | Technology            |
-| ----------- | --------------------- |
-| UI Backend  | FastAPI               |
-| API Backend | FastAPI               |
-| Database    | MongoDB (Optional)    |
-| Frontend    | HTML, CSS, Vanilla JS |
-| QR Code     | qrcode + Pillow       |
-| API Server  | Uvicorn               |
-| Validation  | Pydantic v2           |
-| Env Mgmt    | python-dotenv         |
-| Tooling     | Poetry                |
+| Layer       | Technology              |
+| ----------- | ----------------------- |
+| UI Backend  | FastAPI                 |
+| API Backend | FastAPI                 |
+| Database    | MongoDB (Optional)      |
+| Cache       | In-Memory (Python dict) |
+| Frontend    | HTML, CSS, Vanilla JS   |
+| QR Code     | qrcode + Pillow         |
+| API Server  | Uvicorn                 |
+| Validation  | Pydantic v2             |
+| Env Mgmt    | python-dotenv           |
+| Tooling     | Poetry                  |
 
 ---
 
-## Project Folder Structure
+[Project Tree](./docs/tree.md)
 
-```text
-Directory structure:
-tiny/
-├── CHANGELOG.md
-├── LICENSE
-├── app/
-│   ├──__init__.py
-│   ├── main.py
-│   ├── cli.py
-│   ├── api/
-|   |   └──__init__.py
-│   │   └── fast_api.py
-|   ├──assets/images
-│   ├── db/
-|   |    └──__init__.py
-|   |     └──data.py
-|   ├── static/
-|   |     └── images
-|   |      └── qr
-|   |      └── style.css
-|   ├── templates/
-|   |        └── index.html
-|   |        └── recent.html
-│   ├── utils/
-|   |     └── __init__.py
-|   |     └── _version.py
-|   |     └── config.py
-|   |     └── helper.py
-|   |     └── lint.py
-|   |     └── qr.py
-|
-├── docs/
-|    └── build-test.md
-|    └─ run_with_curl.md
-|
-├── request/
-|    └── mixed.json
-|    └── single.json
-|    └── urls.json
-├── pyproject.toml
-|    └── poetry.lock
-├──README.md
-|    └── CHANGELOG.md
-|    └── requirements.txt
-├── tiny.code-workspace
-└── .gitignore
+## ⚙️ How to Run the Project Locally
 
+`Virtual Environment Configuration`
+
+```bash
+poetry config virtualenvs.path /your/desired/path
 ```
-
-⚙️ How to Run the Project Locally
-
-## How to start
-
-```sh
-poetry install
-```
-
-### 3. Install with other dependent packages
-
-```sh
-poetry install --all-extras --with dev
-```
-
----
-
-## Running the App
-
-```sh
-poetry run uvicorn app.main:app --reload
-```
-
-or
-
-```sh
-poetry run tiny dev
-```
-
-Open:
-<http://127.0.0.1:8000>
-
----
 
 ## Environment Configuration
 
-```
-ENV=development
-DOMAIN=http://127.0.0.1:8000
-MONGO_URI=mongodb://<user>:<password>@localhost:27017/tiny_url?authSource=tiny_url
-DATABASE_NAME=tiny_url
-```
+Ensure below files are configured (create if not exist) properly to run the project;
 
 Supported env files:
 
@@ -197,7 +121,41 @@ Supported env files:
 - .env.local
 - .env (production)
 
----
+```text
+ENV=development
+DOMAIN=http://127.0.0.1:8000
+MONGO_URI=mongodb://<user>:<password>@localhost:27017/tiny_url?authSource=tiny_url
+DATABASE_NAME=tiny_url
+```
+
+## Install Dependencies
+
+```bash
+poetry lock --no-cache --regenerate
+poetry install  --all-extras --with dev
+```
+
+Or manually
+
+```bash
+poetry install
+```
+
+## How to Run
+
+```bash
+poetry run tiny dev
+```
+
+Access: <http://127.0.0.1:8000>
+
+## Run FastAPI Server
+
+```bash
+poetry run tiny api
+```
+
+Access: <http://127.0.0.1:8001>
 
 ## Offline Mode (No Database)
 
@@ -209,6 +167,7 @@ TinyURL supports graceful offline mode.
 - UI loads
 - Short URLs are generated
 - QR codes are generated
+- Redirects work from in-memory cache
 
 ### What is disabled
 
@@ -232,14 +191,6 @@ Log message:
 
 ## Switching Modes
 
-### With MongoDB
-
-```sh
-poetry install --with mongodb
-sudo systemctl start mongod
-poetry run tiny dev
-```
-
 ### Without MongoDB
 
 ```sh
@@ -256,53 +207,15 @@ poetry run tiny dev
 
 ---
 
-## REST API (FastAPI)
-
-### API Base URL
-
-<http://127.0.0.1:8000/api>
-
-### Swagger Docs
-
-<http://127.0.0.1:8000/api/docs>
-
-### Shorten URL
-
-POST /api/shorten
-
-Request:
-
-```json
-{
-  "url": "https://example.com"
-}
-```
-
-Response:
-
-```json
-{
-  "input_url": "https://example.com",
-  "output_url": "http://127.0.0.1:8000/AbX92p",
-  "created_on": "2026-01-03T13:25:10+00:00"
-}
-```
-
-### API Version
-
-GET /api/version
-
-Response:
-
-```json
-{
-  "version": "0.1.0"
-}
-```
-
----
-
 ## Troubleshooting
+
+sometimes there might be chances that virtual environment get corrupted then delete the old virtual environment and start afresh.
+
+```sh
+poetry env info
+# this will provide virtual environment name
+poetry env remove <environment-full-name>
+```
 
 ### Mongo auth error
 
@@ -322,27 +235,56 @@ MONGO_URI=mongodb://user%40gmail.com:Pass%40123@localhost:27017/tiny_url?authSou
 
 ```sh
 sudo systemctl start mongod
-poetry run uvicorn app.main:app --reload
+poetry run tiny dev
 ```
 
----
+## Build & Packaging
+
+## Build Package
+
+```bash
+poetry clean
+poetry build
+```
+
+Artifacts in `dist/`
+
+- tiny-x.y.0-py3-none-any.whl
+- tiny-x.y.0.tar.gz
+
+## Test Locally
+
+```bash
+python -m venv .venv-dist
+source .venv-dist/bin/activate
+# Windows
+.venv-dist\Scripts\activate
+```
+
+### Install package
+
+```bash
+pip install dist/*.whl
+pip install --upgrade dist/*.whl
+```
 
 ## License
 
 📜Docs
-[run_with_curl](run_with_curl)
+[run_with_curl](docs/run_with_curl)
 
 Screenshots:
 Home Page:
-![home page](./assets/images/home.png)
-![home dark mode](./assets/images/home_dark.png)
-![home page](./assets/images/valid.png)
-![home layout](./assets/images/short_url.png)
-![recent](./assets/images/recent.png)
+![home page](assets/images/home.png)
+![home dark mode](assets/images/home_dark.png)
+![home page](assets/images/valid.png)
+![home layout](assets/images/short_url.png)
+![recent](assets/images/recent.png)
 tiny API Page:
-![API](./assets/images/API_page.png)
-![API1](./assets/images/api_page2.png)
-
+![API](assets/images/API_page.png)
+![API1](assets/images/api_page2.png)
+No DB Mode:
+![NO DB](assets/images/no-db.png)
 📜License
 
 [MIT](LICENSE)
