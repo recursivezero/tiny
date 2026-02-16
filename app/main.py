@@ -18,7 +18,7 @@ from app.utils.cache import (
     set_cache_pair,
     url_cache,
 )
-from app.utils.config import DOMAIN, MAX_RECENT_URLS, SESSION_SECRET, load_env
+from app.utils.config import DOMAIN, MAX_RECENT_URLS, SESSION_SECRET
 from app.utils.helper import (
     format_date,
     generate_code,
@@ -27,7 +27,6 @@ from app.utils.helper import (
 )
 from app.utils.qr import generate_qr_with_logo
 
-load_env()
 
 
 # -----------------------------
@@ -151,7 +150,7 @@ async def create_short_url(
         return RedirectResponse("/", status_code=303)
 
     # Mypy now knows short_code is strictly 'str'
-    new_short_url = build_short_url(short_code, str(request.base_url))
+    new_short_url = build_short_url(short_code, DOMAIN)
 
     session.update(
         {
