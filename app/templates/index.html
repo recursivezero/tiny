@@ -4,7 +4,7 @@
 <main class="main-layout">
   <div class="hero-input-card">
     <h1>tiny URL</h1>
-    <form method="POST" id="shortenForm">
+    <form method="POST" id="shortenForm" action="/shorten">
       <div class="input-wrapper">
         <input type="text" name="original_url" placeholder="Paste your long link here..."
           value="{{ original_url or '' }}" required>
@@ -39,12 +39,17 @@
       </div>
     </div>
     <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-      <button onclick="copyLink()" class="btn-copy"
-        style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; padding: 0.8rem 1.5rem; border-radius: 1rem; cursor: pointer;">Copy
-        Link</button>
-      {% if qr_image %}<a href="{{ qr_image }}" download
-        style="text-align: center; font-size: 0.7rem; color: var(--text-secondary); text-decoration: none;">Download
-        QR</a>{% endif %}
+      <button onclick="copyLink(this)" data-url="{{ new_short_url }}" class="btn-copy"
+        style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; padding: 0.8rem 1.5rem; border-radius: 1rem; cursor: pointer; position: relative;">
+        Copy Link
+      </button>
+
+      {% if qr_image %}
+      <a href="{{ qr_image }}" download
+        style="text-align: center; font-size: 0.7rem; color: var(--text-secondary); text-decoration: none;">
+        Download QR
+      </a>
+      {% endif %}
     </div>
   </div>
   {% endif %}
@@ -113,10 +118,30 @@
 </footer>
 
 <script>
-  function copyLink() {
-    const text = document.getElementById('shortUrlDisplay').innerText;
-    navigator.clipboard.writeText(text);
-    alert('Copied to clipboard!');
+  async function copyLink(btn) {
+    // Get the dynamic value from the data attribute
+    const url = btn.getAttribute('data-url');
+    const originalText = btn.innerText;
+
+    try {
+      await navigator.clipboard.writeText(url);
+
+      // Visual feedback: Change text and style
+      btn.innerText = 'Copied!';
+      btn.style.borderColor = '#4ade80'; // A subtle green (Tailwind-like)
+      btn.style.color = '#4ade80';
+
+      // Reset after 2 seconds
+      setTimeout(() => {
+        btn.innerText = originalText;
+        btn.style.borderColor = 'var(--glass-border)';
+        btn.style.color = 'white';
+      }, 2000);
+
+    } catch (err) {
+      console.error('Copy failed', err);
+      // Fallback if needed
+    }
   }
 </script>
 {% endblock %}

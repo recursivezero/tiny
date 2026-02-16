@@ -2,6 +2,7 @@ import string
 import random
 from datetime import timezone
 import validators
+from app.utils.config import SHORT_CODE_LENGTH
 
 
 def is_valid_url(url: str) -> bool:
@@ -17,12 +18,16 @@ def sanitize_url(url: str) -> str:
     return url
 
 
-def generate_code(length: int = 6) -> str:
+def generate_code(length: int = SHORT_CODE_LENGTH) -> str:
     chars = string.ascii_letters + string.digits
     return "".join(random.choice(chars) for _ in range(length))
 
 
 def format_date(dt):
+    if not dt:
+        return "Just now"
+
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
-    return dt.strftime("%d %b %Y")
+
+    return dt.strftime("%d %b %Y, %I:%M %p")
