@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>{% block title %}tiny URL{% endblock %}</title>
+  <meta name="description" content="Advanced URL Management Platform">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="tiny URL - Precision Shortening">
+  <meta property="og:image" content="/static/og-image.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Geist+Mono&display=swap"
+    rel="stylesheet">
+
+  <link rel="stylesheet" href="/static/css/tiny.css">
+
+  {% block head_extra %}{% endblock %}
+</head>
+
+<body class="dark-theme">
+  <div class="bg-glow"></div>
+
+  {% include "header.html" %}
+
+  {% block content %}{% endblock %}
+
+  <script>
+    // Global Theme Management
+    (function applyTheme() {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.body.className = theme === 'dark' ? 'dark-theme' : 'light-theme';
+    })();
+  </script>
+</body>
+
+</html>

@@ -2,7 +2,7 @@ name: "Auto Format Issue Title"
 
 on:
   issues:
-    types: [opened, labeled]
+    types: [opened, edited]
 permissions:
   issues: write
 
