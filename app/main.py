@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI, Form, Request
+from fastapi import FastAPI, Form, Request, status
 from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -26,7 +26,6 @@ from app.utils.helper import (
     sanitize_url,
 )
 from app.utils.qr import generate_qr_with_logo
-
 
 
 # -----------------------------
@@ -103,37 +102,27 @@ async def create_short_url(
     original_url: str = Form(""),
     generate_qr: Optional[str] = Form(None),
     qr_type: str = Form("short"),
-):
+) -> RedirectResponse:
     session = request.session
     qr_enabled = bool(generate_qr)
     original_url = sanitize_url(original_url)
 
-    if not original_url:
-        session["error"] = "URL cannot be empty."
-        return RedirectResponse("/", status_code=303)
-
-    if not is_valid_url(original_url):
-        session["error"] = (
-            "Please enter a valid URL (must start with http:// or https://)."
-        )
-        return RedirectResponse("/", status_code=303)
+    # Basic validation (FastAPI can also handle this via Pydantic)
+    if not original_url or not is_valid_url(original_url):
+        session["error"] = "Please enter a valid URL."
+        return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
     # 1. Try Cache First
     short_code: Optional[str] = get_short_from_cache(original_url)
 
-    if short_code:
-        session["info_message"] = "Already shortened before — fetched from cache."
-    else:
+    if not short_code:
         # 2. Try Database
         existing = db_data.find_by_original_url(original_url)
         # Pull the value and check it in one go
         db_code = existing.get("short_code") if existing else None
         if isinstance(db_code, str):
             short_code = db_code
-            set_cache_pair(short_code, original_url)  # Cache it for future
-            session["info_message"] = (
-                "Already shortened before — fetched from database."
-            )
+            set_cache_pair(short_code, original_url)  # Cache it for future requests
 
         # 3. Generate New if still None
         if not short_code:
@@ -147,7 +136,7 @@ async def create_short_url(
     if not isinstance(short_code, str):
         # This acts as a final safety net for production
         session["error"] = "Internal server error: Code generation failed."
-        return RedirectResponse("/", status_code=303)
+        return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
     # Mypy now knows short_code is strictly 'str'
     new_short_url = build_short_url(short_code, DOMAIN)
@@ -162,7 +151,7 @@ async def create_short_url(
         }
     )
 
-    return RedirectResponse("/", status_code=303)
+    return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @app.get("/recent", response_class=HTMLResponse)
