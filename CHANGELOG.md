@@ -11,3 +11,9 @@ All notable changes to this repository will be documented in this file.
 
 - Restructure folder structure
 - added poetry dev script
+
+## [1.0.0] Sun, Feb 15, 2026
+
+- Added In-Memory cache strategy
+- DB dependency optional
+- Change UI
