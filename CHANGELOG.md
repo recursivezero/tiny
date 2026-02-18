@@ -17,3 +17,7 @@ All notable changes to this repository will be documented in this file.
 - Added In-Memory cache strategy
 - DB dependency optional
 - Change UI
+
+## [1.0.3] Wed, Feb 18, 2026
+
+- Added Database connection retry logic
