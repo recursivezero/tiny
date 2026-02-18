@@ -1,15 +1,16 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
+import logging
 
 from fastapi import FastAPI, Form, Request, status
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 
 from app.api.fast_api import app as api_app
-from app.utils import data as db_data
+from app.utils import db
 from app.utils.cache import (
     get_from_cache,
     get_recent_from_cache,
@@ -33,8 +34,26 @@ from app.utils.qr import generate_qr_with_logo
 # -----------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    db_data.connect_db()
+    logger = logging.getLogger(__name__)
+    logger.info("Application startup: Connecting to database...")
+    db.connect_db()
+    db.start_health_check()
+    logger.info("Application startup complete")
+    
     yield
+    
+    logger.info("Application shutdown: Cleaning up...")
+    await db.stop_health_check()
+    
+    # Close MongoDB client gracefully
+    try:
+        if db.client is not None:
+            db.client.close()
+            logger.info("MongoDB client closed")
+    except Exception as e:
+        logger.error(f"Error closing MongoDB client: {str(e)}")
+    
+    logger.info("Application shutdown complete")
 
 
 app = FastAPI(title="TinyURL", lifespan=lifespan)
@@ -75,7 +94,7 @@ async def index(request: Request):
         generate_qr_with_logo(qr_data, str(qr_dir / qr_filename))
         qr_image = f"/static/qr/{qr_filename}"
 
-    all_urls = db_data.get_recent_urls(MAX_RECENT_URLS) or get_recent_from_cache(
+    all_urls = db.get_recent_urls(MAX_RECENT_URLS) or get_recent_from_cache(
         MAX_RECENT_URLS
     )
 
@@ -91,7 +110,7 @@ async def index(request: Request):
             "original_url": original_url,
             "error": error,
             "info_message": info_message,
-            "db_available": db_data.get_collection() is not None,
+            "db_available": db.get_collection() is not None,
         },
     )
 
@@ -103,6 +122,8 @@ async def create_short_url(
     generate_qr: Optional[str] = Form(None),
     qr_type: str = Form("short"),
 ) -> RedirectResponse:
+    logger = logging.getLogger(__name__)
+    
     session = request.session
     qr_enabled = bool(generate_qr)
     original_url = sanitize_url(original_url)
@@ -116,25 +137,28 @@ async def create_short_url(
     short_code: Optional[str] = get_short_from_cache(original_url)
 
     if not short_code:
-        # 2. Try Database
-        existing = db_data.find_by_original_url(original_url)
-        # Pull the value and check it in one go
-        db_code = existing.get("short_code") if existing else None
-        if isinstance(db_code, str):
-            short_code = db_code
-            set_cache_pair(short_code, original_url)  # Cache it for future requests
+        # 2. Try Database if connected
+        if db.is_connected():
+            existing = db.find_by_original_url(original_url)
+            db_code = existing.get("short_code") if existing else None
+            if isinstance(db_code, str):
+                short_code = db_code
+                set_cache_pair(short_code, original_url)
 
         # 3. Generate New if still None
         if not short_code:
             short_code = generate_code()
             set_cache_pair(short_code, original_url)
-            db_data.insert_url(short_code, original_url)
+            
+            # Only write to database if connected
+            if db.is_connected():
+                db.insert_url(short_code, original_url)
+            else:
+                logger.warning(f"Database not connected, URL {short_code} created in cache only")
+                session["info_message"] = "URL created (database temporarily unavailable)"
 
     # --- TYPE GUARD FOR MYPY ---
-    # At this point, short_code could still technically be Optional[str]
-    # if generate_code() wasn't strictly typed. We cast or assert.
     if not isinstance(short_code, str):
-        # This acts as a final safety net for production
         session["error"] = "Internal server error: Code generation failed."
         return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
@@ -156,7 +180,7 @@ async def create_short_url(
 
 @app.get("/recent", response_class=HTMLResponse)
 async def recent_urls(request: Request):
-    recent_urls_list = db_data.get_recent_urls(
+    recent_urls_list = db.get_recent_urls(
         MAX_RECENT_URLS
     ) or get_recent_from_cache(MAX_RECENT_URLS)
 
@@ -183,7 +207,7 @@ async def recent_urls(request: Request):
 
 @app.post("/delete/{short_code}")
 async def delete_url(request: Request, short_code: str):
-    db_data.delete_by_short_code(short_code)
+    db.delete_by_short_code(short_code)
 
     cached = url_cache.pop(short_code, None)
     if cached:
@@ -194,24 +218,50 @@ async def delete_url(request: Request, short_code: str):
 
 @app.get("/{short_code}")
 async def redirect_short(request: Request, short_code: str):
-    doc = db_data.increment_visit(short_code)
-
+    logger = logging.getLogger(__name__)
+    # Try cache first
     cached_url = get_from_cache(short_code)
     if cached_url:
         return RedirectResponse(cached_url)
-
+    
+    # Check if database is connected
+    if not db.is_connected():
+        logger.warning(f"Database not connected, cannot redirect {short_code}")
+        return PlainTextResponse(
+            "Service temporarily unavailable. Please try again later.",
+            status_code=503,
+            headers={"Retry-After": "30"}
+        )
+    
+    # Try database
+    doc = db.increment_visit(short_code)
     if doc:
         set_cache_pair(short_code, doc["original_url"])
         return RedirectResponse(doc["original_url"])
-    if db_data.get_collection() is None:
-        return PlainTextResponse("Database is not connected.", status_code=503)
-
+    
     return PlainTextResponse("Invalid or expired short URL", status_code=404)
 
 
 @app.get("/coming-soon", response_class=HTMLResponse)
 async def coming_soon(request: Request):
     return templates.TemplateResponse("coming-soon.html", {"request": request})
+
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint showing database and cache status."""
+    state = db.get_connection_state()
+    
+    response_data = {
+        "database": state,
+        "cache": {
+            "enabled": True,
+            "size": len(url_cache),
+        }
+    }
+    
+    status_code = 200 if state["connected"] else 503
+    return JSONResponse(content=response_data, status_code=status_code)
 
 
 app.mount("/api", api_app)

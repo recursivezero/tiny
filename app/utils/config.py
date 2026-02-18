@@ -41,6 +41,22 @@ MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB_NAME = "tiny_url"
 MONGO_COLLECTION = os.getenv("MONGO_COLLECTION", "urls")
 
+# Connection timeouts (in milliseconds)
+MONGO_TIMEOUT_MS = _get_int("MONGO_TIMEOUT_MS", 10000)
+MONGO_SOCKET_TIMEOUT_MS = _get_int("MONGO_SOCKET_TIMEOUT_MS", 20000)
+
+# Connection pool settings
+MONGO_MIN_POOL_SIZE = _get_int("MONGO_MIN_POOL_SIZE", 5)
+MONGO_MAX_POOL_SIZE = _get_int("MONGO_MAX_POOL_SIZE", 50)
+
+# Retry configuration
+MONGO_MAX_RETRIES = _get_int("MONGO_MAX_RETRIES", 10)
+MONGO_INITIAL_RETRY_DELAY = 1.0
+MONGO_MAX_RETRY_DELAY = 30.0
+
+# Health check interval (in seconds)
+HEALTH_CHECK_INTERVAL_SECONDS = _get_int("HEALTH_CHECK_INTERVAL_SECONDS", 30)
+
 
 # -------------------------
 # Cache (constants)

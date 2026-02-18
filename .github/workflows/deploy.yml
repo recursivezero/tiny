@@ -22,7 +22,7 @@ jobs:
             git pull origin release
 
             # Install dependencies (Production mode, no dev deps)
-            /root/.local/bin/poetry install --only main --sync
+            /root/.local/bin/poetry install --only main --all-extras --sync
 
             # Restart the service
             sudo systemctl restart tiny.service
