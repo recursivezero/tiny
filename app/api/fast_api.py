@@ -20,7 +20,7 @@ else:
 
 
 from app import __version__
-from app.utils import data as db_data
+from app.utils import db
 from app.utils.cache import get_short_from_cache, set_cache_pair
 from app.utils.helper import generate_code, is_valid_url, sanitize_url
 
@@ -154,7 +154,7 @@ def shorten_url(payload: ShortenRequest):
             },
         )
 
-    if db_data.collection is None:
+    if db.collection is None:
         cached_short = get_short_from_cache(original_url)
         short_code = cached_short or generate_code()
         set_cache_pair(short_code, original_url)
@@ -166,7 +166,7 @@ def shorten_url(payload: ShortenRequest):
         }
 
     try:
-        existing = db_data.collection.find_one({"original_url": original_url})
+        existing = db.collection.find_one({"original_url": original_url})
     except PyMongoError:
         existing = None
 
@@ -180,7 +180,7 @@ def shorten_url(payload: ShortenRequest):
 
     short_code = generate_code()
     try:
-        db_data.collection.insert_one(
+        db.collection.insert_one(
             {
                 "short_code": short_code,
                 "original_url": original_url,
