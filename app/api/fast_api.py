@@ -1,4 +1,3 @@
-# app/api/fast_api.py
 import traceback
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse

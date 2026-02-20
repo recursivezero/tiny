@@ -268,6 +268,27 @@ pip install dist/*.whl
 pip install --upgrade dist/*.whl
 ```
 
+`📡 Endpoints`
+
+🖥️ UI Endpoints
+
+| Method | Path            | Description                          |
+| ------ | --------------- | ------------------------------------ |
+| GET    | `/`             | Home page (URL shortener UI)         |
+| GET    | `/recent`       | Shows recently shortened URLs        |
+| GET    | `/{short_code}` | Redirects to the original URL        |
+| GET    | `/debug/cache`  | 🔧 Debug cache view (local/dev only) |
+
+🔌 API Endpoints (v1)
+
+| Method | Path                | Description                      |
+| ------ | ------------------- | -------------------------------- |
+| POST   | `/api/v1/shorten`   | Create a short URL               |
+| GET    | `/api/v1/version`   | Get API version                  |
+| GET    | `/api/v1/health`    | Health check (DB + cache status) |
+| GET    | `/api/_debug/cache` | 🔧 Debug cache view (dev only)   |
+| GET    | `/api/{short_code}` | Redirect to original URL         |
+
 ## License
 
 📜Docs
