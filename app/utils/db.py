@@ -40,13 +40,7 @@ def connect_db(max_retries: int = 1) -> bool:
     Returns:
         True if connection successful, False otherwise
     """
-    global \
-        client, \
-        db, \
-        collection, \
-        connection_state, \
-        last_connection_attempt, \
-        connection_error
+    global client, db, collection, connection_state, last_connection_attempt, connection_error
 
     if not MONGO_INSTALLED:
         logger.error("PyMongo is not installed")
@@ -110,9 +104,9 @@ def get_connection_state() -> dict[str, Any]:
     """Return current connection state information."""
     return {
         "state": connection_state,
-        "last_attempt": last_connection_attempt.isoformat()
-        if last_connection_attempt
-        else None,
+        "last_attempt": (
+            last_connection_attempt.isoformat() if last_connection_attempt else None
+        ),
         "error": connection_error,
         "connected": is_connected(),
     }
