@@ -34,14 +34,20 @@ health_check_task: Any = None
 def connect_db(max_retries: Optional[int] = None) -> bool:
     """
     Connect to MongoDB with retry logic and exponential backoff.
-    
+
     Args:
         max_retries: Maximum number of retry attempts (defaults to config value)
-    
+
     Returns:
         True if connection successful, False otherwise
     """
-    global client, db, collection, connection_state, last_connection_attempt, connection_error
+    global \
+        client, \
+        db, \
+        collection, \
+        connection_state, \
+        last_connection_attempt, \
+        connection_error
 
     if not MONGO_INSTALLED:
         logger.error("PyMongo is not installed")
@@ -68,8 +74,10 @@ def connect_db(max_retries: Optional[int] = None) -> bool:
     for attempt in range(1, max_retries + 1):
         connection_state = "CONNECTING"
         last_connection_attempt = datetime.utcnow()
-        
-        logger.info(f"Attempting to connect to MongoDB (attempt {attempt}/{max_retries})...")
+
+        logger.info(
+            f"Attempting to connect to MongoDB (attempt {attempt}/{max_retries})..."
+        )
 
         try:
             # Create MongoClient with timeout and pool settings
@@ -80,17 +88,17 @@ def connect_db(max_retries: Optional[int] = None) -> bool:
                 minPoolSize=MONGO_MIN_POOL_SIZE,
                 maxPoolSize=MONGO_MAX_POOL_SIZE,
             )
-            
+
             # Validate connection with ping
             new_client.admin.command("ping")
-            
+
             # Connection successful
             client = new_client
             db = new_client[MONGO_DB_NAME]
             collection = db[MONGO_COLLECTION]
             connection_state = "CONNECTED"
             connection_error = None
-            
+
             logger.info("Successfully connected to MongoDB")
             return True
 
@@ -98,7 +106,7 @@ def connect_db(max_retries: Optional[int] = None) -> bool:
             error_msg = f"Connection attempt {attempt} failed: {str(e)}"
             logger.warning(error_msg)
             connection_error = str(e)
-            
+
             if attempt < max_retries:
                 logger.info(f"Retrying in {retry_delay:.1f} seconds...")
                 time.sleep(retry_delay)
@@ -120,7 +128,9 @@ def get_connection_state() -> dict[str, Any]:
     """Return current connection state information."""
     return {
         "state": connection_state,
-        "last_attempt": last_connection_attempt.isoformat() if last_connection_attempt else None,
+        "last_attempt": last_connection_attempt.isoformat()
+        if last_connection_attempt
+        else None,
         "error": connection_error,
         "connected": is_connected(),
     }
@@ -227,23 +237,23 @@ def increment_visit(short_code: str) -> Optional[dict]:
 async def health_check_loop() -> None:
     """Background task that periodically checks database connection health."""
     global connection_state, connection_error
-    
+
     from app.utils.config import HEALTH_CHECK_INTERVAL_SECONDS
-    
+
     logger.info("Health check loop started")
-    
+
     try:
         while True:
             await asyncio.sleep(HEALTH_CHECK_INTERVAL_SECONDS)
-            
+
             logger.debug("Running health check...")
-            
+
             # If disconnected, try to reconnect
             if not is_connected():
                 logger.info("Database disconnected, attempting reconnection...")
                 connect_db()
                 continue
-            
+
             # Validate active connection with ping
             try:
                 if client is not None:
@@ -253,7 +263,7 @@ async def health_check_loop() -> None:
                 logger.error(f"Health check failed: {str(e)}")
                 connection_state = "FAILED"
                 connection_error = str(e)
-                
+
     except asyncio.CancelledError:
         logger.info("Health check loop cancelled")
         raise
@@ -262,7 +272,7 @@ async def health_check_loop() -> None:
 def start_health_check() -> Any:
     """Start the background health check task."""
     global health_check_task
-    
+
     health_check_task = asyncio.create_task(health_check_loop())
     logger.info("Health check task started")
     return health_check_task
@@ -271,7 +281,7 @@ def start_health_check() -> Any:
 async def stop_health_check() -> None:
     """Stop the background health check task."""
     global health_check_task
-    
+
     if health_check_task is not None:
         logger.info("Stopping health check task...")
         health_check_task.cancel()

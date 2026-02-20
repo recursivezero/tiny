@@ -1,13 +1,13 @@
-
 import os
 # -------------------------
 # Helpers
 # -------------------------
 
 
-from app.utils.config_env import load_env # noqa: F401
+from app.utils.config_env import load_env  # noqa: F401
 
 load_env()
+
 
 def _get_int(key: str, default: int) -> int:
     try:
