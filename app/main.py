@@ -15,20 +15,29 @@ from app.utils.config import SESSION_SECRET
 
 
 # -----------------------------
-# Lifespan: env + DB connect ONCE
+# Lifespan: env + DB connect ONCE (DB-optional)
 # -----------------------------
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger = logging.getLogger(__name__)
-    logger.info("Application startup: Connecting to database...")
-    db.connect_db()
-    db.start_health_check()
-    logger.info("Application startup complete")
+    logger.info("Application startup: Initializing services...")
 
+    db_ok = db.connect_db()
+    if db_ok:
+        db.start_health_check()
+        logger.info("🟢 MongoDB enabled")
+    else:
+        logger.warning("🟡 MongoDB disabled (cache-only mode)")
+
+    logger.info("Application startup complete")
     yield
 
     logger.info("Application shutdown: Cleaning up...")
-    await db.stop_health_check()
+
+    try:
+        await db.stop_health_check()
+    except Exception as e:
+        logger.error(f"Error stopping health check: {str(e)}")
 
     try:
         if db.client is not None:
@@ -65,4 +74,4 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Routers (UI + API)
 # -----------------------------
 app.include_router(ui_router)  # UI routes at "/"
-app.include_router(api_router)  # API routes at "/api" (or /api/v1 prefix inside router)
+app.include_router(api_router)  # API routes at "/api"

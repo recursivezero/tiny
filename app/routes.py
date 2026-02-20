@@ -23,7 +23,7 @@ from app.utils.cache import (
     url_cache,
     rev_cache,
 )
-from app.utils.config import DOMAIN, MAX_RECENT_URLS, MODE
+from app.utils.config import DOMAIN, MAX_RECENT_URLS
 from app.utils.helper import generate_code, is_valid_url, sanitize_url, format_date
 from app.utils.qr import generate_qr_with_logo
 
@@ -172,19 +172,34 @@ def redirect_short_ui(short_code: str):
     return PlainTextResponse("Invalid short URL", status_code=404)
 
 
-@ui_router.get("/debug/cache", include_in_schema=False)
-def ui_debug_cache():
-    if MODE != "local":
-        return PlainTextResponse("Not Found", status_code=404)
+@ui_router.delete("/recent/{short_code}")
+def delete_recent_api(short_code: str):
+    """
+    Delete a short URL from recent list (cache-first, DB optional).
+    UI should never fail if DB is down.
+    """
 
+    # 1️⃣ Remove from cache (source of truth for UI)
+    recent = get_recent_from_cache(MAX_RECENT_URLS)
+    removed_from_cache = False
+
+    for i, item in enumerate(recent or []):
+        code = item.get("short_code") or item.get("code")
+        if code == short_code:
+            recent.pop(i)
+            removed_from_cache = True
+            break
+
+    # 2️⃣ Best-effort DB delete
+    db_deleted = False
+    if db.is_connected():
+        db_deleted = db.delete_by_short_code(short_code)
+
+    # 3️⃣ Always succeed for UI
     return {
-        "url_cache": url_cache,
-        "rev_cache": rev_cache,
-        "recent_from_cache": get_recent_from_cache(MAX_RECENT_URLS),
-        "size": {
-            "url_cache": len(url_cache),
-            "rev_cache": len(rev_cache),
-        },
+        "success": True,
+        "removed_from_cache": removed_from_cache,
+        "db_deleted": bool(db_deleted),
     }
 
 
