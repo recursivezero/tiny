@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
-from app.utils.cache import list_cache_clean, cleanup_expired, clear_cache
+from app.utils.cache import list_cache_clean, clear_cache
 from fastapi import APIRouter, Form, Request, status, HTTPException
 from fastapi.responses import (
     HTMLResponse,
