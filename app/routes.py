@@ -2,8 +2,8 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
-
-from fastapi import APIRouter, Form, Request, status
+from app.utils.cache import list_cache_clean, cleanup_expired, clear_cache
+from fastapi import APIRouter, Form, Request, status, HTTPException
 from fastapi.responses import (
     HTMLResponse,
     PlainTextResponse,
@@ -21,7 +21,6 @@ from app.utils.cache import (
     get_short_from_cache,
     set_cache_pair,
     url_cache,
-    rev_cache,
 )
 from app.utils.config import DOMAIN, MAX_RECENT_URLS
 from app.utils.helper import generate_code, is_valid_url, sanitize_url, format_date
@@ -137,6 +136,24 @@ async def recent_urls(request: Request):
         "recent.html",
         {"request": request, "urls": recent_urls_list, "format_date": format_date},
     )
+
+
+@ui_router.get("/cache/list")
+def cache_list_ui():
+    return list_cache_clean()
+
+
+@ui_router.post("/cache/clean")
+def cache_clean_ui(key: str):
+    if key == "CACHE_TTL":
+        cleanup_expired()
+        return {"status": "cleaned", "strategy": "TTL", **list_cache_clean()}
+
+    if key == "ALL":
+        clear_cache()
+        return {"status": "cleared", "strategy": "FULL_RESET", **list_cache_clean()}
+
+    raise HTTPException(400, "Invalid key. Use key=CACHE_TTL or key=ALL")
 
 
 @ui_router.get("/{short_code}")
@@ -302,19 +319,6 @@ def health():
     return {
         "db": db.get_connection_state(),
         "cache_size": len(url_cache),
-    }
-
-
-@api_router.get("/_debug/cache", include_in_schema=False)
-def debug_cache():
-    return {
-        "url_cache": url_cache,
-        "rev_cache": rev_cache,
-        "recent_from_cache": get_recent_from_cache(MAX_RECENT_URLS),
-        "size": {
-            "url_cache": len(url_cache),
-            "rev_cache": len(rev_cache),
-        },
     }
 
 
