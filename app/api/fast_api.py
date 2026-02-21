@@ -3,7 +3,7 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
 from app import __version__
-from app.routes import api_router
+from app.routes import api_router, ui_router
 
 app = FastAPI(
     title="Tiny API",
@@ -24,5 +24,5 @@ async def global_exception_handler(request: Request, exc: Exception):
     )
 
 
-# ✅ Single source of truth for API routes only
 app.include_router(api_router)
+app.include_router(ui_router)

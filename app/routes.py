@@ -326,28 +326,4 @@ def health():
     }
 
 
-@api_router.get("/{short_code}")
-def redirect_short_api(short_code: str):
-    cached_url = get_from_cache(short_code)
-    if cached_url:
-        return RedirectResponse(cached_url)
-
-    if db.is_connected():
-        doc = db.increment_visit(short_code)
-        if doc and doc.get("original_url"):
-            set_cache_pair(short_code, doc["original_url"])
-            return RedirectResponse(doc["original_url"])
-
-    recent = get_recent_from_cache(MAX_RECENT_URLS)
-    for item in recent or []:
-        code = item.get("short_code") or item.get("code")
-        if code == short_code:
-            original_url = item.get("original_url")
-            if original_url:
-                set_cache_pair(short_code, original_url)
-                return RedirectResponse(original_url)
-
-    return PlainTextResponse("Invalid short URL", status_code=404)
-
-
 api_router.include_router(api_v1)
