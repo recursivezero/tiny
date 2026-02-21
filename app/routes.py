@@ -145,15 +145,19 @@ def cache_list_ui():
 
 @ui_router.post("/cache/clean")
 def cache_clean_ui(key: str):
-    if key == "CACHE_TTL":
-        cleanup_expired()
-        return {"status": "cleaned", "strategy": "TTL", **list_cache_clean()}
+    """
+    key=CLEAR_ALL  -> force delete everything from cache
+    key=FORCE_ONE  -> force delete one entry (requires short_code or original_url)
+    """
+    if key == "CLEAR_ALL":
+        clear_cache()  # 🔥 force wipe all cache
+        return {
+            "status": "cleared",
+            "strategy": "FORCE_FULL_RESET",
+            **list_cache_clean(),
+        }
 
-    if key == "ALL":
-        clear_cache()
-        return {"status": "cleared", "strategy": "FULL_RESET", **list_cache_clean()}
-
-    raise HTTPException(400, "Invalid key. Use key=CACHE_TTL or key=ALL")
+    raise HTTPException(400, "Invalid key. Use key=CLEAR_ALL")
 
 
 @ui_router.get("/{short_code}")
