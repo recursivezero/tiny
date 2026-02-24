@@ -1,6 +1,7 @@
 import time
 from typing import TypedDict
-
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from app.utils.config import CACHE_TTL, MAX_RECENT_URLS
 
 
@@ -12,8 +13,13 @@ class UrlCacheItem(TypedDict):
 class RevCacheItem(TypedDict):
     short_code: str
     expires_at: float
+    created_at: float
     last_accessed: float
 
+
+# -----------------------
+# Performance caches (TTL)
+# -----------------------
 
 # short_code -> original_url
 url_cache: dict[str, UrlCacheItem] = {}
@@ -31,54 +37,6 @@ def _now() -> float:
 # -----------------------
 
 
-def _delete_pair_by_short_code(short_code: str) -> None:
-    """
-    Remove both sides of cache using short_code.
-    """
-    data = url_cache.pop(short_code, None)
-    if data:
-        original_url = data["url"]
-        rev_cache.pop(original_url, None)
-
-
-def _delete_pair_by_url(original_url: str) -> None:
-    """
-    Remove both sides of cache using original_url.
-    """
-    data = rev_cache.pop(original_url, None)
-    if data:
-        short_code = data["short_code"]
-        url_cache.pop(short_code, None)
-
-
-def get_from_cache(short_code: str) -> str | None:
-    data = url_cache.get(short_code)
-
-    if not data:
-        return None
-
-    if data["expires_at"] < _now():
-        _delete_pair_by_short_code(short_code)
-        return None
-
-    return data["url"]
-
-
-def get_short_from_cache(original_url: str) -> str | None:
-    data = rev_cache.get(original_url)
-
-    if not data:
-        return None
-
-    if data["expires_at"] < _now():
-        _delete_pair_by_url(original_url)
-        return None
-
-    # Touch for recent tracking
-    data["last_accessed"] = _now()
-    return data["short_code"]
-
-
 def set_cache_pair(short_code: str, original_url: str) -> None:
     now = _now()
     expires_at = now + CACHE_TTL
@@ -91,79 +49,96 @@ def set_cache_pair(short_code: str, original_url: str) -> None:
     rev_cache[original_url] = {
         "short_code": short_code,
         "expires_at": expires_at,
+        "created_at": now,
         "last_accessed": now,
     }
 
 
-def clear_cache() -> None:
-    """
-    Useful for tests or if DB goes down and you want to reset cache.
-    """
-    url_cache.clear()
-    rev_cache.clear()
+def get_from_cache(short_code: str) -> str | None:
+    data = url_cache.get(short_code)
+
+    if not data:
+        return None
+
+    if data["expires_at"] < _now():
+        url_cache.pop(short_code, None)
+        _remove_recent_if_exists(short_code)
+        return None
+
+    return data["url"]
 
 
-# -----------------------
-# TTL Cleanup (ACTIVE)
-# -----------------------
+def get_short_from_cache(original_url: str) -> str | None:
+    data = rev_cache.get(original_url)
 
+    if not data:
+        return None
 
-def cleanup_expired() -> None:
-    """
-    Actively remove expired cache entries from both caches.
-    Safe to run periodically in background task.
-    """
-    now = _now()
+    if data["expires_at"] < _now():
+        rev_cache.pop(original_url, None)
+        return None
 
-    expired_short_codes = [
-        key for key, value in url_cache.items() if value["expires_at"] < now
-    ]
-
-    for short_code in expired_short_codes:
-        _delete_pair_by_short_code(short_code)
-
-    expired_urls = [
-        key for key, value in rev_cache.items() if value["expires_at"] < now
-    ]
-
-    for original_url in expired_urls:
-        _delete_pair_by_url(original_url)
-
-
-# -----------------------
-# Recent URLs (derived from rev_cache)
-# -----------------------
+    data["last_accessed"] = _now()
+    return data["short_code"]
 
 
 def get_recent_from_cache(limit: int = MAX_RECENT_URLS) -> list[dict]:
-    """
-    Returns recent URLs based on cache activity (TTL-aware, no duplicates).
-    """
     now = _now()
 
     valid_items = [
         {
             "short_code": data["short_code"],
             "original_url": original_url,
-            "last_accessed": data["last_accessed"],
+            "created_at": data["created_at"],
         }
         for original_url, data in rev_cache.items()
         if data["expires_at"] >= now
     ]
 
-    valid_items.sort(key=lambda x: x["last_accessed"], reverse=True)
+    valid_items.sort(key=lambda x: x["created_at"], reverse=True)
+    return valid_items[:limit]
 
-    return [
-        {
-            "short_code": item["short_code"],
-            "original_url": item["original_url"],
-        }
-        for item in valid_items[:limit]
+
+def cleanup_expired() -> None:
+    now = _now()
+
+    expired_short_codes = [
+        short_code for short_code, data in url_cache.items() if data["expires_at"] < now
     ]
+
+    for short_code in expired_short_codes:
+        url_cache.pop(short_code, None)
+        _remove_recent_if_exists(short_code)
+
+    expired_original_urls = [
+        original_url
+        for original_url, data in rev_cache.items()
+        if data["expires_at"] < now
+    ]
+
+    for original_url in expired_original_urls:
+        rev_cache.pop(original_url, None)
+
+
+def clear_cache() -> None:
+    url_cache.clear()
+    rev_cache.clear()
+
+
+def _remove_recent_if_exists(short_code: str) -> None:
+    to_delete = None
+
+    for original_url, data in rev_cache.items():
+        if data["short_code"] == short_code:
+            to_delete = original_url
+            break
+
+    if to_delete:
+        rev_cache.pop(to_delete, None)
 
 
 # -----------------------
-# Debug / Introspection
+# UI helpers
 # -----------------------
 
 
@@ -177,6 +152,9 @@ def list_cache_clean() -> dict:
         {
             "short_code": data["short_code"],
             "original_url": original_url,
+            "created_at": datetime.fromtimestamp(
+                data["created_at"], tz=ZoneInfo("Asia/Kolkata")
+            ).strftime("%d %b %Y, %I:%M %p"),
         }
         for original_url, data in rev_cache.items()
         if data["expires_at"] >= now

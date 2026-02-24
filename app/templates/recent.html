@@ -185,16 +185,25 @@
     function deleteUrl(shortCode, btn) {
       if (!confirm("Are you sure you want to delete this URL?")) return;
 
-      fetch(`/delete/${shortCode}`, {
-        method: "POST"
+      fetch(`/recent/${shortCode}`, {
+        method: "DELETE"
       })
-        .then(res => {
-          if (!res.ok) throw new Error("Delete failed");
+        .then(async (res) => {
+          const data = await res.json();
+
+          if (!res.ok || !data.success) {
+            throw new Error("Delete failed");
+          }
+
           const row = btn.closest("tr");
           if (row) row.remove();
         })
-        .catch(() => alert("Failed to delete URL"));
+        .catch((err) => {
+          console.error(err);
+          alert("Failed to delete URL");
+        });
     }
+
     function toggleRecent() {
       const box = document.getElementById('recentList');
       box.style.display = box.style.display === 'block' ? 'none' : 'block';
@@ -202,7 +211,6 @@
         box.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-
   </script>
 
 </body>
