@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/static/style.css">
 </head>
 
-<body>
+<body class="dark-theme">
   <header class="app-header">
     <div class="header-left">
       <div class="app-logo">🔗</div>
@@ -203,6 +203,21 @@
       }
     }
 
+  </script>
+
+  <script>
+    // Global Theme Management
+    (function applyTheme() {
+      const theme = localStorage.getItem('theme') || 'dark';
+      document.body.className = theme === 'dark' ? 'dark-theme' : 'light-theme';
+    })();
+
+    function toggleTheme() {
+      const current = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
+      const next = current === 'dark' ? 'light' : 'dark';
+      document.body.className = next + '-theme';
+      localStorage.setItem('theme', next);
+    }
   </script>
 
 </body>

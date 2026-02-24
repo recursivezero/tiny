@@ -216,12 +216,44 @@ async def delete_url(request: Request, short_code: str):
     return PlainTextResponse("", status_code=204)
 
 
+#@app.get("/{short_code}")
+#async def redirect_short(request: Request, short_code: str):
+#    logger = logging.getLogger(__name__)
+#    # Try cache first
+#    cached_url = get_from_cache(short_code)
+#    if cached_url:
+#        return RedirectResponse(cached_url)
+
+#    # Check if database is connected
+#    if not db.is_connected():
+#        logger.warning(f"Database not connected, cannot redirect {short_code}")
+#        return PlainTextResponse(
+#            "Service temporarily unavailable. Please try again later.",
+#            status_code=503,
+#            headers={"Retry-After": "30"},
+#        )
+
+#    # Try database
+#    doc = db.increment_visit(short_code)
+#    if doc:
+#        set_cache_pair(short_code, doc["original_url"])
+#        return RedirectResponse(doc["original_url"])
+
+#    return PlainTextResponse("Invalid or expired short URL", status_code=404)
+
 @app.get("/{short_code}")
 async def redirect_short(request: Request, short_code: str):
     logger = logging.getLogger(__name__)
     # Try cache first
     cached_url = get_from_cache(short_code)
     if cached_url:
+
+        if db.is_connected():
+            db.increment_visit(short_code)
+        else:
+            from app.utils.cache import increment_cache_visit
+            increment_cache_visit(short_code)
+
         return RedirectResponse(cached_url)
     
     # Check if database is connected
