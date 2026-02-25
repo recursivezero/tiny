@@ -13,22 +13,30 @@ from starlette.middleware.sessions import SessionMiddleware
 from app.routes import ui_router
 from app.utils import db
 from app.utils.cache import cleanup_expired
-from app.utils.config import SESSION_SECRET
-
 
 # -----------------------------
 # Background cache cleanup task
 # -----------------------------
+from app.utils.config import (
+    CACHE_TTL,
+    SESSION_SECRET,
+)
+
+
 async def cache_health_check():
     logger = logging.getLogger(__name__)
     logger.info("🧹 Cache cleanup task started")
+
+    interval = max(1, CACHE_TTL // 3)  # pure TTL-based
+
+    logger.info(f"🕒 Cache cleanup interval set to {interval}s")
 
     while True:
         try:
             cleanup_expired()
         except Exception as e:
             logger.error(f"Cache cleanup error: {e}")
-        await asyncio.sleep(5)  # cleanup every 5 seconds
+        await asyncio.sleep(interval)
 
 
 # -----------------------------

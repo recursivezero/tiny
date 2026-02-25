@@ -64,7 +64,6 @@ HEALTH_CHECK_INTERVAL_SECONDS = _get_int("HEALTH_CHECK_INTERVAL_SECONDS", 30)
 # -------------------------
 USE_CACHE = True
 CACHE_TTL = 900  # 15 minutes
-MAX_CACHE_SIZE = 10_000
 MAX_RECENT_URLS = 20
 
 # -------------------------

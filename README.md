@@ -277,7 +277,7 @@ pip install --upgrade dist/*.whl
 | GET    | `/`             | Home page (URL shortener UI)         |
 | GET    | `/recent`       | Shows recently shortened URLs        |
 | GET    | `/{short_code}` | Redirects to the original URL        |
-| GET    | `/debug/cache`  | 🔧 Debug cache view (local/dev only) |
+| GET    | `/cache/list`   | 🔧 Debug cache view (local/dev only) |
 
 🔌 API Endpoints (v1)
 
