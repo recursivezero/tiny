@@ -27,6 +27,9 @@ url_cache: dict[str, UrlCacheItem] = {}
 # original_url -> short_code (+ metadata for recent tracking)
 rev_cache: dict[str, RevCacheItem] = {}
 
+# short_code -> visit_count (temporary, in-memory)
+visit_cache: dict[str, int] = {}
+
 
 def _now() -> float:
     return time.time()
@@ -52,6 +55,10 @@ def set_cache_pair(short_code: str, original_url: str) -> None:
         "created_at": now,
         "last_accessed": now,
     }
+
+
+def increment_visit_cache(short_code: str) -> None:
+    visit_cache[short_code] = visit_cache.get(short_code, 0) + 1
 
 
 def get_from_cache(short_code: str) -> str | None:

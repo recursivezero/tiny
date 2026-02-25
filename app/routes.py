@@ -3,7 +3,15 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 from app.utils.cache import list_cache_clean, clear_cache
-from fastapi import APIRouter, Form, Request, status, HTTPException
+from fastapi import (
+    APIRouter,
+    Form,
+    Request,
+    status,
+    HTTPException,
+    Query,
+    BackgroundTasks,
+)
 from fastapi.responses import (
     HTMLResponse,
     PlainTextResponse,
@@ -20,7 +28,9 @@ from app.utils.cache import (
     get_recent_from_cache,
     get_short_from_cache,
     set_cache_pair,
+    increment_visit_cache,
     url_cache,
+    rev_cache,
 )
 from app.utils.config import DOMAIN, MAX_RECENT_URLS
 from app.utils.helper import generate_code, is_valid_url, sanitize_url, format_date
@@ -134,7 +144,13 @@ async def recent_urls(request: Request):
 
     return templates.TemplateResponse(
         "recent.html",
-        {"request": request, "urls": recent_urls_list, "format_date": format_date},
+        {
+            "request": request,
+            "urls": recent_urls_list,
+            "format_date": format_date,
+            "db_available": db.get_collection() is not None,
+            "get_visit_count_from_cache": increment_visit_cache,
+        },
     )
 
 
@@ -144,10 +160,12 @@ def cache_list_ui():
 
 
 @ui_router.post("/cache/clean")
-def cache_clean_ui(key: str):
+def cache_clean_ui(
+    key: str = Query(..., description="CLEAR_ALL | short_code | original_url"),
+):
     """
-    key=CLEAR_ALL  -> force delete everything from cache
-    key=FORCE_ONE  -> force delete one entry (requires short_code or original_url)
+    key=CLEAR_ALL              -> force delete everything from cache
+    key=<short_code or url>    -> force delete one entry from cache
     """
     if key == "CLEAR_ALL":
         clear_cache()  # 🔥 force wipe all cache
@@ -157,13 +175,43 @@ def cache_clean_ui(key: str):
             **list_cache_clean(),
         }
 
-    raise HTTPException(400, "Invalid key. Use key=CLEAR_ALL")
+    removed = False
+
+    # Try deleting by short_code
+    data = url_cache.pop(key, None)
+    if data:
+        rev_cache.pop(data["url"], None)
+        removed = True
+
+    # Try deleting by original_url
+    if not removed:
+        data = rev_cache.pop(key, None)
+        if data:
+            url_cache.pop(data["short_code"], None)
+            removed = True
+
+    if removed:
+        return {
+            "status": "deleted",
+            "strategy": "FORCE_ONE",
+            "key": key,
+            **list_cache_clean(),
+        }
+
+    raise HTTPException(
+        404,
+        "Key not found in cache. Use key=CLEAR_ALL or a valid short_code/original_url.",
+    )
 
 
 @ui_router.get("/{short_code}")
-def redirect_short_ui(short_code: str):
+def redirect_short_ui(short_code: str, background_tasks: BackgroundTasks):
     cached_url = get_from_cache(short_code)
     if cached_url:
+        if db.is_connected():
+            background_tasks.add_task(db.increment_visit, short_code)
+        else:
+            increment_visit_cache(short_code)
         return RedirectResponse(cached_url)
 
     if db.is_connected():
@@ -171,15 +219,6 @@ def redirect_short_ui(short_code: str):
         if doc and doc.get("original_url"):
             set_cache_pair(short_code, doc["original_url"])
             return RedirectResponse(doc["original_url"])
-
-        recent_db = db.get_recent_urls(MAX_RECENT_URLS)
-        for item in recent_db or []:
-            code = item.get("short_code") or item.get("code")
-            if code == short_code:
-                original_url = item.get("original_url")
-                if original_url:
-                    set_cache_pair(short_code, original_url)
-                    return RedirectResponse(original_url)
 
     recent_cache = get_recent_from_cache(MAX_RECENT_URLS)
     for item in recent_cache or []:
@@ -200,7 +239,6 @@ def delete_recent_api(short_code: str):
     UI should never fail if DB is down.
     """
 
-    # 1️⃣ Remove from cache (source of truth for UI)
     recent = get_recent_from_cache(MAX_RECENT_URLS)
     removed_from_cache = False
 
@@ -211,12 +249,10 @@ def delete_recent_api(short_code: str):
             removed_from_cache = True
             break
 
-    # 2️⃣ Best-effort DB delete
     db_deleted = False
     if db.is_connected():
         db_deleted = db.delete_by_short_code(short_code)
 
-    # 3️⃣ Always succeed for UI
     return {
         "success": True,
         "removed_from_cache": removed_from_cache,
