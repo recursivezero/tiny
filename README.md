@@ -268,7 +268,18 @@ pip install dist/*.whl
 pip install --upgrade dist/*.whl
 ```
 
-`📡 Endpoints`
+# 📡 Endpoints
+
+# 🔐 Cache Admin Endpoints (Authentication)
+
+To use the cache admin endpoints (`/cache/purge`, `/cache/remove`), you must configure a secret token in your environment and send it in the request header.
+Setup
+
+Add a token in your .env file:
+
+```
+CACHE_PURGE_TOKEN=your-secret-token
+```
 
 🖥️ UI Endpoints
 
@@ -278,16 +289,20 @@ pip install --upgrade dist/*.whl
 | GET    | `/recent`       | Shows recently shortened URLs        |
 | GET    | `/{short_code}` | Redirects to the original URL        |
 | GET    | `/cache/list`   | 🔧 Debug cache view (local/dev only) |
+| DELETE | `/cache/purge`  | 🧹 Remove all entries from cache     |
+| PATCH  | `/cache/remove` | 🧹 Remove a single cache entry       |
 
 🔌 API Endpoints (v1)
 
-| Method | Path                | Description                      |
-| ------ | ------------------- | -------------------------------- |
-| POST   | `/api/v1/shorten`   | Create a short URL               |
-| GET    | `/api/v1/version`   | Get API version                  |
-| GET    | `/api/v1/health`    | Health check (DB + cache status) |
-| GET    | `/api/_debug/cache` | 🔧 Debug cache view (dev only)   |
-| GET    | `/api/{short_code}` | Redirect to original URL         |
+| Method | Path                | Description                          |
+| ------ | ------------------- | ------------------------------------ |
+| POST   | `/api/v1/shorten`   | Create a short URL                   |
+| GET    | `/api/v1/version`   | Get API version                      |
+| GET    | `/api/v1/health`    | Health check (DB + cache status)     |
+| GET    | `/api/{short_code}` | Redirect to original URL             |
+| GET    | `/cache/list`       | 🔧 Debug cache view (local/dev only) |
+| DELETE | `/cache/purge`      | 🧹 Remove all entries from cache     |
+| PATCH  | `/cache/remove`     | 🧹 Remove a single cache entry       |
 
 ## License
 

@@ -9,8 +9,9 @@ from fastapi import (
     Request,
     status,
     HTTPException,
-    Query,
     BackgroundTasks,
+    Header,
+    Query,
 )
 from fastapi.responses import (
     HTMLResponse,
@@ -30,9 +31,9 @@ from app.utils.cache import (
     set_cache_pair,
     increment_visit_cache,
     url_cache,
-    rev_cache,
+    remove_cache_key,
 )
-from app.utils.config import DOMAIN, MAX_RECENT_URLS
+from app.utils.config import DOMAIN, MAX_RECENT_URLS, CACHE_PURGE_TOKEN
 from app.utils.helper import generate_code, is_valid_url, sanitize_url, format_date
 from app.utils.qr import generate_qr_with_logo
 
@@ -159,49 +160,39 @@ def cache_list_ui():
     return list_cache_clean()
 
 
-@ui_router.post("/cache/clean")
-def cache_clean_ui(
-    key: str = Query(..., description="CLEAR_ALL | short_code | original_url"),
+@ui_router.delete("/cache/purge", response_class=PlainTextResponse)
+def cache_purge_ui(cache_token: str = Header(...)):
+    """
+    Force delete everything from cache (secured by header)
+    """
+    if cache_token != CACHE_PURGE_TOKEN:
+        raise HTTPException(status_code=401, detail="Unauthorized")
+
+    clear_cache()
+
+    return "cleared ALL"
+
+
+@ui_router.patch("/cache/remove")
+def cache_remove_one_ui(
+    key: str = Query(..., description="short_code OR original_url"),
+    cache_token: str = Header(...),
 ):
-    """
-    key=CLEAR_ALL              -> force delete everything from cache
-    key=<short_code or url>    -> force delete one entry from cache
-    """
-    if key == "CLEAR_ALL":
-        clear_cache()  # 🔥 force wipe all cache
-        return {
-            "status": "cleared",
-            "strategy": "FORCE_FULL_RESET",
-            **list_cache_clean(),
-        }
+    # 🔐 Header security
+    if cache_token != CACHE_PURGE_TOKEN:
+        raise HTTPException(status_code=401, detail="Unauthorized")
 
-    removed = False
+    removed = remove_cache_key(key)
 
-    # Try deleting by short_code
-    data = url_cache.pop(key, None)
-    if data:
-        rev_cache.pop(data["url"], None)
-        removed = True
-
-    # Try deleting by original_url
     if not removed:
-        data = rev_cache.pop(key, None)
-        if data:
-            url_cache.pop(data["short_code"], None)
-            removed = True
+        raise HTTPException(
+            status_code=404,
+            detail="Key not found in cache.",
+        )
 
-    if removed:
-        return {
-            "status": "deleted",
-            "strategy": "FORCE_ONE",
-            "key": key,
-            **list_cache_clean(),
-        }
-
-    raise HTTPException(
-        404,
-        "Key not found in cache. Use key=CLEAR_ALL or a valid short_code/original_url.",
-    )
+    return {
+        "status": "deleted",
+    }
 
 
 @ui_router.get("/{short_code}")

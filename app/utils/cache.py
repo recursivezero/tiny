@@ -17,6 +17,12 @@ class RevCacheItem(TypedDict):
     last_accessed: float
 
 
+class RecentItem(TypedDict):
+    short_code: str
+    original_url: str
+    created_at: float
+
+
 # -----------------------
 # Performance caches (TTL)
 # -----------------------
@@ -40,6 +46,25 @@ def _now() -> float:
 # -----------------------
 
 
+def _enforce_recent_limit() -> None:
+    """
+    Ensure rev_cache keeps only MAX_RECENT_URLS most recent items.
+    Removes the oldest entries by created_at.
+    """
+    if len(rev_cache) <= MAX_RECENT_URLS:
+        return
+
+    sorted_items = sorted(
+        rev_cache.items(),
+        key=lambda item: item[1]["created_at"],
+    )
+
+    excess = len(rev_cache) - MAX_RECENT_URLS
+    for i in range(excess):
+        original_url, _ = sorted_items[i]
+        rev_cache.pop(original_url, None)
+
+
 def set_cache_pair(short_code: str, original_url: str) -> None:
     now = _now()
     expires_at = now + CACHE_TTL
@@ -55,6 +80,8 @@ def set_cache_pair(short_code: str, original_url: str) -> None:
         "created_at": now,
         "last_accessed": now,
     }
+
+    _enforce_recent_limit()
 
 
 def increment_visit_cache(short_code: str) -> None:
@@ -89,18 +116,20 @@ def get_short_from_cache(original_url: str) -> str | None:
     return data["short_code"]
 
 
-def get_recent_from_cache(limit: int = MAX_RECENT_URLS) -> list[dict]:
+def get_recent_from_cache(limit: int = MAX_RECENT_URLS) -> list[RecentItem]:
     now = _now()
 
-    valid_items = [
-        {
-            "short_code": data["short_code"],
-            "original_url": original_url,
-            "created_at": data["created_at"],
-        }
-        for original_url, data in rev_cache.items()
-        if data["expires_at"] >= now
-    ]
+    valid_items: list[RecentItem] = []
+
+    for original_url, data in rev_cache.items():
+        if data["expires_at"] >= now:
+            valid_items.append(
+                {
+                    "short_code": data["short_code"],
+                    "original_url": original_url,
+                    "created_at": data["created_at"],
+                }
+            )
 
     valid_items.sort(key=lambda x: x["created_at"], reverse=True)
     return valid_items[:limit]
@@ -173,3 +202,25 @@ def list_cache_clean() -> dict:
         "MAX_RECENT_URLS": MAX_RECENT_URLS,
         "CACHE_TTL": CACHE_TTL,
     }
+
+
+def remove_cache_key(key: str) -> bool:
+    """
+    Remove a cache entry by short_code OR original_url.
+    """
+    is_url = key.startswith("http://") or key.startswith("https://")
+
+    if is_url:
+        rev_item = rev_cache.pop(key, None)
+        if rev_item:
+            url_cache.pop(rev_item["short_code"], None)
+            visit_cache.pop(rev_item["short_code"], None)
+            return True
+    else:
+        url_item = url_cache.pop(key, None)
+        if url_item:
+            rev_cache.pop(url_item["url"], None)
+            visit_cache.pop(key, None)
+            return True
+
+    return False

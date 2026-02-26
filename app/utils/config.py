@@ -71,6 +71,9 @@ MAX_RECENT_URLS = 20
 # -------------------------
 SESSION_SECRET = os.getenv("SESSION_SECRET", "super-secret-key")
 
+
+# Security token for cache/purge and cache/remove endpoint (in case we want to trigger it manually)
+CACHE_PURGE_TOKEN = os.getenv("CACHE_PURGE_TOKEN", "dev-token")
 # -------------------------
 # Short URL (constants)
 # -------------------------
