@@ -61,9 +61,9 @@ def set_cache_pair(short_code: str, original_url: str) -> None:
     expires_at = now + CACHE_TTL
 
     url_cache[short_code] = {
-    "url": original_url,
-    "expires_at": expires_at,
-    "visit_count": 0,
+        "url": original_url,
+        "expires_at": expires_at,
+        "visit_count": 0,
     }
 
     rev_cache[original_url] = {
@@ -114,14 +114,14 @@ def get_recent_from_cache(limit: int = MAX_RECENT_URLS) -> list[dict]:
     now = _now()
 
     items = [
-    {
-        "short_code": data["short_code"],
-        "original_url": original_url,
-        "visit_count": url_cache.get(data["short_code"], {}).get("visit_count", 0),
-    }
-    for original_url, data in rev_cache.items()
-    if data["expires_at"] >= now
-  ]
+        {
+            "short_code": data["short_code"],
+            "original_url": original_url,
+            "visit_count": url_cache.get(data["short_code"], {}).get("visit_count", 0),
+        }
+        for original_url, data in rev_cache.items()
+        if data["expires_at"] >= now
+    ]
 
     items.sort(
         key=lambda x: rev_cache[x["original_url"]]["last_accessed"], reverse=True

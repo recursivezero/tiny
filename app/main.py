@@ -4,7 +4,12 @@ from typing import Optional
 import logging
 
 from fastapi import FastAPI, Form, Request, status
-from fastapi.responses import HTMLResponse, PlainTextResponse, RedirectResponse, JSONResponse
+from fastapi.responses import (
+    HTMLResponse,
+    PlainTextResponse,
+    RedirectResponse,
+    JSONResponse,
+)
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
@@ -39,12 +44,12 @@ async def lifespan(app: FastAPI):
     db.connect_db()
     db.start_health_check()
     logger.info("Application startup complete")
-    
+
     yield
-    
+
     logger.info("Application shutdown: Cleaning up...")
     await db.stop_health_check()
-    
+
     # Close MongoDB client gracefully
     try:
         if db.client is not None:
@@ -52,7 +57,7 @@ async def lifespan(app: FastAPI):
             logger.info("MongoDB client closed")
     except Exception as e:
         logger.error(f"Error closing MongoDB client: {str(e)}")
-    
+
     logger.info("Application shutdown complete")
 
 
@@ -123,7 +128,7 @@ async def create_short_url(
     qr_type: str = Form("short"),
 ) -> RedirectResponse:
     logger = logging.getLogger(__name__)
-    
+
     session = request.session
     qr_enabled = bool(generate_qr)
     original_url = sanitize_url(original_url)
@@ -149,13 +154,17 @@ async def create_short_url(
         if not short_code:
             short_code = generate_code()
             set_cache_pair(short_code, original_url)
-            
+
             # Only write to database if connected
             if db.is_connected():
                 db.insert_url(short_code, original_url)
             else:
-                logger.warning(f"Database not connected, URL {short_code} created in cache only")
-                session["info_message"] = "URL created (database temporarily unavailable)"
+                logger.warning(
+                    f"Database not connected, URL {short_code} created in cache only"
+                )
+                session["info_message"] = (
+                    "URL created (database temporarily unavailable)"
+                )
 
     # --- TYPE GUARD FOR MYPY ---
     if not isinstance(short_code, str):
@@ -180,9 +189,9 @@ async def create_short_url(
 
 @app.get("/recent", response_class=HTMLResponse)
 async def recent_urls(request: Request):
-    recent_urls_list = db.get_recent_urls(
+    recent_urls_list = db.get_recent_urls(MAX_RECENT_URLS) or get_recent_from_cache(
         MAX_RECENT_URLS
-    ) or get_recent_from_cache(MAX_RECENT_URLS)
+    )
 
     normalized = []
     for item in recent_urls_list:
@@ -216,8 +225,8 @@ async def delete_url(request: Request, short_code: str):
     return PlainTextResponse("", status_code=204)
 
 
-#@app.get("/{short_code}")
-#async def redirect_short(request: Request, short_code: str):
+# @app.get("/{short_code}")
+# async def redirect_short(request: Request, short_code: str):
 #    logger = logging.getLogger(__name__)
 #    # Try cache first
 #    cached_url = get_from_cache(short_code)
@@ -241,6 +250,7 @@ async def delete_url(request: Request, short_code: str):
 
 #    return PlainTextResponse("Invalid or expired short URL", status_code=404)
 
+
 @app.get("/{short_code}")
 async def redirect_short(request: Request, short_code: str):
     logger = logging.getLogger(__name__)
@@ -252,25 +262,26 @@ async def redirect_short(request: Request, short_code: str):
             db.increment_visit(short_code)
         else:
             from app.utils.cache import increment_cache_visit
+
             increment_cache_visit(short_code)
 
         return RedirectResponse(cached_url)
-    
+
     # Check if database is connected
     if not db.is_connected():
         logger.warning(f"Database not connected, cannot redirect {short_code}")
         return PlainTextResponse(
             "Service temporarily unavailable. Please try again later.",
             status_code=503,
-            headers={"Retry-After": "30"}
+            headers={"Retry-After": "30"},
         )
-    
+
     # Try database
     doc = db.increment_visit(short_code)
     if doc:
         set_cache_pair(short_code, doc["original_url"])
         return RedirectResponse(doc["original_url"])
-    
+
     return PlainTextResponse("Invalid or expired short URL", status_code=404)
 
 
@@ -283,15 +294,15 @@ async def coming_soon(request: Request):
 async def health_check():
     """Health check endpoint showing database and cache status."""
     state = db.get_connection_state()
-    
+
     response_data = {
         "database": state,
         "cache": {
             "enabled": True,
             "size": len(url_cache),
-        }
+        },
     }
-    
+
     status_code = 200 if state["connected"] else 503
     return JSONResponse(content=response_data, status_code=status_code)
 
