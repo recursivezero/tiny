@@ -225,15 +225,10 @@ def redirect_short_ui(short_code: str, background_tasks: BackgroundTasks):
 
 @ui_router.delete("/recent/{short_code}")
 def delete_recent_api(short_code: str):
-    """
-    Delete a short URL from recent list (cache-first, DB optional).
-    UI should never fail if DB is down.
-    """
-
-    recent = get_recent_from_cache(MAX_RECENT_URLS)
+    recent = get_recent_from_cache(MAX_RECENT_URLS) or []
     removed_from_cache = False
 
-    for i, item in enumerate(recent or []):
+    for i, item in enumerate(recent):
         code = item.get("short_code") or item.get("code")
         if code == short_code:
             recent.pop(i)
@@ -241,13 +236,21 @@ def delete_recent_api(short_code: str):
             break
 
     db_deleted = False
-    if db.is_connected():
-        db_deleted = db.delete_by_short_code(short_code)
+    db_available = db.is_connected()
+
+    if db_available:
+        db_deleted = bool(db.delete_by_short_code(short_code))
+
+    if not removed_from_cache and not db_deleted:
+        raise HTTPException(
+            status_code=404, detail=f"short_code '{short_code}' not found"
+        )
 
     return {
-        "success": True,
-        "removed_from_cache": removed_from_cache,
-        "db_deleted": bool(db_deleted),
+        "status": "deleted",
+        "short_code": short_code,
+        "db_deleted": db_deleted,
+        "db_available": db_available,
     }
 
 

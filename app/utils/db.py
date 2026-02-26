@@ -40,7 +40,13 @@ def connect_db(max_retries: int = 1) -> bool:
     Returns:
         True if connection successful, False otherwise
     """
-    global client, db, collection, connection_state, last_connection_attempt, connection_error
+    global \
+        client, \
+        db, \
+        collection, \
+        connection_state, \
+        last_connection_attempt, \
+        connection_error
 
     if not MONGO_INSTALLED:
         logger.error("PyMongo is not installed")
@@ -152,8 +158,8 @@ def delete_by_short_code(short_code: str) -> bool:
     if not is_connected():
         return False
     try:
-        collection.delete_one({"short_code": short_code})
-        return True
+        result = collection.delete_one({"short_code": short_code})
+        return result.deleted_count > 0
     except PyMongoError as e:
         logger.error(f"DB error (delete_by_short_code): {e}")
         _mark_failed(e)
