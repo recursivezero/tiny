@@ -161,7 +161,7 @@ def cache_list_ui():
 
 
 @ui_router.delete("/cache/purge", response_class=PlainTextResponse)
-def cache_purge_ui(cache_token: str = Header(...)):
+def cache_purge_ui(cache_token: str = Header(..., alias="Cache-Token")):
     """
     Force delete everything from cache (secured by header)
     """
@@ -176,7 +176,7 @@ def cache_purge_ui(cache_token: str = Header(...)):
 @ui_router.patch("/cache/remove")
 def cache_remove_one_ui(
     key: str = Query(..., description="short_code OR original_url"),
-    cache_token: str = Header(...),
+    cache_token: str = Header(..., alias="Cache-Token"),
 ):
     # 🔐 Header security
     if cache_token != CACHE_PURGE_TOKEN:

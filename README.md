@@ -281,6 +281,26 @@ Add a token in your .env file:
 CACHE_PURGE_TOKEN=your-secret-token
 ```
 
+🧪 How to test
+
+PowerShell
+
+```
+Invoke-RestMethod `
+  -Method DELETE `
+  -Uri "http://127.0.0.1:8000/cache/purge" `
+  -Headers @{ "X-Cache-Token" = "your-secret-token" }
+```
+
+🧹 Remove a single cache entry
+
+```
+Invoke-RestMethod `
+  -Method PATCH `
+  -Uri "http://127.0.0.1:8000/cache/remove?key=abc123" `
+  -Headers @{ "X-Cache-Token" = "your-secret-token" }
+```
+
 🖥️ UI Endpoints
 
 | Method | Path            | Description                          |
