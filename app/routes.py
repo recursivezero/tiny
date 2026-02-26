@@ -32,6 +32,7 @@ from app.utils.cache import (
     increment_visit_cache,
     url_cache,
     remove_cache_key,
+    rev_cache,
 )
 from app.utils.config import DOMAIN, MAX_RECENT_URLS, CACHE_PURGE_TOKEN
 from app.utils.helper import generate_code, is_valid_url, sanitize_url, format_date
@@ -161,25 +162,27 @@ def cache_list_ui():
 
 
 @ui_router.delete("/cache/purge", response_class=PlainTextResponse)
-def cache_purge_ui(cache_token: str = Header(..., alias="Cache-Token")):
+def cache_purge_ui(x_cache_token: str = Header(..., alias="X-Cache-Token")):
     """
     Force delete everything from cache (secured by header)
     """
-    if cache_token != CACHE_PURGE_TOKEN:
+    if x_cache_token != CACHE_PURGE_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
-    clear_cache()
+    if not url_cache and not rev_cache:
+        return "No URLs in cache"
 
+    clear_cache()
     return "cleared ALL"
 
 
 @ui_router.patch("/cache/remove")
 def cache_remove_one_ui(
     key: str = Query(..., description="short_code OR original_url"),
-    cache_token: str = Header(..., alias="Cache-Token"),
+    x_cache_token: str = Header(..., alias="X-Cache-Token"),
 ):
     # 🔐 Header security
-    if cache_token != CACHE_PURGE_TOKEN:
+    if x_cache_token != CACHE_PURGE_TOKEN:
         raise HTTPException(status_code=401, detail="Unauthorized")
 
     removed = remove_cache_key(key)
@@ -228,6 +231,7 @@ def delete_recent_api(short_code: str):
     recent = get_recent_from_cache(MAX_RECENT_URLS) or []
     removed_from_cache = False
 
+    # Try removing from cache (memory only)
     for i, item in enumerate(recent):
         code = item.get("short_code") or item.get("code")
         if code == short_code:
@@ -235,13 +239,27 @@ def delete_recent_api(short_code: str):
             removed_from_cache = True
             break
 
-    db_deleted = False
     db_available = db.is_connected()
+    db_deleted = False
 
+    # If DB available → rely ONLY on DB
     if db_available:
-        db_deleted = bool(db.delete_by_short_code(short_code))
+        db_deleted = db.delete_by_short_code(short_code)
 
-    if not removed_from_cache and not db_deleted:
+        if not db_deleted:
+            raise HTTPException(
+                status_code=404, detail=f"short_code '{short_code}' not found"
+            )
+
+        return {
+            "status": "deleted",
+            "short_code": short_code,
+            "db_deleted": True,
+            "db_available": True,
+        }
+
+    # If DB NOT available → rely on cache only
+    if not removed_from_cache:
         raise HTTPException(
             status_code=404, detail=f"short_code '{short_code}' not found"
         )
@@ -249,8 +267,8 @@ def delete_recent_api(short_code: str):
     return {
         "status": "deleted",
         "short_code": short_code,
-        "db_deleted": db_deleted,
-        "db_available": db_available,
+        "db_deleted": False,
+        "db_available": False,
     }
 
 

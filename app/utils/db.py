@@ -40,13 +40,7 @@ def connect_db(max_retries: int = 1) -> bool:
     Returns:
         True if connection successful, False otherwise
     """
-    global \
-        client, \
-        db, \
-        collection, \
-        connection_state, \
-        last_connection_attempt, \
-        connection_error
+    global client, db, collection, connection_state, last_connection_attempt, connection_error
 
     if not MONGO_INSTALLED:
         logger.error("PyMongo is not installed")
