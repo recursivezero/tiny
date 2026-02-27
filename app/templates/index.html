@@ -8,10 +8,21 @@
       <div class="options-row"> <label class="checkbox-label"> <input type="checkbox" name="generate_qr" checked>
           Generate QR Code </label> <span class="info-text">Analytics Enabled</span> </div>
     </form>
-  </div> {% if new_short_url %} <div class="result-card">
-    <div class="result-content"> {% if qr_image %} <img src="{{ qr_image }}" class="qr-image"> {% endif %} <div> <span
-          class="ready-label">Ready</span>
-        <div class="short-url"> <a href="{{ new_short_url }}" id="shortUrlDisplay">{{ new_short_url }}</a> </div>
+  </div>
+
+  {% if new_short_url %}
+  <div class="result-card">
+    <div class="result-content">
+      {% if qr_image %}
+      <img src="{{ qr_image }}" class="qr-image">
+      {% endif %}
+      <div>
+        <span class="ready-label">Ready</span>
+        <div class="short-url">
+          <a href="{{ new_short_url }}" id="shortUrlDisplay" style="text-decoration: underline;">
+            {{ new_short_url }}
+          </a>
+        </div>
       </div>
     </div>
     <div class="result-actions"> <button onclick="copyLink(this)" data-url="{{ new_short_url }}" class="btn-copy">Copy
@@ -27,6 +38,54 @@
       </div> {% endfor %} </div>
   </div>
 </main>
+
+<footer class="big-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <h3>🔗 tiny URL</h3>
+      <p>Advanced link optimization engine built on Python and optimized for Ubuntu environments. Secure, fast, and
+        scalable.</p>
+    </div>
+
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="cache/list">CACHE URLs</a></li>
+        <li><a href="#">API Documentation</a></li>
+        <li><a href="#">Custom Branded Links</a></li>
+        <li><a href="#">QR Code Engine</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Support</h4>
+      <ul>
+        <li><a href="/docs"> UI docs</a></li>
+        <li><a href="#">Help Center</a></li>
+        <li><a href="#">System Status</a></li>
+        <li><a href="#">Contact Us</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy Policy</a></li>
+        <li><a href="#">Terms of Service</a></li>
+        <li><a href="#">Abuse Report</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <div>© 2026 Recursive Zero Pvt Ltd. All rights reserved.</div>
+    <div class="footer-meta">
+      <span>v2.4.0-stable</span>
+      <a href="https://github.com/recursivezero/tiny">GitHub</a>
+    </div>
+  </div>
+</footer>
+
 <script>
   async function copyLink(btn) {
     const url = btn.getAttribute('data-url');

@@ -64,7 +64,6 @@ HEALTH_CHECK_INTERVAL_SECONDS = _get_int("HEALTH_CHECK_INTERVAL_SECONDS", 30)
 # -------------------------
 USE_CACHE = True
 CACHE_TTL = 900  # 15 minutes
-MAX_CACHE_SIZE = 10_000
 MAX_RECENT_URLS = 20
 
 # -------------------------
@@ -72,6 +71,9 @@ MAX_RECENT_URLS = 20
 # -------------------------
 SESSION_SECRET = os.getenv("SESSION_SECRET", "super-secret-key")
 
+
+# Security token for cache/purge and cache/remove endpoint (in case we want to trigger it manually)
+CACHE_PURGE_TOKEN = os.getenv("CACHE_PURGE_TOKEN", "dev-token")
 # -------------------------
 # Short URL (constants)
 # -------------------------
