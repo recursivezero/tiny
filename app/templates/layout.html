@@ -30,18 +30,6 @@
   {% include "footer.html" %}
 
   <script>
-    // Global Theme Management
-    //(function applyTheme() {
-    //  const theme = localStorage.getItem('theme') || 'dark';
-    //  document.body.className = theme === 'dark' ? 'dark-theme' : 'light-theme';
-    //})();
-
-    //function toggleTheme() {
-    //  const isDark = document.body.classList.contains('dark-theme');
-    //  const next = isDark ? 'light' : 'dark';
-    //  document.body.className = next + '-theme';
-    //  localStorage.setItem('theme', next);
-    //}
     (function applyTheme() {
       const theme = localStorage.getItem('theme') || 'dark';
       document.body.classList.toggle('dark-theme', theme === 'dark');
