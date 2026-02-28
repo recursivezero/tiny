@@ -364,13 +364,13 @@ body.dark-theme .app-header {
   font-weight: bold;
 }
 
-.original-url {
+/*.original-url {
   color: var(--text-secondary);
   font-size: 0.8rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
+}*/
 
 
 .hero {
@@ -745,4 +745,48 @@ body.dark-theme .footer-bottom a {
     gap: 1rem;
     text-align: center;
   }
+}
+
+
+/* ===============================
+   HOME PAGE FIX — LONG URL WRAP
+   (does NOT affect table)
+================================= */
+/*.recent-tray .recent-item .original-url,
+.recent-tray .recent-item .original-url a {
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  line-break: anywhere !important;
+  display: block;
+}
+
+.recent-tray .recent-item {
+  max-width: 20px;
+}*/
+
+
+/* allow wrapping */
+.recent-tray .recent-item .original-url,
+.recent-tray .recent-item .original-url a {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+
+  -webkit-line-clamp: 3;
+  /* ⭐ change 2 or 3 lines here */
+  line-clamp: 3;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+/* IMPORTANT — remove width restriction */
+.recent-tray .recent-item {
+  min-width: 0;
+  /* allows shrinking inside flex/grid */
+  max-width: 100%;
 }
