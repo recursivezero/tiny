@@ -19,8 +19,10 @@
       <div>
         <span class="ready-label">Ready</span>
         <div class="short-url">
-          <a href="{{ new_short_url }}" id="shortUrlDisplay" style="text-decoration: underline;">
+          <a href="{{ new_short_url }}" id="shortUrlDisplay" style="text-decoration: underline;" target="_blank"
+            rel="noopener noreferrer">
             {{ new_short_url }}
+          </a>
           </a>
         </div>
       </div>
@@ -30,7 +32,8 @@
       %} </div>
   </div> {% endif %} <div class="recent-tray">
     <div class="recent-header">
-      <h3>Recently Shortened</h3> <a href="/recent" class="history-link">View History →</a>
+      <h3>Recently Shortened</h3>
+      <a href="/recent" class="history-link" target="_blank">View History →</a>
     </div>
     <div class="scroll-container"> {% for url in urls %} <div class="recent-item">
         <div class="short-code">/{{ url.short_code }}</div>

@@ -57,7 +57,6 @@ async def index(request: Request):
 
     new_short_url = session.pop("new_short_url", None)
     qr_enabled = session.pop("qr_enabled", False)
-    qr_type = session.pop("qr_type", "short")
     original_url = session.pop("original_url", None)
     short_code = session.pop("short_code", None)
     info_message = session.pop("info_message", None)
@@ -67,7 +66,7 @@ async def index(request: Request):
     qr_data = None
 
     if qr_enabled and new_short_url and short_code:
-        qr_data = new_short_url if qr_type == "short" else original_url
+        qr_data = new_short_url
         qr_filename = f"{short_code}.png"
         PROJECT_ROOT = BASE_DIR.parent  # go from app/ → project root
         qr_dir = PROJECT_ROOT / "assets" / "images" / "qr"
@@ -235,44 +234,30 @@ def delete_recent_api(short_code: str):
     recent = get_recent_from_cache(MAX_RECENT_URLS) or []
     removed_from_cache = False
 
-    # Try removing from cache (memory only)
     for i, item in enumerate(recent):
         code = item.get("short_code") or item.get("code")
         if code == short_code:
-            recent.pop(i)
             removed_from_cache = True
             break
 
     db_available = db.is_connected()
     db_deleted = False
 
-    # If DB available → rely ONLY on DB
     if db_available:
         db_deleted = db.delete_by_short_code(short_code)
 
-        if not db_deleted:
-            raise HTTPException(
-                status_code=404, detail=f"short_code '{short_code}' not found"
-            )
-
-        return {
-            "status": "deleted",
-            "short_code": short_code,
-            "db_deleted": True,
-            "db_available": True,
-        }
-
-    # If DB NOT available → rely on cache only
-    if not removed_from_cache:
+    # ✅ If nothing was deleted anywhere → 404
+    if not removed_from_cache and not db_deleted:
         raise HTTPException(
             status_code=404, detail=f"short_code '{short_code}' not found"
         )
 
     return {
+        "success": True,
         "status": "deleted",
         "short_code": short_code,
-        "db_deleted": False,
-        "db_available": False,
+        "db_deleted": db_deleted,
+        "db_available": db_available,
     }
 
 
