@@ -73,6 +73,7 @@ def set_cache_pair(short_code: str, original_url: str) -> None:
     url_cache[short_code] = {
         "url": original_url,
         "expires_at": expires_at,
+        "visit_count": 0,
     }
 
     rev_cache[original_url] = {

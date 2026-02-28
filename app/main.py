@@ -2,13 +2,17 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
 import logging
-import traceback
 import asyncio
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+
+# from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
+
+# from fastapi.exceptions import RequestValidationError
+# from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.templating import Jinja2Templates
 
 from app.routes import ui_router
 from app.utils import db
@@ -90,22 +94,36 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="TinyURL", lifespan=lifespan)
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
+templates = Jinja2Templates(directory="app/templates")
 
 BASE_DIR = Path(__file__).resolve().parent
 STATIC_DIR = BASE_DIR / "static"
 
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 
+# QR codes are now served from /qr, which maps to assets/images/qr in the project root
+PROJECT_ROOT = BASE_DIR.parent
+QR_DIR = PROJECT_ROOT / "assets" / "images" / "qr"
+app.mount("/qr", StaticFiles(directory=QR_DIR), name="qr")
 
 # -----------------------------
 # Global error handler
 # -----------------------------
-@app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
-    traceback.print_exc()
-    return JSONResponse(
-        status_code=500,
-        content={"success": False, "error": "INTERNAL_SERVER_ERROR"},
+# app.exception_handler(Exception)
+# sync def global_exception_handler(request: Request, exc: Exception):
+#    traceback.print_exc()
+#    return JSONResponse(
+#        status_code=500,
+#        content={"success": False, "error": "INTERNAL_SERVER_ERROR"},
+#    )
+
+
+@app.exception_handler(404)
+async def custom_404_handler(request: Request, exc):
+    return templates.TemplateResponse(
+        "404.html",
+        {"request": request},
+        status_code=404,
     )
 
 

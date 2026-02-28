@@ -22,6 +22,7 @@ from fastapi.responses import (
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
+
 from app import __version__
 from app.utils import db
 from app.utils.cache import (
@@ -68,10 +69,11 @@ async def index(request: Request):
     if qr_enabled and new_short_url and short_code:
         qr_data = new_short_url if qr_type == "short" else original_url
         qr_filename = f"{short_code}.png"
-        qr_dir = BASE_DIR / "static" / "qr"
+        PROJECT_ROOT = BASE_DIR.parent  # go from app/ → project root
+        qr_dir = PROJECT_ROOT / "assets" / "images" / "qr"
         qr_dir.mkdir(parents=True, exist_ok=True)
         generate_qr_with_logo(qr_data, str(qr_dir / qr_filename))
-        qr_image = f"/static/qr/{qr_filename}"
+        qr_image = f"/qr/{qr_filename}"
 
     recent_urls = db.get_recent_urls(MAX_RECENT_URLS) or get_recent_from_cache(
         MAX_RECENT_URLS
@@ -139,6 +141,7 @@ async def create_short_url(
 
 
 @ui_router.get("/recent", response_class=HTMLResponse)
+@ui_router.get("/history", response_class=HTMLResponse)
 async def recent_urls(request: Request):
     recent_urls_list = db.get_recent_urls(MAX_RECENT_URLS) or get_recent_from_cache(
         MAX_RECENT_URLS
@@ -223,7 +226,8 @@ def redirect_short_ui(short_code: str, background_tasks: BackgroundTasks):
                 set_cache_pair(short_code, original_url)
                 return RedirectResponse(original_url)
 
-    return PlainTextResponse("Invalid short URL", status_code=404)
+    # return PlainTextResponse("Invalid short URL", status_code=404)
+    raise HTTPException(status_code=404, detail="Page not found")
 
 
 @ui_router.delete("/recent/{short_code}")
