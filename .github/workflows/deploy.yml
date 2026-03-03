@@ -1,0 +1,28 @@
+name: Deploy App
+run-name: Deploy Tiny App to Cloud Server
+
+on:
+  push:
+    branches: [release]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/tz_apps/tiny
+            # Fetch latest code
+            git pull origin release
+
+            # Install dependencies (Production mode, no dev deps)
+            /root/.local/bin/poetry install --only main --all-extras --sync
+
+            # Restart the service
+            sudo systemctl restart tiny.service

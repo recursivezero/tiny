@@ -1,25 +1,14 @@
 import os
-
-from dotenv import load_dotenv
-
-
-def load_env():
-    env = os.getenv("ENV", "development")
-    file_map = {
-        "production": ".env",
-        "local": ".env.local",
-        "development": ".env.development",
-    }
-    load_dotenv(file_map.get(env, ".env.development"), override=True)
-    print(f"Environment selected: {env}")
-    print(f"MODE value: {os.getenv('MODE')}")
-
+from pathlib import Path
 
 # -------------------------
 # Helpers
 # -------------------------
-def _get_bool(key: str, default: bool) -> bool:
-    return os.getenv(key, str(default)).lower() in ("1", "true", "yes", "on")
+
+
+from app.utils.config_env import load_env  # noqa: F401
+
+load_env()
 
 
 def _get_int(key: str, default: int) -> int:
@@ -54,13 +43,28 @@ MONGO_URI = os.getenv("MONGO_URI")
 MONGO_DB_NAME = "tiny_url"
 MONGO_COLLECTION = os.getenv("MONGO_COLLECTION", "urls")
 
+# Connection timeouts (in milliseconds)
+MONGO_TIMEOUT_MS = _get_int("MONGO_TIMEOUT_MS", 10000)
+MONGO_SOCKET_TIMEOUT_MS = _get_int("MONGO_SOCKET_TIMEOUT_MS", 20000)
+
+# Connection pool settings
+MONGO_MIN_POOL_SIZE = _get_int("MONGO_MIN_POOL_SIZE", 5)
+MONGO_MAX_POOL_SIZE = _get_int("MONGO_MAX_POOL_SIZE", 50)
+
+# Retry configuration
+MONGO_MAX_RETRIES = _get_int("MONGO_MAX_RETRIES", 10)
+MONGO_INITIAL_RETRY_DELAY = 1.0
+MONGO_MAX_RETRY_DELAY = 30.0
+
+# Health check interval (in seconds)
+HEALTH_CHECK_INTERVAL_SECONDS = _get_int("HEALTH_CHECK_INTERVAL_SECONDS", 30)
+
 
 # -------------------------
 # Cache (constants)
 # -------------------------
 USE_CACHE = True
 CACHE_TTL = 900  # 15 minutes
-MAX_CACHE_SIZE = 10_000
 MAX_RECENT_URLS = 20
 
 # -------------------------
@@ -68,8 +72,18 @@ MAX_RECENT_URLS = 20
 # -------------------------
 SESSION_SECRET = os.getenv("SESSION_SECRET", "super-secret-key")
 
+
+# Security token for cache/purge and cache/remove endpoint (in case we want to trigger it manually)
+CACHE_PURGE_TOKEN = os.getenv("CACHE_PURGE_TOKEN", "dev-token")
 # -------------------------
 # Short URL (constants)
 # -------------------------
 SHORT_CODE_LENGTH = 6
 MAX_URL_LENGTH = 2048
+
+# for making the qr constant
+# Base project paths
+BASE_DIR = Path(__file__).resolve().parent.parent  # app/
+PROJECT_ROOT = BASE_DIR.parent  # project root
+# QR directory constant
+QR_DIR = PROJECT_ROOT / "assets" / "images" / "qr"

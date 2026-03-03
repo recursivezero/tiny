@@ -1,6 +1,9 @@
 import string
 import random
-from datetime import timezone
+from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
+from typing import Union
+
 import validators
 from app.utils.config import SHORT_CODE_LENGTH
 
@@ -23,11 +26,27 @@ def generate_code(length: int = SHORT_CODE_LENGTH) -> str:
     return "".join(random.choice(chars) for _ in range(length))
 
 
-def format_date(dt):
-    if not dt:
+def format_date(value: Union[float, datetime, None]) -> str:
+    """
+    Formats both:
+    - float/int epoch timestamps (from cache)
+    - datetime objects (from DB)
+    into: '24 Feb 2026, 03:59 PM' (IST)
+    """
+    if not value:
         return "Just now"
 
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
+    # If cache timestamp (epoch seconds)
+    if isinstance(value, (int, float)):
+        return datetime.fromtimestamp(value, tz=ZoneInfo("Asia/Kolkata")).strftime(
+            "%d %b %Y, %I:%M %p"
+        )
 
-    return dt.strftime("%d %b %Y, %I:%M %p")
+    # If DB datetime
+    if isinstance(value, datetime):
+        if value.tzinfo is None:
+            value = value.replace(tzinfo=timezone.utc)
+
+        return value.astimezone(ZoneInfo("Asia/Kolkata")).strftime("%d %b %Y, %I:%M %p")
+
+    return "Just now"

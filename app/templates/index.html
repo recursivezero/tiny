@@ -1,146 +1,61 @@
-{% extends "layout.html" %}
-
-{% block content %}
+{% extends "layout.html" %} {% block content %}
 <main class="main-layout">
   <div class="hero-input-card">
-    <h1>tiny URL</h1>
+    <h1>Shorten Your Links</h1>
     <form method="POST" id="shortenForm" action="/shorten">
-      <div class="input-wrapper">
-        <input type="text" name="original_url" placeholder="Paste your long link here..."
-          value="{{ original_url or '' }}" required>
-        <button type="submit" class="btn-primary"
-          style="padding: 0 2.5rem; border-radius: 1.5rem; background: #fff; color: #000; font-weight: bold; border: none; cursor: pointer;">
-          Shorten
-        </button>
-      </div>
-      <div style="margin-top: 1.5rem; display: flex; gap: 2rem; color: var(--text-secondary); font-size: 0.85rem;">
-        <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-          <input type="checkbox" name="generate_qr" checked> Generate QR Code
-        </label>
-        <span>Analytics Enabled</span>
-      </div>
+      <div class="input-wrapper"> <input type="text" name="original_url" placeholder="Paste your long link here..."
+          value="{{ original_url or '' }}" required> <button type="submit" class="btn-primary">Shorten</button> </div>
+      <div class="options-row"> <label class="checkbox-label"> <input type="checkbox" name="generate_qr" checked>
+          Generate QR Code </label> <span class="info-text">Analytics Enabled</span> </div>
     </form>
   </div>
 
   {% if new_short_url %}
   <div class="result-card">
-    <div style="display: flex; align-items: center; gap: 2rem;">
+    <div class="result-content">
       {% if qr_image %}
-      <img src="{{ qr_image }}"
-        style="width: 100px; height: 100px; background: #fff; padding: 0.5rem; border-radius: 1rem;">
+      <img src="{{ qr_image }}" class="qr-image">
       {% endif %}
       <div>
-        <span
-          style="font-size: 0.8rem; text-transform: uppercase; color: var(--accent); font-weight: 800; letter-spacing: 1px;">Ready</span>
-        <div style="font-size: 1.8rem; font-weight: 700; margin-top: 0.5rem;">
-          <a href="{{ new_short_url }}" id="shortUrlDisplay" style="color: white; text-decoration: none;">{{
-            new_short_url }}</a>
+        <span class="ready-label">Ready</span>
+        <div class="short-url">
+          <a href="{{ new_short_url }}" id="shortUrlDisplay" style="text-decoration: underline;" target="_blank"
+            rel="noopener noreferrer">
+            {{ new_short_url }}
+          </a>
+          </a>
         </div>
       </div>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 0.5rem;">
-      <button onclick="copyLink(this)" data-url="{{ new_short_url }}" class="btn-copy"
-        style="background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); color: white; padding: 0.8rem 1.5rem; border-radius: 1rem; cursor: pointer; position: relative;">
-        Copy Link
-      </button>
-
-      {% if qr_image %}
-      <a href="{{ qr_image }}" download
-        style="text-align: center; font-size: 0.7rem; color: var(--text-secondary); text-decoration: none;">
-        Download QR
-      </a>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
-
-  <div class="recent-tray">
+    <div class="result-actions"> <button onclick="copyLink(this)" data-url="{{ new_short_url }}" class="btn-copy">Copy
+        Link</button> {% if qr_image %} <a href="{{ qr_image }}" download class="download-link">Download QR</a> {% endif
+      %} </div>
+  </div> {% endif %} <div class="recent-tray">
     <div class="recent-header">
-      <h3 style="margin: 0; font-size: 1rem; color: var(--text-secondary);">Recently Shortened</h3>
-      <a href="/recent" style="color: var(--accent); text-decoration: none; font-size: 0.8rem;">View History →</a>
+      <h3>Recently Shortened</h3>
+      <a href="/history" class="history-link" target="_blank">View History →</a>
     </div>
-    <div class="scroll-container">
-      {% for url in urls %}
-      <div class="recent-item">
-        <div style="color: var(--accent); font-weight: bold; margin-bottom: 0.5rem;">/{{ url.short_code }}</div>
-        <div
-          style="color: var(--text-secondary); font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-          {{ url.original_url }}</div>
-      </div>
-      {% endfor %}
-    </div>
+    <div class="scroll-container"> {% for url in urls %} <div class="recent-item">
+        <div class="short-code">/{{ url.short_code }}</div>
+        <div class="original-url">{{ url.original_url }}</div>
+      </div> {% endfor %} </div>
   </div>
 </main>
 
-<footer class="big-footer">
-  <div class="footer-grid">
-    <div class="footer-brand">
-      <h3>🔗 tiny URL</h3>
-      <p>Advanced link optimization engine built on Python and optimized for Ubuntu environments. Secure, fast, and
-        scalable.</p>
-    </div>
-
-    <div class="footer-col">
-      <h4>Product</h4>
-      <ul>
-        <li><a href="#">API Documentation</a></li>
-        <li><a href="#">Custom Branded Links</a></li>
-        <li><a href="#">QR Code Engine</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h4>Support</h4>
-      <ul>
-        <li><a href="#">Help Center</a></li>
-        <li><a href="#">System Status</a></li>
-        <li><a href="#">Contact Us</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h4>Legal</h4>
-      <ul>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Terms of Service</a></li>
-        <li><a href="#">Abuse Report</a></li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <div>© 2026 Recursive Zero Pvt Ltd. All rights reserved.</div>
-    <div style="display: flex; gap: 20px;">
-      <span>v2.4.0-stable</span>
-      <a href="https://github.com/recursivezero/tiny" style="color: inherit; text-decoration: none;">GitHub</a>
-    </div>
-  </div>
-</footer>
-
 <script>
   async function copyLink(btn) {
-    // Get the dynamic value from the data attribute
     const url = btn.getAttribute('data-url');
     const originalText = btn.innerText;
-
     try {
       await navigator.clipboard.writeText(url);
-
-      // Visual feedback: Change text and style
       btn.innerText = 'Copied!';
-      btn.style.borderColor = '#4ade80'; // A subtle green (Tailwind-like)
-      btn.style.color = '#4ade80';
-
-      // Reset after 2 seconds
+      btn.classList.add('copy-success');
       setTimeout(() => {
         btn.innerText = originalText;
-        btn.style.borderColor = 'var(--glass-border)';
-        btn.style.color = 'white';
+        btn.classList.remove('copy-success');
       }, 2000);
-
     } catch (err) {
       console.error('Copy failed', err);
-      // Fallback if needed
     }
   }
 </script>

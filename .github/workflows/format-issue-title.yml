@@ -1,4 +1,4 @@
-name: "Auto Format Issue Title"
+name: "Format Issue Title"
 
 on:
   issues:
@@ -11,7 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Format issue title
-        uses: recursivezero/template/.github/actions/format-issue-title@v2.6
+        uses: recursivezero/action-club/.github/actions/format-issue-title@v0.2.57
         with:
           prefix: RTY
-          dry_run: false

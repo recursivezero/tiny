@@ -10,6 +10,10 @@ on:
         description: "Issue number"
         required: true
         type: number
+      comment_body:
+        description: "Comment text"
+        required: true
+        type: string
 
 permissions:
   issues: write
@@ -20,16 +24,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/github-script@v8
+      - name: Run Comment Action
+        uses: recursivezero/action-club/.github/actions/comment-on-issue@main
         with:
-          script: |
-            // For workflow_dispatch, use the input; for issue events, use context.issue.number
-            const issue_number = context.payload.inputs?.issue_number
-              ? parseInt(context.payload.inputs.issue_number, 10)
-              : context.issue.number;
-
-            await github.rest.issues.createComment({
-              ...context.repo,
-              issue_number,
-              body: "👋 Thank you for opening this issue! We will look into it as soon as possible."
-            });
+          issue_number: ${{ github.event.inputs.issue_number }}
+          comment_body: ${{ github.event.inputs.comment_body }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
