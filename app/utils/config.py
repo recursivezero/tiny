@@ -1,13 +1,15 @@
-
 import os
+from pathlib import Path
+
 # -------------------------
 # Helpers
 # -------------------------
 
 
-from app.utils.config_env import load_env # noqa: F401
+from app.utils.config_env import load_env  # noqa: F401
 
 load_env()
+
 
 def _get_int(key: str, default: int) -> int:
     try:
@@ -63,7 +65,6 @@ HEALTH_CHECK_INTERVAL_SECONDS = _get_int("HEALTH_CHECK_INTERVAL_SECONDS", 30)
 # -------------------------
 USE_CACHE = True
 CACHE_TTL = 900  # 15 minutes
-MAX_CACHE_SIZE = 10_000
 MAX_RECENT_URLS = 20
 
 # -------------------------
@@ -71,8 +72,18 @@ MAX_RECENT_URLS = 20
 # -------------------------
 SESSION_SECRET = os.getenv("SESSION_SECRET", "super-secret-key")
 
+
+# Security token for cache/purge and cache/remove endpoint (in case we want to trigger it manually)
+CACHE_PURGE_TOKEN = os.getenv("CACHE_PURGE_TOKEN", "dev-token")
 # -------------------------
 # Short URL (constants)
 # -------------------------
 SHORT_CODE_LENGTH = 6
 MAX_URL_LENGTH = 2048
+
+# for making the qr constant
+# Base project paths
+BASE_DIR = Path(__file__).resolve().parent.parent  # app/
+PROJECT_ROOT = BASE_DIR.parent  # project root
+# QR directory constant
+QR_DIR = PROJECT_ROOT / "assets" / "images" / "qr"
