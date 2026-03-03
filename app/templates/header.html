@@ -1,11 +1,28 @@
-<header class="site-header">
-  <div class="header-left"></div>
-
-  <div class="header-center">
-    <h2 class="logo">🔗 RZRO.link</h2>
+<header class="app-header">
+  <div class="header-left">
+    <div class="app-logo">🔗</div>
+    <span class="app-name">RZRO.link</span>
   </div>
+  <nav class="header-nav">
+    <a href="/" class="nav-link active">Home</a>
+    <a href="/coming-soon" class="nav-link">Analysis</a>
+    <a href="/coming-soon" class="nav-link">Search</a>
+    <a href="/coming-soon" class="nav-link">Contact</a>
+    <a href="/history" class="nav-link" title="Show recent shortened URLs">History</a>
+  </nav>
   <div class="header-right">
-    <button class="icon-btn" onclick="openSettings()">⚙️</button>
-    <button class="icon-btn" onclick="toggleTheme()">🌓</button>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
   </div>
 </header>
+<script>
+  const links = document.querySelectorAll(".nav-link");
+  const currentPath = window.location.pathname;
+
+  links.forEach(link => {
+    if (link.getAttribute("href") === currentPath) {
+      link.classList.add("active");
+    } else {
+      link.classList.remove("active");
+    }
+  });
+</script>

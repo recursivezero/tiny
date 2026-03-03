@@ -8,6 +8,7 @@ from app.utils.config import CACHE_TTL, MAX_RECENT_URLS
 class UrlCacheItem(TypedDict):
     url: str
     expires_at: float
+    visit_count: int
 
 
 class RevCacheItem(TypedDict):
@@ -72,6 +73,7 @@ def set_cache_pair(short_code: str, original_url: str) -> None:
     url_cache[short_code] = {
         "url": original_url,
         "expires_at": expires_at,
+        "visit_count": 0,
     }
 
     rev_cache[original_url] = {

@@ -1,21 +1,12 @@
-{% extends "layout.html" %}
-
-{% block content %}
+{% extends "layout.html" %} {% block content %}
 <main class="main-layout">
   <div class="hero-input-card">
-    <h1>tiny URL</h1>
+    <h1>Shorten Your Links</h1>
     <form method="POST" id="shortenForm" action="/shorten">
-      <div class="input-wrapper">
-        <input type="text" name="original_url" placeholder="Paste your long link here..."
-          value="{{ original_url or '' }}" required>
-        <button type="submit" class="btn-primary">Shorten</button>
-      </div>
-      <div class="options-row">
-        <label class="checkbox-label">
-          <input type="checkbox" name="generate_qr" checked> Generate QR Code
-        </label>
-        <span class="info-text">Analytics Enabled</span>
-      </div>
+      <div class="input-wrapper"> <input type="text" name="original_url" placeholder="Paste your long link here..."
+          value="{{ original_url or '' }}" required> <button type="submit" class="btn-primary">Shorten</button> </div>
+      <div class="options-row"> <label class="checkbox-label"> <input type="checkbox" name="generate_qr" checked>
+          Generate QR Code </label> <span class="info-text">Analytics Enabled</span> </div>
     </form>
   </div>
 
@@ -36,88 +27,29 @@
         </div>
       </div>
     </div>
-    <div class="result-actions">
-      <button onclick="copyLink(this)" data-url="{{ new_short_url }}" class="btn-copy">Copy Link</button>
-      {% if qr_image %}
-      <a href="{{ qr_image }}" download class="download-link">Download QR</a>
-      {% endif %}
-    </div>
-  </div>
-  {% endif %}
-
-  <div class="recent-tray">
+    <div class="result-actions"> <button onclick="copyLink(this)" data-url="{{ new_short_url }}" class="btn-copy">Copy
+        Link</button> {% if qr_image %} <a href="{{ qr_image }}" download class="download-link">Download QR</a> {% endif
+      %} </div>
+  </div> {% endif %} <div class="recent-tray">
     <div class="recent-header">
       <h3>Recently Shortened</h3>
-      <a href="/recent" class="history-link" target="_blank">View History →</a>
+      <a href="/history" class="history-link" target="_blank">View History →</a>
     </div>
-    <div class="scroll-container">
-      {% for url in urls %}
-      <div class="recent-item">
+    <div class="scroll-container"> {% for url in urls %} <div class="recent-item">
         <div class="short-code">/{{ url.short_code }}</div>
         <div class="original-url">{{ url.original_url }}</div>
-      </div>
-      {% endfor %}
-    </div>
+      </div> {% endfor %} </div>
   </div>
 </main>
-
-<footer class="big-footer">
-  <div class="footer-grid">
-    <div class="footer-brand">
-      <h3>🔗 tiny URL</h3>
-      <p>Advanced link optimization engine built on Python and optimized for Ubuntu environments. Secure, fast, and
-        scalable.</p>
-    </div>
-
-    <div class="footer-col">
-      <h4>Product</h4>
-      <ul>
-        <li><a href="cache/list" target="_blank">CACHE URLs</a></li>
-        <li><a href="#" target="_blank">API Documentation</a></li>
-        <li><a href="#" target="_blank">Custom Branded Links</a></li>
-        <li><a href="#" target="_blank">QR Code Engine</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h4>Support</h4>
-      <ul>
-        <li><a href="/docs" target="_blank"> UI docs</a></li>
-        <li><a href="#" target="_blank">Help Center</a></li>
-        <li><a href="#" target="_blank">System Status</a></li>
-        <li><a href="#" target="_blank">Contact Us</a></li>
-      </ul>
-    </div>
-
-    <div class="footer-col">
-      <h4>Legal</h4>
-      <ul>
-        <li><a href="#">Privacy Policy</a></li>
-        <li><a href="#">Terms of Service</a></li>
-        <li><a href="#">Abuse Report</a></li>
-      </ul>
-    </div>
-  </div>
-
-  <div class="footer-bottom">
-    <div>© 2026 Recursive Zero Pvt Ltd. All rights reserved.</div>
-    <div class="footer-meta">
-      <span>v2.4.0-stable</span>
-      <a href="https://github.com/recursivezero/tiny">GitHub</a>
-    </div>
-  </div>
-</footer>
 
 <script>
   async function copyLink(btn) {
     const url = btn.getAttribute('data-url');
     const originalText = btn.innerText;
-
     try {
       await navigator.clipboard.writeText(url);
       btn.innerText = 'Copied!';
       btn.classList.add('copy-success');
-
       setTimeout(() => {
         btn.innerText = originalText;
         btn.classList.remove('copy-success');
@@ -125,14 +57,6 @@
     } catch (err) {
       console.error('Copy failed', err);
     }
-  }
-
-  // Theme toggle logic
-  function toggleTheme() {
-    const current = document.body.classList.contains('dark-theme') ? 'dark' : 'light';
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.body.className = next + '-theme';
-    localStorage.setItem('theme', next);
   }
 </script>
 {% endblock %}
