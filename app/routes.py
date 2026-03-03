@@ -1,6 +1,5 @@
 import os
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Optional
 from app.utils.cache import list_cache_clean, clear_cache
 from fastapi import (
@@ -35,13 +34,12 @@ from app.utils.cache import (
     remove_cache_key,
     rev_cache,
 )
-from app.utils.config import DOMAIN, MAX_RECENT_URLS, CACHE_PURGE_TOKEN
+from app.utils.config import DOMAIN, MAX_RECENT_URLS, CACHE_PURGE_TOKEN, QR_DIR
 from app.utils.helper import generate_code, is_valid_url, sanitize_url, format_date
 from app.utils.qr import generate_qr_with_logo
 
-BASE_DIR = Path(__file__).resolve().parent
-templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
-
+# templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
+templates = Jinja2Templates(directory="app/templates")
 # Routers
 ui_router = APIRouter()
 api_router = APIRouter()
@@ -68,10 +66,7 @@ async def index(request: Request):
     if qr_enabled and new_short_url and short_code:
         qr_data = new_short_url
         qr_filename = f"{short_code}.png"
-        PROJECT_ROOT = BASE_DIR.parent  # go from app/ → project root
-        qr_dir = PROJECT_ROOT / "assets" / "images" / "qr"
-        qr_dir.mkdir(parents=True, exist_ok=True)
-        generate_qr_with_logo(qr_data, str(qr_dir / qr_filename))
+        generate_qr_with_logo(qr_data, str(QR_DIR / qr_filename))
         qr_image = f"/qr/{qr_filename}"
 
     recent_urls = db.get_recent_urls(MAX_RECENT_URLS) or get_recent_from_cache(
@@ -139,7 +134,6 @@ async def create_short_url(
     return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@ui_router.get("/recent", response_class=HTMLResponse)
 @ui_router.get("/history", response_class=HTMLResponse)
 async def recent_urls(request: Request):
     recent_urls_list = db.get_recent_urls(MAX_RECENT_URLS) or get_recent_from_cache(
@@ -229,7 +223,7 @@ def redirect_short_ui(short_code: str, background_tasks: BackgroundTasks):
     raise HTTPException(status_code=404, detail="Page not found")
 
 
-@ui_router.delete("/recent/{short_code}")
+@ui_router.delete("/history/{short_code}")
 def delete_recent_api(short_code: str):
     recent = get_recent_from_cache(MAX_RECENT_URLS) or []
     removed_from_cache = False
@@ -237,6 +231,7 @@ def delete_recent_api(short_code: str):
     for i, item in enumerate(recent):
         code = item.get("short_code") or item.get("code")
         if code == short_code:
+            recent.pop(i)  # remove from cache
             removed_from_cache = True
             break
 
@@ -246,7 +241,6 @@ def delete_recent_api(short_code: str):
     if db_available:
         db_deleted = db.delete_by_short_code(short_code)
 
-    # ✅ If nothing was deleted anywhere → 404
     if not removed_from_cache and not db_deleted:
         raise HTTPException(
             status_code=404, detail=f"short_code '{short_code}' not found"

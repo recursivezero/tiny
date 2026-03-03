@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 # -------------------------
 # Helpers
@@ -79,3 +80,10 @@ CACHE_PURGE_TOKEN = os.getenv("CACHE_PURGE_TOKEN", "dev-token")
 # -------------------------
 SHORT_CODE_LENGTH = 6
 MAX_URL_LENGTH = 2048
+
+# for making the qr constant
+# Base project paths
+BASE_DIR = Path(__file__).resolve().parent.parent  # app/
+PROJECT_ROOT = BASE_DIR.parent  # project root
+# QR directory constant
+QR_DIR = PROJECT_ROOT / "assets" / "images" / "qr"

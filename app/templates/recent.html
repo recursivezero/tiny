@@ -42,7 +42,7 @@
   function deleteUrl(shortCode, btn) {
     if (!confirm("Are you sure you want to delete this URL?")) return;
 
-    fetch(`/recent/${shortCode}`, {
+    fetch(`/history/${shortCode}`, {
       method: "DELETE"
     })
       .then(async (res) => {
@@ -52,11 +52,7 @@
           throw new Error("Delete failed");
         }
 
-        return fetch(`/delete/${shortCode}`, { method: "POST" });
-      })
-      .then(res => {
-        if (!res.ok) throw new Error("Delete failed");
-
+        // ✅ remove row from table
         const row = btn.closest("tr");
         if (row) row.remove();
       })
@@ -64,8 +60,7 @@
         console.error(err);
         alert("Failed to delete URL");
       });
-  }   // ✅ <-- THIS WAS MISSING
-
+  }
 
   function toggleRecent() {
     const box = document.getElementById('recentList');

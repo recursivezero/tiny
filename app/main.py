@@ -6,12 +6,13 @@ import asyncio
 
 from fastapi import FastAPI, Request
 
-# from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 # from fastapi.exceptions import RequestValidationError
 # from starlette.exceptions import HTTPException as StarletteHTTPException
+from fastapi.exceptions import HTTPException as FastAPIHTTPException
 from fastapi.templating import Jinja2Templates
 
 from app.routes import ui_router
@@ -24,6 +25,7 @@ from app.utils.cache import cleanup_expired
 from app.utils.config import (
     CACHE_TTL,
     SESSION_SECRET,
+    QR_DIR,
 )
 
 
@@ -96,34 +98,65 @@ app = FastAPI(title="TinyURL", lifespan=lifespan)
 app.add_middleware(SessionMiddleware, secret_key=SESSION_SECRET)
 templates = Jinja2Templates(directory="app/templates")
 
+# Mount QR static files
 BASE_DIR = Path(__file__).resolve().parent
-STATIC_DIR = BASE_DIR / "static"
 
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
-
-# QR codes are now served from /qr, which maps to assets/images/qr in the project root
-PROJECT_ROOT = BASE_DIR.parent
-QR_DIR = PROJECT_ROOT / "assets" / "images" / "qr"
-app.mount("/qr", StaticFiles(directory=QR_DIR), name="qr")
+# Mount QR static files
+app.mount(
+    "/static",
+    StaticFiles(directory=str(BASE_DIR / "static")),
+    name="static",
+)
+# Ensure QR directory exists at startup
+QR_DIR.mkdir(parents=True, exist_ok=True)
+app.mount(
+    "/qr",
+    StaticFiles(directory=str(QR_DIR)),
+    name="qr",
+)
 
 # -----------------------------
 # Global error handler
 # -----------------------------
-# app.exception_handler(Exception)
-# sync def global_exception_handler(request: Request, exc: Exception):
-#    traceback.print_exc()
-#    return JSONResponse(
+# @app.exception_handler(Exception)
+# async def global_exception_handler(request: Request, exc: Exception):
+#  traceback.print_exc()
+#  return JSONResponse(
 #        status_code=500,
 #        content={"success": False, "error": "INTERNAL_SERVER_ERROR"},
 #    )
 
 
-@app.exception_handler(404)
-async def custom_404_handler(request: Request, exc):
-    return templates.TemplateResponse(
-        "404.html",
-        {"request": request},
-        status_code=404,
+# @app.exception_handler(404)
+# async def custom_404_handler(request: Request, exc):
+#    return templates.TemplateResponse(
+#        "404.html",
+#        {"request": request},
+#        status_code=404,
+#    )
+
+
+@app.exception_handler(FastAPIHTTPException)
+async def http_exception_handler(request: Request, exc: FastAPIHTTPException):
+
+    # If it's API/UI route → return JSON
+    if request.url.path.startswith("/cache") or request.url.path.startswith("/api"):
+        return JSONResponse(
+            status_code=exc.status_code,
+            content={"error": exc.detail},
+        )
+
+    # If it's browser route → return HTML page
+    if exc.status_code == 404:
+        return templates.TemplateResponse(
+            "404.html",
+            {"request": request},
+            status_code=404,
+        )
+
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"success": False, "error": exc.detail},
     )
 
 
