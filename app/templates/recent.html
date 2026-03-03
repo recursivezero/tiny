@@ -1,210 +1,77 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Recent URLs</title>
-
-  <!-- Reuse main CSS -->
-  <link rel="stylesheet" href="/static/style.css">
-</head>
-
-<body>
-  <header class="app-header">
-    <div class="header-left">
-      <div class="app-logo">🔗</div>
-      <span class="app-name">tiny URL</span>
+{% extends "layout.html" %}
+{% block title %}Recent URLs{% endblock %}
+{% block content %}
+<main class="page">
+  <div class="topbar" style="width:100%; max-width:1100px;"> </div> <!-- Hero -->
+  <div class="hero">
+    <h1>Recent Shortened URLs</h1>
+  </div> <!-- Card -->
+  <div class="recent-page-container">
+    <div class="recent-table-wrapper">
+      <table class="recent-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Short URL</th>
+            <th>Original URL</th>
+            <th>Created</th>
+            <th>Visits</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody> {% for url in urls %} <tr>
+            <td>{{ loop.index }}</td>
+            <td class="short-code"> <a href="/{{ url.short_code }}" target="_blank" rel="noopener"> {{
+                request.host_url }}{{ url.short_code }} </a> </td>
+            <td class="original-url"> <a href="{{ url.original_url }}" target="_blank" rel="noopener"> {{
+                url.original_url }} </a> </td>
+            <!-- CREATED TIME -->
+            <td class="created-time"> {{ format_date(url.created_at) }} </td>
+            <td>{{ url.visit_count }}</td>
+            <td class="action-col"> <a href="/{{ url.short_code }}" target="_blank" class="action-btn open-btn"
+                title="Open"> ↗ </a> <a href="#" class="action-btn delete-btn" title="Delete"
+                onclick="deleteUrl('{{ url.short_code }}', this); return false;"> 🗑 </a> </td>
+          </tr> {% else %} <tr>
+            <td colspan="6" style="text-align:center;padding:20px;"> No URLs found. </td>
+          </tr> {% endfor %} </tbody>
+      </table>
     </div>
-    <nav class="header-nav">
-      <a href="/" class="nav-link active">Home</a>
-      <a href="/coming-soon" class="nav-link">Analysis</a>
-      <a href="coming-soon" class="nav-link">Search</a>
-      <a href="coming-soon" class="nav-link">Contact</a>
+  </div>
+</main>
+<script>
+  function deleteUrl(shortCode, btn) {
+    if (!confirm("Are you sure you want to delete this URL?")) return;
 
-      <a href="/recent" class="nav-link" title="Show recent shortened URLs">🕘Recent URLs</a>
+    fetch(`/history/${shortCode}`, {
+      method: "DELETE"
+    })
+      .then(async (res) => {
+        const data = await res.json();
 
+        if (!res.ok || !data.success) {
+          throw new Error("Delete failed");
+        }
 
-    </nav>
-
-    <div class="header-right">
-      <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">🌙</button>
-    </div>
-  </header>
-  <!-- Floating Admin Panel Button -->
-
-
-  <main class="page">
-    <div class="topbar" style="width:100%; max-width:1100px;">
-
-    </div>
-
-
-    <!-- Hero -->
-    <div class="hero">
-      <h1>Recent Shortened URLs</h1>
-    </div>
-
-    <!-- Card -->
-    <div class="recent-page-container">
-
-      <div class="recent-table-wrapper">
-        <table class="recent-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Short URL</th>
-              <th>Original URL</th>
-              <th>Created</th>
-              <th>Visits</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% for url in urls %}
-            <tr>
-              <td>{{ loop.index }}</td>
-
-              <td class="short-code">
-                <a href="/{{ url.short_code }}" target="_blank" rel="noopener">
-                  {{ request.host_url }}{{ url.short_code }}
-                </a>
-              </td>
-
-              <td class="original-url">
-                <a href="{{ url.original_url }}" target="_blank" rel="noopener">
-                  {{ url.original_url }}
-                </a>
-              </td>
-
-              <!-- CREATED TIME -->
-              <td class="created-time">
-                {{ format_date(url.created_at) }}
-              </td>
-
-              <td>{{ url.visit_count }}</td>
-
-              <td class="action-col">
-                <a href="/{{ url.short_code }}" target="_blank" class="action-btn open-btn" title="Open">
-                  ↗
-                </a>
-
-                <a href="#" class="action-btn delete-btn" title="Delete"
-                  onclick="deleteUrl('{{ url.short_code }}', this); return false;">
-                  🗑
-                </a>
-              </td>
-            </tr>
-            {% else %}
-            <tr>
-              <td colspan="6" style="text-align:center;padding:20px;">
-                No URLs found.
-              </td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-    </div>
-
-  </main>
-
-  <footer class="app-footer">
-    <div class="footer-container">
-
-      <!-- Left -->
-      <div class="footer-brand">
-        <div class="footer-logo">
-          <span>🔗</span>
-        </div>
-        <h3>tiny URL</h3>
-        <p>
-          A modern URL shortener with analytics, QR codes, and a clean UI.
-          Built for speed, simplicity, and scalability.
-        </p>
-
-        <a href="https://github.com/recursivezero/tiny" target="_blank" class="github-btn">
-          <svg height="18" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 
-                3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38
-                0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49
-                -2.69-.94-.09-.23-.48-.94-.82-1.13
-                -.28-.15-.68-.52-.01-.53.63-.01
-                1.08.58 1.23.82.72 1.21 1.87.87
-                2.33.66.07-.52.28-.87.51-1.07
-                -1.78-.2-3.64-.89-3.64-3.95
-                0-.87.31-1.59.82-2.15
-                -.08-.2-.36-1.02.08-2.12
-                0 0 .67-.21 2.2.82
-                .64-.18 1.32-.27 2-.27
-                .68 0 1.36.09 2 .27
-                1.53-1.04 2.2-.82 2.2-.82
-                .44 1.1.16 1.92.08 2.12
-                .51.56.82 1.27.82 2.15
-                0 3.07-1.87 3.75-3.65 3.95
-                .29.25.54.73.54 1.48
-                0 1.07-.01 1.93-.01 2.2
-                0 .21.15.46.55.38
-                A8.013 8.013 0 0 0 16 8
-                c0-4.42-3.58-8-8-8z" />
-          </svg>
-          tiny
-        </a>
-      </div>
-
-      <!-- Right -->
-      <div class="footer-links">
-
-        <div class="footer-col">
-          <h4>Product</h4>
-          <a href="coming-soon">Features</a>
-          <a href="coming-soon">API</a>
-        </div>
-
-        <div class="footer-col">
-          <h4>Support</h4>
-          <a href="coming-soon">Documentation</a>
-          <a href="coming-soon">Contact</a>
-          <a href="coming-soon">Help Center</a>
-        </div>
-
-      </div>
-
-    </div>
-    <div class="footer-bottom">
-      © 2025
-      <a href="https://recursivezero.com/" target="_blank" rel="noopener noreferrer">
-        Recursive Zero Pvt Ltd
-      </a>.
-      All rights reserved.
-    </div>
-  </footer>
-  <script>
-    function deleteUrl(shortCode, btn) {
-      if (!confirm("Are you sure you want to delete this URL?")) return;
-
-      fetch(`/delete/${shortCode}`, {
-        method: "POST"
+        // ✅ remove row from table
+        const row = btn.closest("tr");
+        if (row) row.remove();
       })
-        .then(res => {
-          if (!res.ok) throw new Error("Delete failed");
-          const row = btn.closest("tr");
-          if (row) row.remove();
-        })
-        .catch(() => alert("Failed to delete URL"));
+      .catch((err) => {
+        console.error(err);
+        alert("Failed to delete URL");
+      });
+  }
+
+  function toggleRecent() {
+    const box = document.getElementById('recentList');
+    if (!box) return;
+
+    box.style.display =
+      box.style.display === 'block' ? 'none' : 'block';
+
+    if (box.style.display === 'block') {
+      box.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
-    function toggleRecent() {
-      const box = document.getElementById('recentList');
-      box.style.display = box.style.display === 'block' ? 'none' : 'block';
-      if (box.style.display === 'block') {
-        box.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }
-    }
-
-  </script>
-
-</body>
-
-</html>
+  }
+</script>
+{% endblock %}
