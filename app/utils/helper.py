@@ -3,13 +3,45 @@ import random
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from typing import Union
-
-import validators
 from app.utils.config import SHORT_CODE_LENGTH
+from urllib.parse import urlparse
+import ipaddress
+
+# def is_valid_url(url: str) -> bool:
+#    return bool(validators.url(url))
 
 
 def is_valid_url(url: str) -> bool:
-    return bool(validators.url(url))
+    try:
+        parsed = urlparse(url)
+
+        # 1️⃣ Allow only http/https
+        if parsed.scheme not in ("http", "https"):
+            return False
+
+        # 2️⃣ Must have hostname
+        if not parsed.netloc:
+            return False
+
+        hostname = parsed.hostname
+
+        # 3️⃣ Block localhost
+        if hostname in ("localhost",):
+            return False
+
+        # 4️⃣ Block private / loopback IPs
+        try:
+            ip = ipaddress.ip_address(hostname)
+            if ip.is_private or ip.is_loopback:
+                return False
+        except ValueError:
+            # Hostname is not an IP (normal domain)
+            pass
+
+        return True
+
+    except Exception:
+        return False
 
 
 def sanitize_url(url: str) -> str:

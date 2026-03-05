@@ -743,27 +743,58 @@ body.dark-theme .footer-bottom a {
 
 
 /* allow wrapping */
+/*.recent-tray .recent-item .original-url,
+.recent-tray .recent-item .original-url a {*/
+/*display: -webkit-box;*/
+/*-webkit-box-orient: vertical;
+
+  -webkit-line-clamp: 3;*/
+/* ⭐ change 2 or 3 lines here */
+/*line-clamp: 3;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-wrap: balance;
+
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}*/
+
+/* IMPORTANT — remove width restriction */
+/*.recent-tray .recent-item {
+  min-width: 0;*/
+/* allows shrinking inside flex/grid */
+/*max-width: 100%;
+}*/
+
+.recent-tray .recent-item .original-url {
+  max-width: 350px;
+  /* control width of text block */
+  min-width: 0;
+}
+
 .recent-tray .recent-item .original-url,
 .recent-tray .recent-item .original-url a {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
 
-  -webkit-line-clamp: 3;
-  /* ⭐ change 2 or 3 lines here */
-  line-clamp: 3;
+  display: -webkit-box;
+  /* REQUIRED for line clamp */
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  /* show only 2 lines */
 
   overflow: hidden;
   text-overflow: ellipsis;
 
   white-space: normal;
-  word-break: break-word;
+  word-break: break-all;
+  /* break long URLs */
   overflow-wrap: anywhere;
 }
 
-/* IMPORTANT — remove width restriction */
+/* container */
 .recent-tray .recent-item {
   min-width: 0;
-  /* allows shrinking inside flex/grid */
   max-width: 100%;
 }
 
