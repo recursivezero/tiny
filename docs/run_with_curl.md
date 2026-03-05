@@ -55,14 +55,37 @@ in request folder Create a file named input.json in the project root:
 ```#
 $data = Get-Content .\request\urls.json -Raw | ConvertFrom-Json
 
-foreach ($item in $data) {
-    $body = @{ url = $item.url } | ConvertTo-Json
+Write-Host "🚀 Processing URLs..."
 
-    Invoke-RestMethod `
-      -Uri "http://127.0.0.1:8001/api/v1/shorten" `
-      -Method POST `
-      -ContentType "application/json" `
-      -Body $body
+foreach ($item in $data) {
+    if (-not $item.url) {
+        Write-Host "❌ Skipping invalid entry (missing url field)"
+        continue
+    }
+
+    $body = @{ url = $item.url } | ConvertTo-Json -Depth 3
+
+    try {
+        $response = Invoke-RestMethod `
+            -Uri "http://127.0.0.1:8001/shorten" `
+            -Method POST `
+            -ContentType "application/json" `
+            -Body $body
+
+        Write-Host "✅ SUCCESS: $($item.url) -> $($response.short_code)"
+    }
+    catch {
+        $status = $_.Exception.Response.StatusCode.value__ 2>$null
+        if ($status -eq 400) {
+            Write-Host "❌ ERROR: $($item.url) - Invalid URL"
+        }
+        elseif ($status -eq 404) {
+            Write-Host "❌ ERROR: $($item.url) - API endpoint not found"
+        }
+        else {
+            Write-Host "❌ ERROR: $($item.url) - Rejected by API"
+        }
+    }
 }
 
 

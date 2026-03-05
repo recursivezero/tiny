@@ -268,6 +268,62 @@ pip install dist/*.whl
 pip install --upgrade dist/*.whl
 ```
 
+# 📡 Endpoints
+
+# 🔐 Cache Admin Endpoints (Authentication)
+
+To use the cache admin endpoints (`/cache/purge`, `/cache/remove`), you must configure a secret token in your environment and send it in the request header.
+Setup
+
+Add a token in your .env file:
+
+```
+CACHE_PURGE_TOKEN=your-secret-token
+```
+
+🧪 How to test
+
+PowerShell
+
+```
+Invoke-RestMethod `
+  -Method DELETE `
+  -Uri "http://127.0.0.1:8000/cache/purge" `
+  -Headers @{ "X-Cache-Token" = "your-secret-token" }
+```
+
+🧹 Remove a single cache entry
+
+```
+Invoke-RestMethod `
+  -Method PATCH `
+  -Uri "http://127.0.0.1:8000/cache/remove?key=abc123" `
+  -Headers @{ "X-Cache-Token" = "your-secret-token" }
+```
+
+🖥️ UI Endpoints
+
+| Method | Path            | Description                          |
+| ------ | --------------- | ------------------------------------ |
+| GET    | `/`             | Home page (URL shortener UI)         |
+| GET    | `/recent`       | Shows recently shortened URLs        |
+| GET    | `/{short_code}` | Redirects to the original URL        |
+| GET    | `/cache/list`   | 🔧 Debug cache view (local/dev only) |
+| DELETE | `/cache/purge`  | 🧹 Remove all entries from cache     |
+| PATCH  | `/cache/remove` | 🧹 Remove a single cache entry       |
+
+🔌 API Endpoints (v1)
+
+| Method | Path                | Description                          |
+| ------ | ------------------- | ------------------------------------ |
+| POST   | `/api/v1/shorten`   | Create a short URL                   |
+| GET    | `/api/v1/version`   | Get API version                      |
+| GET    | `/api/v1/health`    | Health check (DB + cache status)     |
+| GET    | `/api/{short_code}` | Redirect to original URL             |
+| GET    | `/cache/list`       | 🔧 Debug cache view (local/dev only) |
+| DELETE | `/cache/purge`      | 🧹 Remove all entries from cache     |
+| PATCH  | `/cache/remove`     | 🧹 Remove a single cache entry       |
+
 ## License
 
 📜Docs
