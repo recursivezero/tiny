@@ -6,6 +6,7 @@ from typing import Union
 from app.utils.config import SHORT_CODE_LENGTH
 from urllib.parse import urlparse
 import ipaddress
+import re
 
 # def is_valid_url(url: str) -> bool:
 #    return bool(validators.url(url))
@@ -44,12 +45,22 @@ def is_valid_url(url: str) -> bool:
         return False
 
 
+# def sanitize_url(url: str) -> str:
+#    url = url.strip()
+#    if not url:
+#        return ""
+#    if not url.startswith(("http://", "https://")):
+#        url = "https://" + url
+#    return url
+
+
 def sanitize_url(url: str) -> str:
     url = url.strip()
-    if not url:
-        return ""
+
     if not url.startswith(("http://", "https://")):
-        url = "https://" + url
+        if re.match(r"^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", url):
+            url = "https://" + url
+
     return url
 
 

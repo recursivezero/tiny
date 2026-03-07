@@ -2,9 +2,16 @@
 <main class="main-layout">
   <div class="hero-input-card">
     <h1>Shorten Your Links</h1>
+    {% if error %}
+    <div class="alert-error">
+      ⚠ {{ error }}
+    </div>
+    {% endif %}
     <form method="POST" id="shortenForm" action="/shorten">
       <div class="input-wrapper"> <input type="text" name="original_url" placeholder="Paste your long link here..."
-          value="{{ original_url or '' }}" required> <button type="submit" class="btn-primary">Shorten</button> </div>
+          value="{{ original_url or '' }}" required>
+        <button type="submit" class="btn-primary">Shorten</button>
+      </div>
       <div class="options-row"> <label class="checkbox-label"> <input type="checkbox" name="generate_qr" checked>
           Generate QR Code </label> <span class="info-text">Analytics Enabled</span> </div>
     </form>

@@ -1,4 +1,5 @@
 import os
+import re
 from datetime import datetime, timezone
 from typing import Optional
 from app.utils.cache import list_cache_clean, clear_cache
@@ -98,11 +99,24 @@ async def create_short_url(
     qr_type: str = Form("short"),
 ):
     session = request.session
-    original_url = sanitize_url(original_url)
+    original_url = original_url.strip()
 
-    if not original_url or not is_valid_url(original_url):
+    if not original_url.startswith(("http://", "https://")):
+        if re.match(r"^[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+){1,2}$", original_url):
+            original_url = "https://" + original_url
+        else:
+            session["error"] = "Please enter a valid URL."
+            return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+
+    if not is_valid_url(original_url):
         session["error"] = "Please enter a valid URL."
         return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+
+    # original_url = sanitize_url(original_url)
+
+    # if not original_url or not is_valid_url(original_url):
+    #    session["error"] = "Please enter a valid URL."
+    #    return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
     short_code: Optional[str] = get_short_from_cache(original_url)
 

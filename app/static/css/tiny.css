@@ -192,6 +192,16 @@ body.dark-theme .app-header {
   -webkit-text-fill-color: transparent;
 }
 
+.alert-error {
+  background: #ffecec;
+  border: 1px solid #ffb3b3;
+  color: #cc0000;
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 14px;
+}
+
 .input-wrapper {
   display: flex;
   gap: 1rem;
