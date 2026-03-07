@@ -15,21 +15,21 @@ def is_valid_url(url: str) -> bool:
     try:
         parsed = urlparse(url)
 
-        # 1️⃣ Allow only http/https
+        #  Allow only http/https
         if parsed.scheme not in ("http", "https"):
             return False
 
-        # 2️⃣ Must have hostname
+        #  Must have hostname
         if not parsed.netloc:
             return False
 
         hostname = parsed.hostname
 
-        # 3️⃣ Block localhost
+        #  Block localhost
         if hostname in ("localhost",):
             return False
 
-        # 4️⃣ Block private / loopback IPs
+        #  Block private / loopback IPs
         try:
             ip = ipaddress.ip_address(hostname)
             if ip.is_private or ip.is_loopback:
