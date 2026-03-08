@@ -13,4 +13,4 @@ jobs:
       - name: Format issue title
         uses: recursivezero/action-club/.github/actions/format-issue-title@v0.2.57
         with:
-          prefix: RTY
+          prefix: ${{ vars.PROJECT_PREFIX }}
