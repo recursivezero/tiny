@@ -1,4 +1,4 @@
-name: "Comment on New Issue"
+name: "Comment on the Issue"
 
 on:
   issues:
