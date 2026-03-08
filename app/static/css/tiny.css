@@ -193,12 +193,9 @@ body.dark-theme .app-header {
 }
 
 .alert-error {
-  background: #ffecec;
-  border: 1px solid #ffb3b3;
-  color: #cc0000;
-  padding: 10px 14px;
-  border-radius: 8px;
-  margin-bottom: 14px;
+  text-align: center;
+  color: #ff6b6b;
+  margin-top: 8px;
   font-size: 14px;
 }
 
