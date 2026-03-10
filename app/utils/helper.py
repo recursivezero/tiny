@@ -48,15 +48,6 @@ def is_valid_url(url: str) -> bool:
 def sanitize_url(url: str) -> str:
     url = url.strip()
 
-    if not url:
-        return ""
-
-    parsed = urlparse(url)
-
-    # If no scheme, prepend https
-    if not parsed.scheme:
-        url = f"https://{url}"
-
     return url
 
 
