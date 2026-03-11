@@ -9,6 +9,8 @@ import ipaddress
 
 
 def is_valid_url(url: str) -> bool:
+    url = url.strip()  # sanitize here
+
     try:
         parsed = urlparse(url)
 
@@ -26,10 +28,6 @@ def is_valid_url(url: str) -> bool:
         if hostname is None:
             return False
 
-        # Block localhost
-        if hostname == "localhost":
-            return False
-
         # Block private / loopback IPs
         try:
             ip = ipaddress.ip_address(hostname)
@@ -43,12 +41,6 @@ def is_valid_url(url: str) -> bool:
 
     except Exception:
         return False
-
-
-def sanitize_url(url: str) -> str:
-    url = url.strip()
-
-    return url
 
 
 def generate_code(length: int = SHORT_CODE_LENGTH) -> str:

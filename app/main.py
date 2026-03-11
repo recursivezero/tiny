@@ -115,26 +115,6 @@ app.mount(
     name="qr",
 )
 
-# -----------------------------
-# Global error handler
-# -----------------------------
-# @app.exception_handler(Exception)
-# async def global_exception_handler(request: Request, exc: Exception):
-#  traceback.print_exc()
-#  return JSONResponse(
-#        status_code=500,
-#        content={"success": False, "error": "INTERNAL_SERVER_ERROR"},
-#    )
-
-
-# @app.exception_handler(404)
-# async def custom_404_handler(request: Request, exc):
-#    return templates.TemplateResponse(
-#        "404.html",
-#        {"request": request},
-#        status_code=404,
-#    )
-
 
 @app.exception_handler(FastAPIHTTPException)
 async def http_exception_handler(request: Request, exc: FastAPIHTTPException):

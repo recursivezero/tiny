@@ -35,7 +35,7 @@ from app.utils.cache import (
     rev_cache,
 )
 from app.utils.config import DOMAIN, MAX_RECENT_URLS, CACHE_PURGE_TOKEN, QR_DIR
-from app.utils.helper import generate_code, is_valid_url, sanitize_url, format_date
+from app.utils.helper import generate_code, is_valid_url, format_date
 from app.utils.qr import generate_qr_with_logo
 
 # templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
@@ -98,7 +98,6 @@ async def create_short_url(
     qr_type: str = Form("short"),
 ):
     session = request.session
-    original_url = sanitize_url(original_url)
 
     if not original_url or not is_valid_url(original_url):
         session["error"] = "Please enter a valid URL."
@@ -330,7 +329,7 @@ class ShortenRequest(BaseModel):
 
 @api_v1.post("/shorten")
 def shorten_api(payload: ShortenRequest):
-    original_url = sanitize_url(payload.url)
+    original_url = payload.url
     if not is_valid_url(original_url):
         return JSONResponse(status_code=400, content={"error": "INVALID_URL"})
 
