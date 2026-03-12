@@ -3,18 +3,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 import logging
 import asyncio
-
 from fastapi import FastAPI, Request
-
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-
-# from fastapi.exceptions import RequestValidationError
-# from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import HTTPException as FastAPIHTTPException
 from fastapi.templating import Jinja2Templates
-
 from app.routes import ui_router
 from app.utils import db
 from app.utils.cache import cleanup_expired

@@ -49,7 +49,6 @@ from app.utils.helper import (
 )
 from app.utils.qr import generate_qr_with_logo
 
-# templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 templates = Jinja2Templates(directory="app/templates")
 # Routers
 ui_router = APIRouter()
@@ -236,7 +235,6 @@ def redirect_short_ui(short_code: str, background_tasks: BackgroundTasks):
                 set_cache_pair(short_code, original_url)
                 return RedirectResponse(original_url)
 
-    # return PlainTextResponse("Invalid short URL", status_code=404)
     raise HTTPException(status_code=404, detail="Page not found")
 
 
