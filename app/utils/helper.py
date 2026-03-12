@@ -3,22 +3,72 @@ import random
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 from typing import Union
-
-import validators
-from app.utils.config import SHORT_CODE_LENGTH
-
-
-def is_valid_url(url: str) -> bool:
-    return bool(validators.url(url))
+from app.utils.config import SHORT_CODE_LENGTH, whitelist_urls, blacklist_urls
+from urllib.parse import urlparse
+import ipaddress
 
 
+# for sanitization the url
 def sanitize_url(url: str) -> str:
-    url = url.strip()
-    if not url:
-        return ""
-    if not url.startswith(("http://", "https://")):
-        url = "https://" + url
-    return url
+    return url.strip()
+
+
+# for validating the url
+def is_valid_url(url: str) -> bool:
+
+    try:
+        parsed = urlparse(url)
+
+        #  Allow only http/https
+        if parsed.scheme not in ("http", "https"):
+            return False
+
+        #  Must have hostname
+        if not parsed.netloc:
+            return False
+
+        hostname = parsed.hostname
+
+        # Handle None (fix for mypy)
+        if hostname is None:
+            return False
+
+        # Block private / loopback IPs
+        try:
+            ip = ipaddress.ip_address(hostname)
+            if ip.is_private or ip.is_loopback:
+                return False
+        except ValueError:
+            # Hostname is not an IP (normal domain)
+            pass
+
+        return True
+
+    except Exception:
+        return False
+
+
+# for authorizing the url based on whitelist and blacklist
+def authorize_url(url: str) -> bool:
+    """Check whitelist / blacklist rules."""
+    hostname = urlparse(url).hostname
+
+    if hostname is None:
+        return False
+
+    hostname = hostname.lower()
+
+    # block blacklist domains
+    if any(hostname.endswith(domain) for domain in blacklist_urls):
+        return False
+
+    # allow only whitelist domains (if defined)
+    if whitelist_urls and not any(
+        hostname.endswith(domain) for domain in whitelist_urls
+    ):
+        return False
+
+    return True
 
 
 def generate_code(length: int = SHORT_CODE_LENGTH) -> str:

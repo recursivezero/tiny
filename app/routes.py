@@ -34,11 +34,21 @@ from app.utils.cache import (
     remove_cache_key,
     rev_cache,
 )
-from app.utils.config import DOMAIN, MAX_RECENT_URLS, CACHE_PURGE_TOKEN, QR_DIR
-from app.utils.helper import generate_code, is_valid_url, sanitize_url, format_date
+from app.utils.config import (
+    DOMAIN,
+    MAX_RECENT_URLS,
+    CACHE_PURGE_TOKEN,
+    QR_DIR,
+)
+from app.utils.helper import (
+    generate_code,
+    sanitize_url,
+    is_valid_url,
+    authorize_url,
+    format_date,
+)
 from app.utils.qr import generate_qr_with_logo
 
-# templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 templates = Jinja2Templates(directory="app/templates")
 # Routers
 ui_router = APIRouter()
@@ -98,10 +108,16 @@ async def create_short_url(
     qr_type: str = Form("short"),
 ):
     session = request.session
-    original_url = sanitize_url(original_url)
+    original_url = sanitize_url(original_url)  # sanitize the URL input
 
-    if not original_url or not is_valid_url(original_url):
+    if not original_url or not is_valid_url(original_url):  # validate the URL
         session["error"] = "Please enter a valid URL."
+        return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+
+    if not authorize_url(
+        original_url
+    ):  # authorize the URL based on whitelist/blacklist
+        session["error"] = "This domain is not allowed."
         return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
     short_code: Optional[str] = get_short_from_cache(original_url)
@@ -219,7 +235,6 @@ def redirect_short_ui(short_code: str, background_tasks: BackgroundTasks):
                 set_cache_pair(short_code, original_url)
                 return RedirectResponse(original_url)
 
-    # return PlainTextResponse("Invalid short URL", status_code=404)
     raise HTTPException(status_code=404, detail="Page not found")
 
 
@@ -331,8 +346,12 @@ class ShortenRequest(BaseModel):
 @api_v1.post("/shorten")
 def shorten_api(payload: ShortenRequest):
     original_url = sanitize_url(payload.url)
+
     if not is_valid_url(original_url):
         return JSONResponse(status_code=400, content={"error": "INVALID_URL"})
+
+    if not authorize_url(original_url):
+        return JSONResponse(status_code=400, content={"error": "DOMAIN_NOT_ALLOWED"})
 
     short_code = get_short_from_cache(original_url)
     if not short_code:
