@@ -21,3 +21,8 @@ All notable changes to this repository will be documented in this file.
 ## [1.0.3] Wed, Feb 18, 2026
 
 - Added Database connection retry logic
+
+## [1.1.0] THu, Mar 12, 2026
+
+- Added Memory Cache
+- Redesign Page
