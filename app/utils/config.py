@@ -82,8 +82,16 @@ SHORT_CODE_LENGTH = 6
 MAX_URL_LENGTH = 2048
 
 # for making the qr constant
-# Base project paths
 BASE_DIR = Path(__file__).resolve().parent.parent  # app/
 PROJECT_ROOT = BASE_DIR.parent  # project root
-# QR directory constant
-QR_DIR = PROJECT_ROOT / "assets" / "images" / "qr"
+QR_DIR = PROJECT_ROOT / "assets" / "images" / "qr"  # QR directory constant
+
+
+# for the check of the url which is blacklist or whitelist
+whitelist_urls: set[str] = set()
+blacklist_urls: set[str] = {
+    "malware.com",
+    "phishing.site",
+    "badsite.test",
+    "spam.test",
+}
