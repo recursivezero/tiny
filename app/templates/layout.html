@@ -30,13 +30,16 @@
 </head>
 
 <body class="dark-theme">
-  <div class="bg-glow"></div>
 
-  {% include "header.html" %}
-
-  {% block content %}{% endblock %}
-
-  {% include "footer.html" %}
+  <header class="app-header">
+    {% include "header.html" %}
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="big-footer">
+    {% include "footer.html" %}
+  </footer>
 
   <script>
     (function applyTheme() {

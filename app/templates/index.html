@@ -1,5 +1,5 @@
 {% extends "layout.html" %} {% block content %}
-<main class="main-layout">
+<div class="main-layout">
   <div class="hero-input-card">
     <h1>Shorten Your Links</h1>
     <form method="POST" id="shortenForm" action="/shorten">
@@ -7,8 +7,13 @@
           value="{{ original_url or '' }}" required>
         <button type="submit" class="btn-primary">Shorten</button>
       </div>
-      <div class="options-row"> <label class="checkbox-label"> <input type="checkbox" name="generate_qr" checked>
-          Generate QR Code </label> <span class="info-text">Analytics Enabled</span> </div>
+      <div class="options-row">
+        <label>
+          <input type="checkbox" name="generate_qr" checked>
+          Generate QR Code
+        </label>
+        <span class="info-text">Analytics Enabled</span>
+      </div>
     </form>
     {% if error %}
     <div class="alert-error">
@@ -47,7 +52,7 @@
         <div class="original-url">{{ url.original_url }}</div>
       </div> {% endfor %} </div>
   </div>
-</main>
+</div>
 
 <script>
   async function copyLink(btn) {
