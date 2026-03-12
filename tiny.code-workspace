@@ -167,5 +167,7 @@
       ".*",
       "__pycache__"
     ],
+    "path-intellisense.autoSlashAfterDirectory": true,
+    "explorer.compactFolders": false,
   }
 }
