@@ -6,10 +6,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <title>{% block title %}tiny URL{% endblock %}</title>
-  <meta name="description" content="Advanced URL Management Platform">
+  <!-- OpenGraph Meta Tags -->
+  <meta property="og:title" content="rzro.link | Smart URL Shortener">
+  <meta property="og:description"
+    content="A fast and reliable platform to shorten, manage, and track your links easily.">
+  <meta property="og:image" content="https://rzro.link/static/og-image.png">
+  <meta property="og:url" content="https://rzro.link/">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="tiny URL - Precision Shortening">
-  <meta property="og:image" content="/static/og-image.png">
+
+  <!-- Twitter Meta Tags -->
+  <meta property="twitter:card" content="summary_large_image">
+  <meta property="twitter:title" content="rzro.link | Smart URL Shortener">
+  <meta property="twitter:description" content="Create powerful short links and manage them easily with rzro.link">
+  <meta property="twitter:image" content="https://rzro.link/static/og-image.png">
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Geist+Mono&display=swap"
@@ -21,13 +30,16 @@
 </head>
 
 <body class="dark-theme">
-  <div class="bg-glow"></div>
 
-  {% include "header.html" %}
-
-  {% block content %}{% endblock %}
-
-  {% include "footer.html" %}
+  <header class="app-header">
+    {% include "header.html" %}
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="big-footer">
+    {% include "footer.html" %}
+  </footer>
 
   <script>
     (function applyTheme() {

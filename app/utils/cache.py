@@ -22,6 +22,7 @@ class RecentItem(TypedDict):
     short_code: str
     original_url: str
     created_at: float
+    visit_count: int
 
 
 # -----------------------
@@ -125,11 +126,13 @@ def get_recent_from_cache(limit: int = MAX_RECENT_URLS) -> list[RecentItem]:
 
     for original_url, data in rev_cache.items():
         if data["expires_at"] >= now:
+            short_code = data["short_code"]
             valid_items.append(
                 {
                     "short_code": data["short_code"],
                     "original_url": original_url,
                     "created_at": data["created_at"],
+                    "visit_count": visit_cache.get(short_code, 0),
                 }
             )
 

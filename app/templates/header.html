@@ -1,19 +1,17 @@
-<header class="app-header">
-  <div class="header-left">
-    <div class="app-logo">🔗</div>
-    <span class="app-name">RZRO.link</span>
-  </div>
-  <nav class="header-nav">
-    <a href="/" class="nav-link active">Home</a>
-    <a href="/coming-soon" class="nav-link">Analysis</a>
-    <a href="/coming-soon" class="nav-link">Search</a>
-    <a href="/coming-soon" class="nav-link">Contact</a>
-    <a href="/history" class="nav-link" title="Show recent shortened URLs">History</a>
-  </nav>
-  <div class="header-right">
-    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
-  </div>
-</header>
+<div class="header-left">
+  <div class="app-logo">🔗</div>
+  <span class="app-name">RZRO.link</span>
+</div>
+<nav class="header-nav">
+  <a href="/" class="nav-link active">Home</a>
+  <a href="/coming-soon" class="nav-link">Analysis</a>
+  <a href="/coming-soon" class="nav-link">Search</a>
+  <a href="/coming-soon" class="nav-link">Contact</a>
+  <a href="/history" class="nav-link" title="Show recent shortened URLs">History</a>
+</nav>
+<div class="header-right">
+  <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+</div>
 <script>
   const links = document.querySelectorAll(".nav-link");
   const currentPath = window.location.pathname;

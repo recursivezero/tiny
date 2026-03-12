@@ -3,18 +3,12 @@ from contextlib import asynccontextmanager
 from pathlib import Path
 import logging
 import asyncio
-
 from fastapi import FastAPI, Request
-
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
-
-# from fastapi.exceptions import RequestValidationError
-# from starlette.exceptions import HTTPException as StarletteHTTPException
 from fastapi.exceptions import HTTPException as FastAPIHTTPException
 from fastapi.templating import Jinja2Templates
-
 from app.routes import ui_router
 from app.utils import db
 from app.utils.cache import cleanup_expired
@@ -114,26 +108,6 @@ app.mount(
     StaticFiles(directory=str(QR_DIR)),
     name="qr",
 )
-
-# -----------------------------
-# Global error handler
-# -----------------------------
-# @app.exception_handler(Exception)
-# async def global_exception_handler(request: Request, exc: Exception):
-#  traceback.print_exc()
-#  return JSONResponse(
-#        status_code=500,
-#        content={"success": False, "error": "INTERNAL_SERVER_ERROR"},
-#    )
-
-
-# @app.exception_handler(404)
-# async def custom_404_handler(request: Request, exc):
-#    return templates.TemplateResponse(
-#        "404.html",
-#        {"request": request},
-#        status_code=404,
-#    )
 
 
 @app.exception_handler(FastAPIHTTPException)
