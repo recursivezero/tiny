@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/badge/License-MIT-yellow.svg)
 ![Status](https://img.shields.io/badge/Status-Active-success.svg)
 
----
+## live on <https://rzro.link>
 
 ## Overview
 
@@ -183,7 +183,7 @@ Offline Mode activates automatically when:
 
 Log message:
 
-```
+```text
 ⚠️ MongoDB connection failed. Running in NO-DB mode.
 ```
 
@@ -225,7 +225,7 @@ Encode special chars:
 
 Example:
 
-```
+```plaintext
 MONGO_URI=mongodb://user%40gmail.com:Pass%40123@localhost:27017/tiny_url?authSource=tiny_url
 ```
 
@@ -268,16 +268,16 @@ pip install dist/*.whl
 pip install --upgrade dist/*.whl
 ```
 
-# 📡 Endpoints
+## 📡 Endpoints
 
-# 🔐 Cache Admin Endpoints (Authentication)
+### 🔐 Cache Admin Endpoints (Authentication)
 
 To use the cache admin endpoints (`/cache/purge`, `/cache/remove`), you must configure a secret token in your environment and send it in the request header.
 Setup
 
 Add a token in your .env file:
 
-```
+```text
 CACHE_PURGE_TOKEN=your-secret-token
 ```
 
@@ -285,7 +285,7 @@ CACHE_PURGE_TOKEN=your-secret-token
 
 PowerShell
 
-```
+```text
 Invoke-RestMethod `
   -Method DELETE `
   -Uri "http://127.0.0.1:8000/cache/purge" `
@@ -294,7 +294,7 @@ Invoke-RestMethod `
 
 🧹 Remove a single cache entry
 
-```
+```text
 Invoke-RestMethod `
   -Method PATCH `
   -Uri "http://127.0.0.1:8000/cache/remove?key=abc123" `
