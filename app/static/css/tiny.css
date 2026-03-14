@@ -35,6 +35,12 @@ body.light-theme {
   background-image: none;
 }
 
+.container {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-height: 100vh;
+}
+
 .main-layout {
   max-width: 870px;
   margin: 0 auto;
