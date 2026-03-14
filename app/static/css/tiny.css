@@ -1,15 +1,7 @@
-html,
-body {
-  height: 100%;
-  margin: 0;
-  font-family: Arial;
-  padding: 0;
-  font-family: "Poppins", system-ui, Arial, sans-serif;
-  background: var(--bg);
-  background-size: cover;
-  background-position: center;
-  background-size: cover;
-  background-position: center;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
 :root {
@@ -27,6 +19,11 @@ body {
   font-family: "Inter", system-ui, sans-serif;
   margin: 0;
   overflow-x: hidden;
+  background-image: radial-gradient(circle at 50% -20%, #1e1e2e 0%, transparent 50%);
+}
+
+a {
+  color: var(--accent);
 }
 
 body.light-theme {
@@ -48,6 +45,16 @@ body.light-theme {
 }
 
 .main-layout {
+  max-width: 870px;
+  margin: 0 auto;
+  padding: 6rem 1rem 4rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  flex: 1;
+}
+
+.main-layout {
   width: 90%;
   margin: 2rem auto;
   display: flex;
@@ -63,7 +70,6 @@ body.light-theme {
   justify-content: space-between;
   padding: 0 10px;
   box-sizing: border-box;
-
   background: var(--glass);
   border-bottom: 1px solid var(--glass-border);
   z-index: 1000;
@@ -103,7 +109,9 @@ body.light-theme .app-header {
 .header-nav {
   display: flex;
   gap: 26px;
-  margin: 0 auto;
+  flex-wrap: wrap;
+  white-space: nowrap;
+  flex-shrink: 1;
 }
 
 .nav-link,
@@ -175,9 +183,49 @@ body.dark-theme .app-header {
   color: var(--accent);
 }
 
+/* hamburger hidden on desktop */
+
+.hamburger {
+  display: none;
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
 @media (max-width: 600px) {
-  .logo {
-    font-size: 1.2rem;
+  .app-logo {
+    transform: scale(0.9);
+  }
+
+  .app-name {
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 700px) {
+  .hamburger {
+    display: block;
+  }
+
+  .header-nav {
+    display: none;
+    position: fixed;
+    top: 55px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    flex-direction: column;
+    background: var(--bg);
+    padding: 20px;
+    display: none;
+    gap: 16px;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .header-nav.open {
+    display: flex;
   }
 }
 
@@ -275,6 +323,10 @@ body.dark-theme .app-header {
   gap: 1.5rem;
 }
 
+.short-url {
+  max-width: 100%;
+}
+
 .qr-image {
   width: 80px;
   height: 80px;
@@ -295,6 +347,8 @@ body.dark-theme .app-header {
   font-weight: 700;
   color: var(--text-primary);
   text-decoration: none;
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .result-actions {
@@ -388,6 +442,21 @@ body.dark-theme .app-header {
   font-weight: 700;
 }
 
+@media (max-width: 768px) {
+  .input-wrapper {
+    flex-direction: column;
+  }
+
+  .btn-primary {
+    width: 100%;
+  }
+
+  .scroll-container {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
 /* ===============================
    MODERN GLASS RECENT TABLE
 ================================= */
@@ -402,6 +471,7 @@ body.dark-theme .app-header {
 .recent-table-wrapper {
   width: 100%;
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ===============================
@@ -414,7 +484,7 @@ body.dark-theme .app-header {
   border-radius: 12px;
   overflow: hidden;
   table-layout: fixed;
-  min-width: 800px;
+  min-width: 720px;
 }
 
 .recent-table thead {
@@ -590,10 +660,7 @@ footer.big-footer {
   background: var(--bg);
   border-top: 1px solid var(--glass-border);
   padding: 4rem 1rem 2rem;
-  margin-top: 4rem;
-  position: fixed;
-  bottom: 0;
-  width: 100%;
+  margin-top: auto;
 }
 
 .footer-grid {
@@ -776,4 +843,19 @@ body.light-theme .history-link {
 
 .history-link:hover {
   opacity: 0.7;
+}
+
+.contact-info {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  padding: 2rem;
+  list-style-type: none;
+  & li {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
 }
