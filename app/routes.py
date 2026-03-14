@@ -1,51 +1,52 @@
 import os
 from datetime import datetime, timezone
 from typing import Optional
-from app.utils.cache import list_cache_clean, clear_cache
+
 from fastapi import (
     APIRouter,
+    BackgroundTasks,
     Form,
+    Header,
+    HTTPException,
+    Query,
     Request,
     status,
-    HTTPException,
-    BackgroundTasks,
-    Header,
-    Query,
 )
 from fastapi.responses import (
     HTMLResponse,
+    JSONResponse,
     PlainTextResponse,
     RedirectResponse,
-    JSONResponse,
 )
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 
-
 from app import __version__
 from app.utils import db
 from app.utils.cache import (
+    clear_cache,
     get_from_cache,
     get_recent_from_cache,
     get_short_from_cache,
-    set_cache_pair,
     increment_visit_cache,
-    url_cache,
+    list_cache_clean,
     remove_cache_key,
     rev_cache,
+    set_cache_pair,
+    url_cache,
 )
 from app.utils.config import (
+    CACHE_PURGE_TOKEN,
     DOMAIN,
     MAX_RECENT_URLS,
-    CACHE_PURGE_TOKEN,
     QR_DIR,
 )
 from app.utils.helper import (
-    generate_code,
-    sanitize_url,
-    is_valid_url,
     authorize_url,
     format_date,
+    generate_code,
+    is_valid_url,
+    sanitize_url,
 )
 from app.utils.qr import generate_qr_with_logo
 
@@ -150,6 +151,11 @@ async def create_short_url(
     )
 
     return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@ui_router.get("/contact", response_class=HTMLResponse)
+async def contact(request: Request):
+    return templates.TemplateResponse("contact.html", {"request": request})
 
 
 @ui_router.get("/history", response_class=HTMLResponse)

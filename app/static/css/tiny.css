@@ -20,7 +20,10 @@ body {
   margin: 0;
   overflow-x: hidden;
   background-image: radial-gradient(circle at 50% -20%, #1e1e2e 0%, transparent 50%);
+}
 
+a {
+  color: var(--accent);
 }
 
 body.light-theme {
@@ -191,7 +194,6 @@ body.dark-theme .app-header {
   cursor: pointer;
 }
 
-
 @media (max-width: 600px) {
   .app-logo {
     transform: scale(0.9);
@@ -200,13 +202,9 @@ body.dark-theme .app-header {
   .app-name {
     font-size: 1.1rem;
   }
-
-
 }
 
-
 @media (max-width: 700px) {
-
   .hamburger {
     display: block;
   }
@@ -229,7 +227,6 @@ body.dark-theme .app-header {
   .header-nav.open {
     display: flex;
   }
-
 }
 
 /* Hero input */
@@ -446,7 +443,6 @@ body.dark-theme .app-header {
 }
 
 @media (max-width: 768px) {
-
   .input-wrapper {
     flex-direction: column;
   }
@@ -459,7 +455,6 @@ body.dark-theme .app-header {
     padding-left: 12px;
     padding-right: 12px;
   }
-
 }
 
 /* ===============================
@@ -848,4 +843,19 @@ body.light-theme .history-link {
 
 .history-link:hover {
   opacity: 0.7;
+}
+
+.contact-info {
+  max-width: 600px;
+  margin: 0 auto;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 1rem;
+  padding: 2rem;
+  list-style-type: none;
+  & li {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
 }
