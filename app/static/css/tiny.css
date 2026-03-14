@@ -61,7 +61,6 @@ body.light-theme {
   justify-content: space-between;
   padding: 0 10px;
   box-sizing: border-box;
-  overflow: hidden;
   background: var(--glass);
   border-bottom: 1px solid var(--glass-border);
   z-index: 1000;
@@ -101,7 +100,6 @@ body.light-theme .app-header {
 .header-nav {
   display: flex;
   gap: 26px;
-  margin: 0 auto;
   flex-wrap: wrap;
   white-space: nowrap;
   flex-shrink: 1;
@@ -177,6 +175,18 @@ body.dark-theme .app-header {
   color: var(--accent);
 }
 
+/* hamburger hidden on desktop */
+
+.hamburger {
+  display: none;
+  font-size: 22px;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+
 @media (max-width: 600px) {
   .app-logo {
     transform: scale(0.9);
@@ -189,12 +199,30 @@ body.dark-theme .app-header {
 
 }
 
+
 @media (max-width: 700px) {
 
+  .hamburger {
+    display: block;
+  }
+
   .header-nav {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 14px;
+    display: none;
+    position: fixed;
+    top: 55px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    flex-direction: column;
+    background: var(--bg);
+    padding: 20px;
+    display: none;
+    gap: 16px;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .header-nav.open {
+    display: flex;
   }
 
 }
