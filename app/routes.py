@@ -112,12 +112,14 @@ async def create_short_url(
 
     if not original_url or not is_valid_url(original_url):  # validate the URL
         session["error"] = "Please enter a valid URL."
+        session["original_url"] = original_url  # preserve user input
         return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
     if not authorize_url(
         original_url
     ):  # authorize the URL based on whitelist/blacklist
         session["error"] = "This domain is not allowed."
+        session["original_url"] = original_url  # preserve user input
         return RedirectResponse("/", status_code=status.HTTP_303_SEE_OTHER)
 
     short_code: Optional[str] = get_short_from_cache(original_url)
