@@ -321,6 +321,10 @@ body.dark-theme .app-header {
   gap: 1.5rem;
 }
 
+.short-url {
+  max-width: 100%;
+}
+
 .qr-image {
   width: 80px;
   height: 80px;
@@ -341,6 +345,8 @@ body.dark-theme .app-header {
   font-weight: 700;
   color: var(--text-primary);
   text-decoration: none;
+  word-break: break-all;
+  overflow-wrap: anywhere;
 }
 
 .result-actions {
