@@ -1,7 +1,7 @@
 [project]
 name = "tiny"
-version = "1.1.1"
-description = "A package for URL Shortener with QR Code generation"
+version = "1.1.2"
+description = "A python web app for URL Shortener with QR Code generation"
 authors = [
   { name = "recursivezero", email = "152776938+recursivezero@users.noreply.github.com" },
 ]

@@ -22,7 +22,12 @@ All notable changes to this repository will be documented in this file.
 
 - Added Database connection retry logic
 
-## [1.1.1] THu, Mar 12, 2026
+## [1.1.1] Thu, Mar 12, 2026
 
 - Added Memory Cache
 - Redesign Page
+
+## [1.1.2] Sat, Mar 14, 2026
+
+- Mobile responsiveness
+- Added Contact us Page
