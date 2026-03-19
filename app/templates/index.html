@@ -1,57 +1,55 @@
 {% extends "layout.html" %} {% block content %}
-<div class="main-layout">
-  <div class="hero-input-card">
-    <h1>Shorten Your Links</h1>
-    <form method="POST" id="shortenForm" action="/shorten">
-      <div class="input-wrapper"> <input type="text" name="original_url" placeholder="Paste your long link here..."
-          value="{{ original_url or '' }}" required>
-        <button type="submit" class="btn-primary">Shorten</button>
-      </div>
-      <div class="options-row">
-        <label>
-          <input type="checkbox" name="generate_qr" checked>
-          Generate QR Code
-        </label>
-        <span class="info-text">Analytics Enabled</span>
-      </div>
-    </form>
-    {% if error %}
-    <div class="alert-error">
-      ⚠ {{ error }}
+<div class="hero-input-card">
+  <h1>Shorten Your Links</h1>
+  <form method="POST" id="shortenForm" action="/shorten">
+    <div class="input-wrapper"> <input type="text" name="original_url" placeholder="Paste your long link here..."
+        value="{{ original_url or '' }}" required>
+      <button type="submit" class="btn-primary">Shorten</button>
     </div>
-    {% endif %}
+    <div class="options-row">
+      <label>
+        <input type="checkbox" name="generate_qr" checked>
+        Generate QR Code
+      </label>
+      <span class="info-text">Analytics Enabled</span>
+    </div>
+  </form>
+  {% if error %}
+  <div class="alert-error">
+    ⚠ {{ error }}
   </div>
+  {% endif %}
+</div>
 
-  {% if new_short_url %}
-  <div class="result-card">
-    <div class="result-content">
-      {% if qr_image %}
-      <img src="{{ qr_image }}" class="qr-image">
-      {% endif %}
-      <div>
-        <span class="ready-label">Ready</span>
-        <div class="short-url">
-          <a href="{{ new_short_url }}" id="shortUrlDisplay" style="text-decoration: underline;" target="_blank"
-            rel="noopener noreferrer">
-            {{ new_short_url }}
-          </a>
-          </a>
-        </div>
+{% if new_short_url %}
+<div class="result-card">
+  <div class="result-content">
+    {% if qr_image %}
+    <img src="{{ qr_image }}" class="qr-image">
+    {% endif %}
+    <div>
+      <span class="ready-label">Ready</span>
+      <div class="short-url">
+        <a href="{{ new_short_url }}" id="shortUrlDisplay" style="text-decoration: underline;" target="_blank"
+          rel="noopener noreferrer">
+          {{ new_short_url }}
+        </a>
+        </a>
       </div>
     </div>
-    <div class="result-actions"> <button onclick="copyLink(this)" data-url="{{ new_short_url }}" class="btn-copy">Copy
-        Link</button> {% if qr_image %} <a href="{{ qr_image }}" download class="download-link">Download QR</a> {% endif
-      %} </div>
-  </div> {% endif %} <div class="recent-tray">
-    <div class="recent-header">
-      <h3>Recently Shortened</h3>
-      <a href="/history" class="history-link" target="_blank">View History →</a>
-    </div>
-    <div class="scroll-container"> {% for url in urls %} <div class="recent-item">
-        <div class="short-code">/{{ url.short_code }}</div>
-        <div class="original-url">{{ url.original_url }}</div>
-      </div> {% endfor %} </div>
   </div>
+  <div class="result-actions"> <button onclick="copyLink(this)" data-url="{{ new_short_url }}" class="btn-copy">Copy
+      Link</button> {% if qr_image %} <a href="{{ qr_image }}" download class="download-link">Download QR</a> {% endif
+    %} </div>
+</div> {% endif %} <div class="recent-tray">
+  <div class="recent-header">
+    <h3>Recently Shortened</h3>
+    <a href="/history" class="history-link" target="_blank">View History →</a>
+  </div>
+  <div class="scroll-container"> {% for url in urls %} <div class="recent-item">
+      <div class="short-code">/{{ url.short_code }}</div>
+      <div class="original-url">{{ url.original_url }}</div>
+    </div> {% endfor %} </div>
 </div>
 
 <script>
