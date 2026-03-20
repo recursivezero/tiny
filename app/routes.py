@@ -158,6 +158,21 @@ async def contact(request: Request):
     return templates.TemplateResponse("contact.html", {"request": request})
 
 
+@ui_router.get("/privacy", response_class=HTMLResponse)
+async def privacy(request: Request):
+    return templates.TemplateResponse("privacy.html", {"request": request})
+
+
+@ui_router.get("/terms", response_class=HTMLResponse)
+async def terms(request: Request):
+    return templates.TemplateResponse("terms.html", {"request": request})
+
+
+@ui_router.get("/faq", response_class=HTMLResponse)
+async def faq(request: Request):
+    return templates.TemplateResponse("faq.html", {"request": request})
+
+
 @ui_router.get("/history", response_class=HTMLResponse)
 async def recent_urls(request: Request):
     recent_urls_list = db.get_recent_urls(MAX_RECENT_URLS) or get_recent_from_cache(

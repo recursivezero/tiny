@@ -1,0 +1,55 @@
+{% extends "layout.html" %}
+{% block title %}Frequently Asked Questions{% endblock %}
+{% block content %}
+<section class="faq-container" itemscope itemtype="https://schema.org/FAQPage">
+  <h2 class="faq-title">Frequently Asked Questions</h2>
+
+  <div class="faq-item" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+    <details>
+      <summary itemprop="name">How long do the shortened links last?</summary>
+      <div class="faq-answer" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+        <div itemprop="text">
+          Our links are permanent by default. However, you can set custom expiration dates via the advanced settings
+          dashboard if you need temporary redirection for seasonal campaigns.
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="faq-item" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+    <details>
+      <summary itemprop="name">Are the generated QR codes high-resolution?</summary>
+      <div class="faq-answer" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+        <div itemprop="text">
+          Yes. All QR codes are generated as vector-compatible PNGs or SVGs, ensuring they remain crisp when printed on
+          everything from business cards to large-scale billboards.
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="faq-item" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+    <details>
+      <summary itemprop="name">Can I track the performance of my links?</summary>
+      <div class="faq-answer" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+        <div itemprop="text">
+          Absolutely. Every shortened link includes real-time analytics tracking, providing data on click counts,
+          geographic location, and referring devices.
+        </div>
+      </div>
+    </details>
+  </div>
+
+  <div class="faq-item" itemprop="mainEntity" itemscope itemtype="https://schema.org/Question">
+    <details>
+      <summary itemprop="name">Is there a limit to how many links I can shorten?</summary>
+      <div class="faq-answer" itemprop="acceptedAnswer" itemscope itemtype="https://schema.org/Answer">
+        <div itemprop="text">
+          Free users can shorten up to 100 links per month. For higher volume requirements and API access, please refer
+          to our developer documentation or enterprise plans.
+        </div>
+      </div>
+    </details>
+  </div>
+</section>
+{% endblock %}

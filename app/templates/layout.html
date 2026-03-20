@@ -31,16 +31,17 @@
 </head>
 
 <body class="dark-theme">
-
-  <header class="app-header">
-    {% include "header.html" %}
-  </header>
-  <main>
-    {% block content %}{% endblock %}
-  </main>
-  <footer class="big-footer">
-    {% include "footer.html" %}
-  </footer>
+  <div class="container">
+    <header class="app-header">
+      {% include "header.html" %}
+    </header>
+    <main class="main-layout">
+      {% block content %}{% endblock %}
+    </main>
+    <footer class="big-footer">
+      {% include "footer.html" %}
+    </footer>
+  </div>
 
   <script>
     (function applyTheme() {
