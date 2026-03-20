@@ -28,9 +28,11 @@
             <!-- CREATED TIME -->
             <td class="created-time"> {{ format_date(url.created_at) }} </td>
             <td>{{ url.visit_count }}</td>
-            <td class="action-col"> <a href="/{{ url.short_code }}" target="_blank" class="action-btn open-btn"
-                title="Open"> ↗ </a> <a href="#" class="action-btn delete-btn" title="Delete"
-                onclick="deleteUrl('{{ url.short_code }}', this); return false;"> 🗑 </a> </td>
+            <td class="action-col">
+              <a href="/{{ url.short_code }}" target="_blank" class="action-btn open-btn" title="Open"> ↗ </a>
+              <!--<a href="#" class="action-btn delete-btn" title="Delete"
+                onclick="deleteUrl('{{ url.short_code }}', this); return false;"> 🗑 </a>-->
+            </td>
           </tr> {% else %} <tr>
             <td colspan="6" style="text-align:center;padding:20px;"> No URLs found. </td>
           </tr> {% endfor %} </tbody>

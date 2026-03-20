@@ -53,7 +53,7 @@ body.light-theme {
   flex-direction: column;
   gap: 1rem;
   flex: 1;
-  justify-content: center;
+  /*justify-content: center;*/
 }
 
 .app-header {
@@ -98,6 +98,7 @@ body.light-theme .app-header {
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--text-primary);
+  text-decoration: none !important;
 }
 
 .header-nav {
@@ -195,6 +196,9 @@ body.dark-theme .app-header {
 
   .app-name {
     font-size: 1.1rem;
+    & a {
+      text-decoration: none !important;
+    }
   }
 }
 
@@ -755,9 +759,6 @@ body.light-theme .history-link {
   }
 }
 
-
-
-
 /*mobile responsive section */
 
 /*tablet version */
@@ -769,7 +770,6 @@ body.light-theme .history-link {
 
 /* Mobile (MAIN BREAKPOINT — 700px) */
 @media (max-width: 700px) {
-
   /* header */
   .hamburger {
     display: block;
@@ -792,7 +792,6 @@ body.light-theme .history-link {
     display: flex;
   }
 
-
   /* layout */
   .main-layout {
     padding: 0.6rem;
@@ -805,7 +804,7 @@ body.light-theme .history-link {
   /* FIX HERO */
   .hero {
     margin: 0 0 10px;
-    text-align: center
+    text-align: center;
   }
 
   .hero h1 {
@@ -882,7 +881,6 @@ body.light-theme .history-link {
     font-size: 0.75rem;
   }
 
-
   /* recent */
   .recent-header {
     font-size: 0.85rem;
@@ -926,4 +924,23 @@ body.light-theme .history-link {
   .recent-page-container {
     padding: 0 8px;
   }
+}
+
+details summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 1rem;
+  font-weight: 600;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+details[open] summary {
+  color: #2563eb;
+  /* Primary brand color */
+}
+
+.faq-answer {
+  padding: 1rem;
+  line-height: 1.6;
+  color: #4b5563;
 }
